@@ -10,9 +10,7 @@ zoom-enabled UMAPs, IGV-style peak tracks, and spatial plots—all easily
 customizable and deployable with minimal dependencies. Designed for both 
 computational and experimental researchers, cellsight empowers intuitive 
 exploration, cross-modality comparison, and statistical analysis of 
-high-dimensional data without requiring extensive coding or setup. An example 
-web app showcasing the visualization of spatial transcriptomics, scATAC-seq, 
-and CITE-seq datasets can be accessed at https://shinycell.ouyanglab.com/
+high-dimensional data without requiring extensive coding or setup. 
 
 If you are using `cellsight`, please cite the [biorxiv preprint](
 https://www.biorxiv.org/content/10.1101/2025.04.22.650045v1). 
@@ -58,38 +56,17 @@ This readme is broken down into the following sections:
 
 - [Frequently Asked Questions](#frequently-asked-questions)
 
-There are also additional information / tutorials as follows:
-
-- [Additional information on new visualisations tailored for spatial / scATAC-seq / multiomics](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/addNewVis.html)
-
-- [Additional information on enhanced visualisation features](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/addEnhanVis.html)
-
-- [Tutorial for creating a cellsight app for scRNA-seq or CITE-seq data](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/tutCiteseq.html)
-
-- [Tutorial for creating a cellsight app for spatial data](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/tutSpatial.html)
-
-- [Tutorial for creating a cellsight app for ArchR-based scATAC-seq data](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/tutArchr.html)
-
-- [Tutorial for creating a cellsight app for Signac-based scATAC-seq data](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/tutSignac.html)
-
-- [Tutorial for creating a ShinyCell app containing several datasets](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/tutMulti.html)
-
-- [Tutorial for customising ShinyCell aesthetics](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/aesthetics.html)
-
-- [Instructions on how to deploy ShinyCell apps online](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/cloud.html)
-
-
 
 # Installation
 
 ## Building  requirements
 
 The default required packages for ShinyCell3 are the packages required to build
-a ShinyCell3 shiny app instance. These packages will be install by default when 
-install installing ShinyCell3:
+a CellSight shiny app instance. These packages will be install by default when 
+install installing CellSight:
 
 ```r
-install.packages("ShinyCell3", dependencies = TRUE)
+install.packages("CellSight", dependencies = TRUE)
 ```
 
 Or if you prefer to install individually:
