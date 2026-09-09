@@ -1,0 +1,51 @@
+Package: cellsight
+Type: Package
+Title: cellsight: spatial sequencing visualization
+Version: 0.0.1
+Author: Ryan Routsong, Skyler Kuhn, Brittney Dulek, Neelam Redekar
+Maintainer: Ryan Routsong <ryan.routsong@nih.gov>
+Description: 
+License: GPL-3
+Depends:
+  data.table   (>= 1.14.8),
+  Matrix       (>= 1.5.3),
+  hdf5r        (>= 1.3.8),
+  reticulate   (>= 1.28),
+  R.utils      (>= 2.12.2),
+  ggplot2      (>= 3.4.1),
+  gridExtra    (>= 2.3),
+  jinjar       (>= 0.2.0),
+  readr        (>= 2.1.4),
+  future       (>= 1.32.0),
+  RColorBrewer (>= 1.1-3),
+  shinyhelper,
+  grid
+Suggests:
+  Seurat       (>= 5.0.0),
+  Signac       (>= 1.12.0),
+  ArchR        (>= 1.0.1),
+  styler       (>= 1.10.0),
+  lintr        (>= 3.0.0),
+  pak          (>= 0.7.0),
+  shiny,
+  DT,
+  magrittr,
+  ggrepel,
+  ggdendro,
+  ggpubr,
+  shinydataviewer
+Config/Needs/viz:
+  shiny,
+  shinyhelper,
+  data.table,
+  Matrix,
+  DT,
+  magrittr,
+  ggplot2,
+  ggrepel,
+  hdf5r,
+  ggdendro,
+  gridExtra,
+  ggpubr
+Encoding: UTF-8
+RoxygenNote: 7.3.3

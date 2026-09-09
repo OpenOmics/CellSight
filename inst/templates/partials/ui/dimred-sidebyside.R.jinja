@@ -1,0 +1,200 @@
+{#
+  dimred-sidebyside page — UI
+
+  tabPanel for "Side-by-side DimRed". Layout:
+    - top controls row: reduction selector, cell-subset toggle, graphics controls
+    - a colour-key legend line (categorical / continuous / undetermined)
+    - left half: first plot's data-type + feature selector, plot controls, plot +
+      legend outputs and download rows
+    - right half: same for the second plot
+    - bottom row: comparison plot (left) and cell-number / statistics table (right)
+  Server counterpart: partials/server/dimred-sidebyside.R.jinja.
+#}
+### dimred-sidebyside page
+tabPanel(
+  HTML("Side-by-side DimRed"),
+  h4("Cell information vs assay expression on reduced dimensions"),
+  "In this tab, users can visualise both cell information and gene ",
+  "expression side-by-side on low-dimensional representions.",
+  br(), br(),
+  HTML(paste0(
+    "<div style='font-size:13px; margin-bottom:8px;'>",
+    "<b>Selector colour key:</b>&nbsp;&nbsp;",
+    "<span style='color:#1B7837; font-weight:bold;'>&#9632; Categorical</span>&nbsp;&nbsp;",
+    "<span style='color:#2166AC; font-weight:bold;'>&#9632; Continuous</span>&nbsp;&nbsp;",
+    "<span style='color:#E66101; font-weight:bold;'>&#9632; Undetermined</span>",
+    "</div>")),
+  fluidRow(
+    column(
+      3, fluidRow(
+        column(
+          12, selectInput("<< d.prefix >>a2dr", "Reduction:", choices = << d.prefix >>def$dimrd,
+                          selected = << d.prefix >>def$dimrd[1]))
+      )
+    ), # End of column (6 space)
+    column(
+      3, actionButton("<< d.prefix >>a2togL", "Toggle to subset cells"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>a2togL % 2 == 1",
+        selectInput("<< d.prefix >>a2sub1", "Cell information to subset:",
+                    choices = << d.prefix >>conf[grp == TRUE]$UI,
+                    selected = << d.prefix >>def$grp1),
+        uiOutput("<< d.prefix >>a2sub1.ui"),
+        actionButton("<< d.prefix >>a2sub1all", "Select all groups", class = "btn btn-primary"),
+        actionButton("<< d.prefix >>a2sub1non", "Deselect all groups", class = "btn btn-primary")
+      )
+    ), # End of column (6 space)
+    column(
+      6, actionButton("<< d.prefix >>a2tog0", "Toggle graphics controls"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>a2tog0 % 2 == 1",
+        fluidRow(
+          column(
+            6, sliderInput("<< d.prefix >>a2siz", "Point size:",
+                           min = 0, max = 4, value = << d.ptsiz >>, step = 0.25),
+            radioButtons("<< d.prefix >>a2psz", "Plot size:",
+                         choices = c("Small", "Medium", "Large"),
+                         selected = "Medium", inline = TRUE),
+            radioButtons("<< d.prefix >>a2fsz", "Font size:",
+                         choices = c("Small", "Medium", "Large"),
+                         selected = "Medium", inline = TRUE)
+          ),
+          column(
+            6, radioButtons("<< d.prefix >>a2asp", "Aspect ratio:",
+                            choices = c("Square", "Fixed", "Free"),
+                            selected = "Square", inline = TRUE),
+            checkboxInput("<< d.prefix >>a2txt", "Show axis text", value = FALSE)
+          )
+        )
+      )
+    ) # End of column (6 space)
+  ), # End of fluidRow (4 space)
+  fluidRow(
+    column(
+      6, style = "border-right: 2px solid black",
+      fluidRow(
+        column(
+          6, selectInput("<< d.prefix >>a2ass1", "Data type to colour plot:",
+                         choices = c("Cell Information", paste0("Assay: ", << d.prefix >>def$assay)),
+                         selected = "Cell Information"),
+          div(class = "centerSelect",
+          selectInput("<< d.prefix >>a2inp1", "Cell Info / Feature Name:", choices = NULL) %>%
+            helper(type = "inline", size = "m", fade = TRUE,
+                   title = "Cell Info / Gene to colour cells by",
+                   content = c("Select cell info / feature to colour cells",
+                               "- Categorical covariates have a fixed colour palette",
+                               paste0("- Continuous covariates / gene expression are coloured ",
+                                      "in a Blue-Yellow-Red colour scheme, which can be ",
+                                      "changed in the plot controls"))))
+        ),
+        column(
+          6, actionButton("<< d.prefix >>a2tog1", "Toggle plot controls"),
+          conditionalPanel(
+            condition = "input.<< d.prefix >>a2tog1 % 2 == 1",
+            radioButtons("<< d.prefix >>a2col1", "Colour (Continuous data):",
+                         choices = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple"),
+                         selected = "Blue-Yellow-Red"),
+            numericInput("<< d.prefix >>a2min1", "Min cutoff (q##):",
+                         min = 0, max = 50, value = 0, step = 1),
+            numericInput("<< d.prefix >>a2max1", "Max cutoff (q##):",
+                         min = 50, max = 100, value = 100, step = 1),
+            radioButtons("<< d.prefix >>a2ord1", "Plot order:",
+                         choices = c("Max-1st", "Min-1st", "Original", "Random"),
+                         selected = "Original", inline = TRUE),
+            checkboxInput("<< d.prefix >>a2lab1", "Show cell info labels", value = TRUE)
+          )
+        )
+      ),
+      fluidRow(column(12, uiOutput("<< d.prefix >>a2oup1.ui"))),
+      fluidRow(column(12, uiOutput("<< d.prefix >>a2oup3.ui"))),
+      fluidRow(column(3, downloadButton("<< d.prefix >>a2oup1.dl", "Download Plot")),
+               column(3, radioButtons("<< d.prefix >>a2oup1.f", "Plot format:",
+                                      choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+               column(3, numericInput("<< d.prefix >>a2oup1.h", "Plot height:",
+                                      min = 4, max = 20, value = 8, step = 0.5)),
+               column(3, numericInput("<< d.prefix >>a2oup1.w", "Plot width:",
+                                      min = 4, max = 20, value = 8, step = 0.5))),
+      fluidRow(column(3, downloadButton("<< d.prefix >>a2oup3.dl", "Download Legend")),
+              column(3, radioButtons("<< d.prefix >>a2oup3.f", "Legend format:",
+                                     choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+               column(3, numericInput("<< d.prefix >>a2oup3.h", "Legend height:",
+                                      min = 0.2, max = 10, value = 2, step = 0.1)),
+               column(3, numericInput("<< d.prefix >>a2oup3.w", "Legend width:",
+                                      min = 4, max = 20, value = 8, step = 0.5))),
+      br()
+    ), # End of column (6 space)
+    column(
+      6,
+      fluidRow(
+        column(
+          6, selectInput("<< d.prefix >>a2ass2", "Data type to colour plot:",
+                         choices = c("Cell Information", paste0("Assay: ", << d.prefix >>def$assay)),
+                         selected = paste0("Assay: ", << d.prefix >>def$assay[1])),
+          div(class = "centerSelect",
+          selectInput("<< d.prefix >>a2inp2", "Cell Info / Feature Name:", choices = NULL) %>%
+            helper(type = "inline", size = "m", fade = TRUE,
+                   title = "Cell Info / Gene to colour cells by",
+                   content = c("Select cell info / feature to colour cells",
+                               "- Categorical covariates have a fixed colour palette",
+                               paste0("- Continuous covariates / gene expression are coloured ",
+                                      "in a Blue-Yellow-Red colour scheme, which can be ",
+                                      "changed in the plot controls"))))
+        ),
+        column(
+          6, actionButton("<< d.prefix >>a2tog2", "Toggle plot controls"),
+          conditionalPanel(
+            condition = "input.<< d.prefix >>a2tog2 % 2 == 1",
+            radioButtons("<< d.prefix >>a2col2", "Colour (Continuous data):",
+                         choices = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple"),
+                         selected = "White-Red"),
+            numericInput("<< d.prefix >>a2min2", "Min cutoff (q##):",
+                         min = 0, max = 50, value = 0, step = 1),
+            numericInput("<< d.prefix >>a2max2", "Max cutoff (q##):",
+                         min = 50, max = 100, value = 100, step = 1),
+            radioButtons("<< d.prefix >>a2ord2", "Plot order:",
+                         choices = c("Max-1st", "Min-1st", "Original", "Random"),
+                         selected = "Max-1st", inline = TRUE),
+            checkboxInput("<< d.prefix >>a2lab2", "Show cell info labels", value = TRUE)
+          )
+        )
+      ),
+      fluidRow(column(12, uiOutput("<< d.prefix >>a2oup2.ui"))),
+      fluidRow(column(12, uiOutput("<< d.prefix >>a2oup4.ui"))),
+      fluidRow(column(3, downloadButton("<< d.prefix >>a2oup2.dl", "Download Plot")),
+               column(3, radioButtons("<< d.prefix >>a2oup2.f", "Plot format:",
+                                      choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+               column(3, numericInput("<< d.prefix >>a2oup2.h", "Plot height:",
+                                      min = 4, max = 20, value = 8, step = 0.5)),
+               column(3, numericInput("<< d.prefix >>a2oup2.w", "Plot width:",
+                                      min = 4, max = 20, value = 8, step = 0.5))),
+      fluidRow(column(3, downloadButton("<< d.prefix >>a2oup4.dl", "Download Legend")),
+               column(3, radioButtons("<< d.prefix >>a2oup4.f", "Legend format:",
+                                      choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+               column(3, numericInput("<< d.prefix >>a2oup4.h", "Legend height:",
+                                      min = 0.2, max = 10, value = 2, step = 0.1)),
+               column(3, numericInput("<< d.prefix >>a2oup4.w", "Legend width:",
+                                      min = 4, max = 20, value = 8, step = 0.5))),
+      br()
+    ) # End of column (6 space)
+  ), # End of fluidRow (4 space)
+  h4("Relationship between left-side and right-side cell info / feature"),
+  fluidRow(
+    column(
+      6, h4("Comparative plot"),
+      style = "border-right: 2px solid black",
+      uiOutput("<< d.prefix >>a2oup5.ui"),
+      fluidRow(column(3, downloadButton("<< d.prefix >>a2oup5.dl", "Download Plot")),
+               column(3, radioButtons("<< d.prefix >>a2oup5.f", "Plot format:",
+                                      choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+               column(3, numericInput("<< d.prefix >>a2oup5.h", "Plot height:",
+                                      min = 4, max = 20, value = 8, step = 0.5)),
+               column(3, numericInput("<< d.prefix >>a2oup5.w", "Plot width:",
+                                      min = 4, max = 20, value = 8, step = 0.5)))
+    ),
+    column(
+      6, h4("Cell numbers / statistics"),
+      dataTableOutput("<< d.prefix >>a2.dt")
+    ) # End of column (6 space)
+  ) # End of fluidRow (4 space)
+) # End of tab (2 space)
+,

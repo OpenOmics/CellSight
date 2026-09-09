@@ -1,0 +1,89 @@
+{#
+  trackplot page — server (ATAC)
+
+  Reactive logic for the "Track plot" page (genome-browser-style bigWig coverage
+  tracks over a gene / region). Wires up:
+    - the gene selectize, bedfile dropdown (scanned from ./bed_files), and the
+      track-subset checkbox UI + select-all / deselect-all buttons
+    - the bwGroup() reactive that reads bigWig column data for the chosen group
+    - the eventReactive gated on "Update View" that assembles track colours +
+      inputs, and the scTrackplot() renderPlot with sized plotOutput
+  Only emitted for datasets with a <prefix>bw.rds. Pairs with the UI in
+  partials/ui/trackplot.R.jinja.
+#}
+### trackplot page
+updateSelectizeInput(session, "<< d.prefix >>t1gene", choices = << d.prefix >>bw$chrGene$gene, server = TRUE,
+                     selected = << d.prefix >>bw$chrGene$gene[42], options = list(
+                       maxOptions = 7, create = TRUE, persist = TRUE, render = I(optCrt)))
+observe({
+  files <- c("no file selected", list.files(path = "./bed_files", pattern = "*.bed|*.tsv"))
+  updateSelectInput(session, "<< d.prefix >>t1bed", choices = files, selected = "no file selected")
+})
+output$<< d.prefix >>t1sub1.ui <- renderUI({
+  sub = dir(paste0("<< d.prefix >>bw_", input$<< d.prefix >>t1grp), full.names = FALSE, pattern = "*.bw")
+  sub = gsub(".bw$", "", sub)
+  checkboxGroupInput("<< d.prefix >>t1sub2", "Select which tracks to show", inline = TRUE,
+                     choices = sub, selected = sub)
+})
+observeEvent(input$<< d.prefix >>t1sub1non, {
+  sub = dir(paste0("<< d.prefix >>bw_", input$<< d.prefix >>t1grp), full.names = FALSE, pattern = "*.bw")
+  sub = gsub(".bw$", "", sub)
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>t1sub2", label = "Select which tracks to show",
+                           choices = sub, selected = NULL, inline = TRUE)
+})
+observeEvent(input$<< d.prefix >>t1sub1all, {
+  sub = dir(paste0("<< d.prefix >>bw_", input$<< d.prefix >>t1grp), full.names = FALSE, pattern = "*.bw")
+  sub = gsub(".bw$", "", sub)
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>t1sub2", label = "Select which tracks to show",
+                           choices = sub, selected = sub, inline = TRUE)
+})
+
+<< d.prefix >>bwGroup <- reactive({
+  req(input$<< d.prefix >>t1grp)
+  bigWigs <- dir(paste0("<< d.prefix >>bw_", input$<< d.prefix >>t1grp), full.names = TRUE)
+  bw_samples <- read_coldata(bws = bigWigs, build = << d.prefix >>bw$genome)
+  if (!is.null(input$<< d.prefix >>t1sub2[[1]])) {
+    tmp <- bw_samples[bw_files %in% paste0(
+      "<< d.prefix >>bw_", input$<< d.prefix >>t1grp, "/", input$<< d.prefix >>t1sub2, ".bw"), ]
+    if (nrow(tmp) > 0) {bw_samples <- tmp}
+  }
+  return(bw_samples)
+})
+<< d.prefix >>t1tr <- eventReactive(input$<< d.prefix >>t1update, {
+  # Process track color
+  tmp = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>t1grp]$fCL, "\\|")[[1]]
+  names(tmp) = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>t1grp]$fID, "\\|")[[1]]
+  if (!is.null(input$<< d.prefix >>t1sub2)) {
+    track_col = tmp[input$<< d.prefix >>t1sub2]
+  } else {
+    track_col = tmp
+  }
+  if (is.na(track_col[[1]])) {track_col = "grey"}
+  if (input$<< d.prefix >>t1col == FALSE) {track_col = "grey"}
+  # Collect inputs
+  inp <- list(gene = input$<< d.prefix >>t1gene,
+              chr = input$<< d.prefix >>t1chr,
+              srt = input$<< d.prefix >>t1srt,
+              end = input$<< d.prefix >>t1end,
+              bed = input$<< d.prefix >>t1bed,
+              extL = input$<< d.prefix >>t1extL,
+              extR = input$<< d.prefix >>t1extR,
+              col = track_col,
+              bw_colData = << d.prefix >>bwGroup())
+  if (input$<< d.prefix >>t1sel == "Region") {inp$gene = NULL}
+  if (input$<< d.prefix >>t1bed == "no file selected") {inp$bed = NULL}
+  inp
+}, ignoreNULL = FALSE)
+output$<< d.prefix >>t1track <- renderPlot({
+  inp <- << d.prefix >>t1tr()
+  scTrackplot("./", inp$bw_colData, inp$gene, << d.prefix >>bw, inp$chr, inp$srt, inp$end,
+              inp$extL, inp$extR, inp$bed, "<< d.prefix >>bw.gtf.gz", binSize = 100,
+              input$<< d.prefix >>t1dgt, input$<< d.prefix >>t1asg, input$<< d.prefix >>t1gth,
+              input$<< d.prefix >>t1ath, input$<< d.prefix >>t1sha, input$<< d.prefix >>t1gsz,
+              input$<< d.prefix >>t1tnp, input$<< d.prefix >>t1ctx, inp$col)
+})
+output$<< d.prefix >>t1track.ui <- renderUI({
+  plotOutput("<< d.prefix >>t1track",
+             height = paste0(input$<< d.prefix >>t1track.h, "px"),
+             width = paste0(input$<< d.prefix >>t1track.w, "px"))
+})

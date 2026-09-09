@@ -1,0 +1,149 @@
+{#
+  dimred-split page — server
+
+  Reactive logic for the "Split-out DimRed" page (one gene's expression faceted
+  across the levels of a categorical variable). Wires up:
+    - the gene/feature selectize (choices follow the chosen assay)
+    - the cell-subset checkbox UI + select-all / deselect-all buttons
+    - the scDRcellsplit() faceted plot output and its PDF / PNG download handlers
+  Pairs with the UI in partials/ui/dimred-split.R.jinja.
+#}
+  ### dimred-split page: dynamic dropdown / subset events
+  getG<< d.prefix >>s3inp1 <- reactive({
+    req(input$<< d.prefix >>s3ass1)
+    res <- names(<< d.prefix >>gene[[input$<< d.prefix >>s3ass1]])
+    resDef1 <- << d.prefix >>def$gene1[[input$<< d.prefix >>s3ass1]]
+    return(list(res, resDef1))
+  })
+
+  observeEvent(input$<< d.prefix >>s3ass1, {
+    updateSelectizeInput(
+      session,
+      "<< d.prefix >>s3feat1",
+      choices = getG<< d.prefix >>s3inp1()[[1]],
+      server = TRUE,
+      selected = getG<< d.prefix >>s3inp1()[[2]],
+      options = list(
+        maxOptions = 7, create = FALSE, persist = TRUE, render = I(optCrt)
+      )
+    )
+  })
+
+  output$<< d.prefix >>s3sub1.ui <- renderUI({
+    sub <- strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>s3sub1]$fID, "\\|")[[1]]
+    checkboxGroupInput("<< d.prefix >>s3sub2", "Select which cells to show",
+      inline = TRUE,
+      choices = sub, selected = sub
+    )
+  })
+  observeEvent(input$<< d.prefix >>s3sub1non, {
+    sub <- strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>s3sub1]$fID, "\\|")[[1]]
+    updateCheckboxGroupInput(session,
+      inputId = "<< d.prefix >>s3sub2", label = "Select which cells to show",
+      choices = sub, selected = NULL, inline = TRUE
+    )
+  })
+  observeEvent(input$<< d.prefix >>s3sub1all, {
+    sub <- strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>s3sub1]$fID, "\\|")[[1]]
+    updateCheckboxGroupInput(session,
+      inputId = "<< d.prefix >>s3sub2", label = "Select which cells to show",
+      choices = sub, selected = sub, inline = TRUE
+    )
+  })
+
+  ### dimred-split page: static plot output + downloads
+  output$<< d.prefix >>s3oup1 <- renderPlot({
+    scDRcellsplit(
+      << d.prefix >>conf,
+      << d.prefix >>meta,
+      << d.prefix >>def,
+      << d.prefix >>dimr,
+      << d.prefix >>gene,
+      paste0("<< d.prefix >>assay_", input$<< d.prefix >>s3ass1, ".h5"),
+      input$<< d.prefix >>s3ass1,
+      input$<< d.prefix >>s3dr,
+      input$<< d.prefix >>s3feat1,
+      input$<< d.prefix >>s3inp3,
+      input$<< d.prefix >>s3txt,
+      input$<< d.prefix >>s3fsz,
+      input$<< d.prefix >>s3siz,
+      input$<< d.prefix >>s3asp,
+      input$<< d.prefix >>s3col1,
+      input$<< d.prefix >>s3ord1,
+      input$<< d.prefix >>s3sub1,
+      input$<< d.prefix >>s3sub2
+    )
+  })
+
+  output$<< d.prefix >>s3oup1.ui <- renderUI({
+    plotOutput("<< d.prefix >>s3oup1", height = pList[input$<< d.prefix >>s3psz])
+  })
+
+  output$<< d.prefix >>s3oup1.pdf <- downloadHandler(
+    filename = function() {
+      paste0(
+        "<< d.prefix >>", input$<< d.prefix >>s3drX, "_", input$<< d.prefix >>s3drY, "_",
+        input$<< d.prefix >>s3inp1, ".pdf"
+      )
+    },
+    content = function(file) {
+      ggsave(
+        file,
+        device = "pdf", height = input$<< d.prefix >>s3oup1.h, width = input$<< d.prefix >>s3oup1.w, useDingbats = FALSE,
+        plot = scDRcellsplit(
+          << d.prefix >>conf,
+          << d.prefix >>meta,
+          << d.prefix >>def,
+          << d.prefix >>dimr,
+          << d.prefix >>gene,
+          paste0("<< d.prefix >>assay_", input$<< d.prefix >>s3ass1, ".h5"),
+          input$<< d.prefix >>s3ass1,
+          input$<< d.prefix >>s3dr,
+          input$<< d.prefix >>s3feat1,
+          input$<< d.prefix >>s3inp3,
+          input$<< d.prefix >>s3txt,
+          input$<< d.prefix >>s3fsz,
+          input$<< d.prefix >>s3siz,
+          input$<< d.prefix >>s3asp,
+          input$<< d.prefix >>s3col1,
+          input$<< d.prefix >>s3ord1,
+          input$<< d.prefix >>s3sub1,
+          input$<< d.prefix >>s3sub2
+        )
+      )
+    }
+  )
+  output$<< d.prefix >>s3oup1.png <- downloadHandler(
+    filename = function() {
+      paste0(
+        "<< d.prefix >>", input$<< d.prefix >>s3drX, "_", input$<< d.prefix >>s3drY, "_",
+        input$<< d.prefix >>s3inp1, ".png"
+      )
+    },
+    content = function(file) {
+    ggsave(
+      file,
+      device = "png", height = input$<< d.prefix >>s3oup1.h, width = input$<< d.prefix >>s3oup1.w,
+      plot = scDRcellsplit(
+        << d.prefix >>conf,
+        << d.prefix >>meta,
+        << d.prefix >>def,
+        << d.prefix >>dimr,
+        << d.prefix >>gene,
+        paste0("<< d.prefix >>assay_", input$<< d.prefix >>s3ass1, ".h5"),
+        input$<< d.prefix >>s3ass1,
+        input$<< d.prefix >>s3dr,
+        input$<< d.prefix >>s3feat1,
+        input$<< d.prefix >>s3inp3,
+        input$<< d.prefix >>s3txt,
+        input$<< d.prefix >>s3fsz,
+        input$<< d.prefix >>s3siz,
+        input$<< d.prefix >>s3asp,
+        input$<< d.prefix >>s3col1,
+        input$<< d.prefix >>s3ord1,
+        input$<< d.prefix >>s3sub1,
+        input$<< d.prefix >>s3sub2
+      )
+    )
+  }
+)

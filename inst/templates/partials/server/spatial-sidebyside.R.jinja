@@ -1,0 +1,229 @@
+{#
+  spatial-sidebyside page — server
+
+  Reactive logic for the "Side-by-side Spatial" page (two spatial plots shown
+  together over the tissue image). Wires up:
+    - slide selection -> reactive image data with a legacy single-slide fallback
+    - the cell-subset checkbox UI + select-all / deselect-all buttons
+    - rotate / flip / nudge transform state (remembered per slide) and reset
+    - two sc2Dspat() plots (left / right), their legends, and download handlers
+  Pairs with the UI in partials/ui/spatial-sidebyside*.R.jinja.
+#}
+### spatial-sidebyside page
+# Reactive image data based on slide selection
+<< d.prefix >>s2image_data <- reactive({
+  # Check if multi-slide data structure exists
+  if (!is.null(<< d.prefix >>image$slide_names) && length(<< d.prefix >>image$slide_names) > 0) {
+    # Multi-slide structure exists
+    if (!is.null(input$<< d.prefix >>s2slide) && input$<< d.prefix >>s2slide != "") {
+      # User has selected a slide
+      slide_name <- input$<< d.prefix >>s2slide
+    } else {
+      # No slide selected yet, use first slide
+      slide_name <- << d.prefix >>image$slide_names[1]
+    }
+    result <- list(
+      coord = << d.prefix >>image$coords[[slide_name]],
+      bg_image = << d.prefix >>image$bg_images[[slide_name]],
+      bg_image_hires = << d.prefix >>image$bg_images_hires[[slide_name]],
+      lowres = << d.prefix >>image$lowres_factors[[slide_name]],
+      hires_factor = << d.prefix >>image$hires_factors[[slide_name]],
+      image_type = << d.prefix >>image$image_types[[slide_name]]
+    )
+  } else {
+    # Legacy single-slide structure
+    result <- list(
+      coord = << d.prefix >>image$coord,
+      bg_image = << d.prefix >>image$bg_image,
+      bg_image_hires = if (!is.null(<< d.prefix >>image$bg_image_hires)) << d.prefix >>image$bg_image_hires else << d.prefix >>image$bg_image,
+      lowres = << d.prefix >>image$lowres,
+      hires_factor = if (!is.null(<< d.prefix >>image$hires_factor)) << d.prefix >>image$hires_factor else 1.0,
+      image_type = << d.prefix >>image$image_type
+    )
+  }
+  # Validate that we have all required components
+  req(result$coord, result$bg_image, result$lowres)
+  return(result)
+})
+
+output$<< d.prefix >>s2sub1.ui <- renderUI({
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>s2sub1]$fID, "\\|")[[1]]
+  checkboxGroupInput("<< d.prefix >>s2sub2", "Select which cells to show", inline = TRUE,
+                     choices = sub, selected = sub)
+})
+observeEvent(input$<< d.prefix >>s2sub1non, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>s2sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>s2sub2", label = "Select which cells to show",
+                           choices = sub, selected = NULL, inline = TRUE)
+})
+observeEvent(input$<< d.prefix >>s2sub1all, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>s2sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>s2sub2", label = "Select which cells to show",
+                           choices = sub, selected = sub, inline = TRUE)
+})
+
+# Spatial transformation state (rotation, flip, and offset) with per-slide memory
+<< d.prefix >>s2transform <- reactiveValues(rotation = 0, flipH = FALSE, flipV = FALSE, offsetX = 0, offsetY = 0)
+# Per-slide transformation memory (survives slide switches)
+<< d.prefix >>s2slideTransforms <- reactiveValues()
+
+# Initialize current slide tracking
+observe({
+  req(input$<< d.prefix >>s2slide)
+  if (is.null(<< d.prefix >>s2slideTransforms$current_slide)) {
+    << d.prefix >>s2slideTransforms$current_slide <- input$<< d.prefix >>s2slide
+  }
+}, priority = 100)
+
+# Save current transform when switching slides
+observeEvent(input$<< d.prefix >>s2slide, {
+  req(<< d.prefix >>s2slideTransforms$current_slide)
+
+  # Save old slide's state before switching
+  if (<< d.prefix >>s2slideTransforms$current_slide != input$<< d.prefix >>s2slide) {
+    old_slide <- << d.prefix >>s2slideTransforms$current_slide
+    << d.prefix >>s2slideTransforms[[old_slide]] <- list(
+      rotation = << d.prefix >>s2transform$rotation,
+      flipH = << d.prefix >>s2transform$flipH,
+      flipV = << d.prefix >>s2transform$flipV,
+      offsetX = << d.prefix >>s2transform$offsetX,
+      offsetY = << d.prefix >>s2transform$offsetY
+    )
+
+    # Load new slide's saved state (or defaults)
+    new_slide <- input$<< d.prefix >>s2slide
+    << d.prefix >>s2slideTransforms$current_slide <- new_slide
+
+    if (!is.null(<< d.prefix >>s2slideTransforms[[new_slide]])) {
+      saved <- << d.prefix >>s2slideTransforms[[new_slide]]
+      << d.prefix >>s2transform$rotation <- saved$rotation
+      << d.prefix >>s2transform$flipH <- saved$flipH
+      << d.prefix >>s2transform$flipV <- saved$flipV
+      << d.prefix >>s2transform$offsetX <- saved$offsetX
+      << d.prefix >>s2transform$offsetY <- saved$offsetY
+    } else {
+      << d.prefix >>s2transform$rotation <- 0
+      << d.prefix >>s2transform$flipH <- FALSE
+      << d.prefix >>s2transform$flipV <- FALSE
+      << d.prefix >>s2transform$offsetX <- 0
+      << d.prefix >>s2transform$offsetY <- 0
+    }
+  }
+}, priority = 50)
+
+# Auto-save transformations to current slide whenever they change
+observe({
+  req(<< d.prefix >>s2slideTransforms$current_slide)
+  current <- << d.prefix >>s2slideTransforms$current_slide
+  << d.prefix >>s2slideTransforms[[current]] <- list(
+    rotation = << d.prefix >>s2transform$rotation,
+    flipH = << d.prefix >>s2transform$flipH,
+    flipV = << d.prefix >>s2transform$flipV,
+    offsetX = << d.prefix >>s2transform$offsetX,
+    offsetY = << d.prefix >>s2transform$offsetY
+  )
+})
+
+# Display current offset
+output$<< d.prefix >>s2offsetDisplay <- renderText({
+  paste0("X: ", << d.prefix >>s2transform$offsetX, ", Y: ", << d.prefix >>s2transform$offsetY)
+})
+
+# Reset transformation
+observeEvent(input$<< d.prefix >>s2reset, {
+  << d.prefix >>s2transform$rotation <- 0
+  << d.prefix >>s2transform$flipH <- FALSE
+  << d.prefix >>s2transform$flipV <- FALSE
+  << d.prefix >>s2transform$offsetX <- 0
+  << d.prefix >>s2transform$offsetY <- 0
+})
+
+# Rotate clockwise (add 90 degrees)
+observeEvent(input$<< d.prefix >>s2rotCW, {
+  << d.prefix >>s2transform$rotation <- (<< d.prefix >>s2transform$rotation + 90) %% 360
+})
+
+# Rotate counter-clockwise (subtract 90 degrees)
+observeEvent(input$<< d.prefix >>s2rotCCW, {
+  << d.prefix >>s2transform$rotation <- (<< d.prefix >>s2transform$rotation - 90) %% 360
+})
+
+# Flip horizontal
+observeEvent(input$<< d.prefix >>s2flipH, {
+  << d.prefix >>s2transform$flipH <- !<< d.prefix >>s2transform$flipH
+})
+
+# Flip vertical
+observeEvent(input$<< d.prefix >>s2flipV, {
+  << d.prefix >>s2transform$flipV <- !<< d.prefix >>s2transform$flipV
+})
+
+# Offset controls (d-pad)
+observeEvent(input$<< d.prefix >>s2offsetUp, {
+  << d.prefix >>s2transform$offsetY <- << d.prefix >>s2transform$offsetY - 1
+})
+
+observeEvent(input$<< d.prefix >>s2offsetDown, {
+  << d.prefix >>s2transform$offsetY <- << d.prefix >>s2transform$offsetY + 1
+})
+
+observeEvent(input$<< d.prefix >>s2offsetLeft, {
+  << d.prefix >>s2transform$offsetX <- << d.prefix >>s2transform$offsetX - 1
+})
+
+observeEvent(input$<< d.prefix >>s2offsetRight, {
+  << d.prefix >>s2transform$offsetX <- << d.prefix >>s2transform$offsetX + 1
+})
+
+<< d.prefix >>s2oup1 <- reactive({
+  req(input$<< d.prefix >>s2inp1)
+  sc2Dspat(<< d.prefix >>conf, << d.prefix >>meta, << d.prefix >>s2image_data(), input$<< d.prefix >>s2alp,
+           input$<< d.prefix >>s2inp1, "<< d.prefix >>assay_", << d.prefix >>gene, "Cell Information",
+           input$<< d.prefix >>s2sub1, input$<< d.prefix >>s2sub2, input$<< d.prefix >>s2min1, input$<< d.prefix >>s2max1, input$<< d.prefix >>s2siz,
+           cList[[input$<< d.prefix >>s2col1]], sList[input$<< d.prefix >>s2fsz], input$<< d.prefix >>s2lab1,
+           rotation = << d.prefix >>s2transform$rotation, flipH = << d.prefix >>s2transform$flipH, flipV = << d.prefix >>s2transform$flipV,
+           offsetX = << d.prefix >>s2transform$offsetX, offsetY = << d.prefix >>s2transform$offsetY,
+           zoom_limits = NULL)
+})
+output$<< d.prefix >>s2oup1 <- renderPlot({<< d.prefix >>s2oup1() + theme(legend.position = "none")})
+output$<< d.prefix >>s2oup1.ui <- renderUI({plotOutput("<< d.prefix >>s2oup1", height = pList[input$<< d.prefix >>s2psz])})
+output$<< d.prefix >>s2oup1.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>spatial_", input$<< d.prefix >>s2inp1, ".", input$<< d.prefix >>s2oup1.f) },
+  content = function(file) { ggsav(file, height = input$<< d.prefix >>s2oup1.h, width = input$<< d.prefix >>s2oup1.w,
+                                   plot = << d.prefix >>s2oup1() + theme(legend.position = "none"))
+})
+output$<< d.prefix >>s2oup3 <- renderPlot({grid.newpage(); grid.draw(g_legend(<< d.prefix >>s2oup1()))})
+output$<< d.prefix >>s2oup3.ui <- renderUI({plotOutput("<< d.prefix >>s2oup3", height = 72 * convertHeight(
+  grobHeight(g_legend(<< d.prefix >>s2oup1())), unitTo = "in", valueOnly = TRUE) + 50)})
+output$<< d.prefix >>s2oup3.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>spatial_", input$<< d.prefix >>s2inp1, "_leg.", input$<< d.prefix >>s2oup3.f) },
+  content = function(file) {
+    grid.newpage(); grid.draw(g_legend(<< d.prefix >>s2oup1()))
+    ggsav(file, height = input$<< d.prefix >>s2oup3.h, width = input$<< d.prefix >>s2oup3.w, plot = grid.grab())
+})
+<< d.prefix >>s2oup2 <- reactive({
+  req(input$<< d.prefix >>s2inp2)
+  sc2Dspat(<< d.prefix >>conf, << d.prefix >>meta, << d.prefix >>s2image_data(), input$<< d.prefix >>s2alp,
+           input$<< d.prefix >>s2inp2, "<< d.prefix >>assay_", << d.prefix >>gene, "Cell Information",
+           input$<< d.prefix >>s2sub1, input$<< d.prefix >>s2sub2, input$<< d.prefix >>s2min2, input$<< d.prefix >>s2max2, input$<< d.prefix >>s2siz,
+           cList[[input$<< d.prefix >>s2col2]], sList[input$<< d.prefix >>s2fsz], input$<< d.prefix >>s2lab2,
+           rotation = << d.prefix >>s2transform$rotation, flipH = << d.prefix >>s2transform$flipH, flipV = << d.prefix >>s2transform$flipV,
+           offsetX = << d.prefix >>s2transform$offsetX, offsetY = << d.prefix >>s2transform$offsetY,
+           zoom_limits = NULL)
+})
+output$<< d.prefix >>s2oup2 <- renderPlot({<< d.prefix >>s2oup2() + theme(legend.position = "none")})
+output$<< d.prefix >>s2oup2.ui <- renderUI({plotOutput("<< d.prefix >>s2oup2", height = pList[input$<< d.prefix >>s2psz])})
+output$<< d.prefix >>s2oup2.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>spatial_", input$<< d.prefix >>s2inp2, ".", input$<< d.prefix >>s2oup4.f) },
+  content = function(file) { ggsav(file, height = input$<< d.prefix >>s2oup2.h, width = input$<< d.prefix >>s2oup2.w,
+                                   plot = << d.prefix >>s2oup2() + theme(legend.position = "none"))
+})
+output$<< d.prefix >>s2oup4 <- renderPlot({grid.newpage(); grid.draw(g_legend(<< d.prefix >>s2oup2()))})
+output$<< d.prefix >>s2oup4.ui <- renderUI({plotOutput("<< d.prefix >>s2oup4", height = 72 * convertHeight(
+  grobHeight(g_legend(<< d.prefix >>s2oup2())), unitTo = "in", valueOnly = TRUE) + 50)})
+output$<< d.prefix >>s2oup4.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>spatial_", input$<< d.prefix >>s2inp2, "_leg.", input$<< d.prefix >>s2oup4.f) },
+  content = function(file) {
+    grid.newpage(); grid.draw(g_legend(<< d.prefix >>s2oup2()))
+    ggsav(file, height = input$<< d.prefix >>s2oup4.h, width = input$<< d.prefix >>s2oup4.w, plot = grid.grab())
+})

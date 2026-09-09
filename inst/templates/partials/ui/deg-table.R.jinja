@@ -1,0 +1,35 @@
+{#
+  deg-table page — UI
+
+  A raw, interactive table view of the FULL marker-gene table stored in
+  <prefix>deg.h5, rendered with the shinydataviewer module (searchable table +
+  per-column summaries). Only emitted when the dataset has DEG data (i.e. a
+  marker file and cluster label were supplied). shinydataviewer is a Suggests
+  dependency; loaded in the generated ui.R only when any dataset has DEG data.
+  Server counterpart: partials/server/deg-table.R.jinja.
+#}
+### deg-table page
+tabPanel(
+  HTML("Marker table"),
+  ### Present just the raw table. Hide every element of shinydataviewer's
+  ### sidebar layout except the main table region -- this drops the summary-card
+  ### sidebar, its collapse toggle, and the runtime-injected sidebar resize
+  ### handle (whose "use arrow keys to resize the sidebar" hint was overlapping
+  ### the table) regardless of class -- and let the table fill the full width
+  ### with slightly larger, more legible cells.
+  tags$head(tags$style(HTML(paste0(
+    ".de-root .bslib-sidebar-layout > *:not(.main) { display: none !important; } ",
+    ".de-root .bslib-sidebar-layout { display: block !important; } ",
+    ".de-root .bslib-sidebar-layout > .main { width: 100% !important; ",
+    "margin: 0 !important; } ",
+    ".de-root .rt-resizer { display: none !important; } ",
+    ".de-root .rt-td, .de-root .rt-th { ",
+    "font-size: 1.05rem; padding-top: 0.55rem; padding-bottom: 0.55rem; } ",
+    ".de-root .rt-th { font-weight: 600; }")))),
+  h4("Browse the full marker-gene table"),
+  "Interactive table of all differential-expression markers with per-column ",
+  "summaries and search. Data source: << d.prefix >>deg.h5.",
+  br(), br(),
+  shinydataviewer::data_viewer_ui("<< d.prefix >>degtbl")
+) # End of tab (2 space)
+,

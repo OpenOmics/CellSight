@@ -1,0 +1,90 @@
+{#
+  ui.R master template
+
+  Assembles the generated ui.R. makeShinyCodes() supplies `datasets` and the
+  `is_single` flag, and renders:
+    1. library() calls (inlined below)
+    2. {% for d in datasets %} data-load block (mirrors server.R: base loads plus
+       spatial / track loads gated on has_image / has_bw)
+    3. preamble: error-message styling, page title, navbarPage(...) open
+    4. tab layout — pages are grouped by CONTENT into navbarMenu(...) dropdowns.
+       Four content menus (each rendered only when it has pages):
+         "Dimensional reduction" : dimred-zoom, dimred-split, dimred-sidebyside,
+                                   dimred-coexpression
+         "Spatial"               : spatial-zoom + spatial-sidebyside (multislide
+                                   variants when d.multislide); gated on has_image
+         "Analysis"              : trackplot (if has_bw), violin-box, proportion,
+                                   bubble-heatmap, module-score
+         "DEG"                   : deg-dimred; gated on has_deg
+       Two shapes:
+         is_single : one {% for %} (single dataset) emitting the four menus, each
+                     gated on that dataset's flags (single_has_deg for DEG).
+         multi     : the four menus are the top level; inside each, an inner
+                     {% for %} lists each dataset's pages under a "<header>"
+                     dropdown-header (Shiny has no nested dropdowns). Spatial /
+                     DEG menus gated on any_image / any_deg.
+       Note: dimred-split is included in both layouts (its server handler is
+       generated per-dataset); the legacy spatial-sidebyside-extra partial is no
+       longer referenced (it duplicated spatial-sidebyside's server bindings).
+    5. closing: footnote + navbarPage / fluidPage / shinyUI close
+  Keep the {% ... %} tags packed on one line — see README ("Whitespace in the
+  masters"). Per-page layout lives in partials/ui/<page>.R.jinja.
+#}
+library(shiny)
+library(shinyhelper)
+library(data.table)
+library(Matrix)
+library(DT)
+library(magrittr)
+{% for d in datasets %}<< d.prefix >>conf = readRDS("./<< d.prefix >>conf.rds")
+<< d.prefix >>def  = readRDS("./<< d.prefix >>def.rds")
+<< d.prefix >>meta = readRDS("./<< d.prefix >>meta.rds")
+{% if d.has_image %}<< d.prefix >>image = readRDS("./<< d.prefix >>image.rds")
+if(is.null(<< d.prefix >>image$slide_display_names)) << d.prefix >>image$slide_display_names <- << d.prefix >>image$slide_names
+{% endif %}{% if d.has_bw %}<< d.prefix >>bw    = readRDS("./<< d.prefix >>bw.rds")
+<< d.prefix >>bwGrp = gsub("<< d.prefix >>bw_", "", dir(pattern = "<< d.prefix >>bw_"))
+{% endif %}{% endfor %}
+
+### Start server code
+shinyUI(fluidPage(
+  ### HTML formatting of error messages
+  << ga >>
+  tags$head(tags$style(HTML(".shiny-output-error-validation {color: red; font-weight: bold;}"))),
+  list(tags$style(HTML(".navbar-default .navbar-nav { font-weight: bold; font-size: 16px; }"))),
+  ### Center-align the text inside the colour-coded feature selectors (dimred-sidebyside page)
+  tags$head(tags$style(HTML(paste0(
+    ".centerSelect .selectize-input, ",
+    ".centerSelect .selectize-input input, ",
+    ".centerSelect .selectize-dropdown .option { text-align: center; }")))),
+
+  ### Page title (logo staged left of the h2 title, on the same horizontal row)
+  titlePanel(div(
+    img(src = "cellsight_logo.png", height = "150px", style = "margin-right: 15px;"),
+    h2("<< title >>", style = "display: inline; vertical-align: middle;"),
+    style = "display: flex; align-items: center;"),
+    windowTitle = "<< title >>"),
+  navbarPage(
+    NULL,
+{% if is_single %}{% for d in datasets %}navbarMenu("Dimensional reduction",
+{% include "partials/ui/dimred-zoom.R.jinja" %}{% include "partials/ui/dimred-split.R.jinja" %}{% include "partials/ui/dimred-sidebyside.R.jinja" %}{% include "partials/ui/dimred-coexpression.R.jinja" %}),
+{% if d.has_image %}navbarMenu("Spatial",
+{% if d.multislide %}{% include "partials/ui/spatial-zoom-multislide.R.jinja" %}{% include "partials/ui/spatial-sidebyside-multislide.R.jinja" %}{% else %}{% include "partials/ui/spatial-zoom.R.jinja" %}{% include "partials/ui/spatial-sidebyside.R.jinja" %}{% endif %}),
+{% endif %}navbarMenu("Analysis",
+{% if d.has_bw %}{% include "partials/ui/trackplot.R.jinja" %}{% endif %}{% include "partials/ui/violin-box.R.jinja" %}{% include "partials/ui/proportion.R.jinja" %}{% include "partials/ui/bubble-heatmap.R.jinja" %}{% include "partials/ui/module-score.R.jinja" %}),
+{% if single_has_deg %}navbarMenu("DEG",
+{% include "partials/ui/deg-dimred.R.jinja" %}{% include "partials/ui/deg-table.R.jinja" %}),
+{% endif %}{% endfor %}{% else %}navbarMenu("Dimensional reduction",
+{% for d in datasets %}"<< d.header >>",{% include "partials/ui/dimred-zoom.R.jinja" %}{% include "partials/ui/dimred-split.R.jinja" %}{% include "partials/ui/dimred-sidebyside.R.jinja" %}{% include "partials/ui/dimred-coexpression.R.jinja" %}{% endfor %}),
+{% if any_image %}navbarMenu("Spatial",
+{% for d in datasets %}{% if d.has_image %}"<< d.header >>",{% if d.multislide %}{% include "partials/ui/spatial-zoom-multislide.R.jinja" %}{% include "partials/ui/spatial-sidebyside-multislide.R.jinja" %}{% else %}{% include "partials/ui/spatial-zoom.R.jinja" %}{% include "partials/ui/spatial-sidebyside.R.jinja" %}{% endif %}{% endif %}{% endfor %}),
+{% endif %}navbarMenu("Analysis",
+{% for d in datasets %}"<< d.header >>",{% if d.has_bw %}{% include "partials/ui/trackplot.R.jinja" %}{% endif %}{% include "partials/ui/violin-box.R.jinja" %}{% include "partials/ui/proportion.R.jinja" %}{% include "partials/ui/bubble-heatmap.R.jinja" %}{% include "partials/ui/module-score.R.jinja" %},{% endfor %}),
+{% if any_deg %}navbarMenu("DEG",
+{% for d in datasets %}{% if d.has_deg %}"<< d.header >>",{% include "partials/ui/deg-dimred.R.jinja" %}{% include "partials/ui/deg-table.R.jinja" %}{% endif %}{% endfor %}),
+{% endif %}{% endif %}br(),
+  p({% if is_list %}strong("Reference: "),{% if existsIn(fn, "author") %}"<< fn.author >> ",{% endif %}{% if existsIn(fn, "title") %}"<< fn.title >> ",{% endif %}{% if existsIn(fn, "journal") %}em("<< fn.journal >> "),{% endif %}{% if existsIn(fn, "volume") %}strong("<< fn.volume >>, "),{% endif %}{% if existsIn(fn, "page") %}"<< fn.page >> ",{% endif %}{% if existsIn(fn, "year") %}"(<< fn.year >>) ",{% endif %}{% if existsIn(fn, "doi") %}"doi: << fn.doi >> ",{% endif %}{% if existsIn(fn, "link") %}a("[Link]", href = "<< fn.link >>", target="_blank"),{% endif %}style = "font-size: 125%;"{% else %}"<< text >>", style = "font-size: 125%;"{% endif %}),
+  p(em("This webpage was made using "), a("cellsight",
+     href = "https://github.com/the-ouyang-lab/cellsight",target="_blank")),
+  br(),br(),br(),br(),br()
+)))
+

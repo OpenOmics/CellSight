@@ -1,0 +1,91 @@
+{#
+  violin-box page — UI
+
+  tabPanel for "Violinplot / Boxplot". Layout:
+    - left column: X-axis (group) selector, Y-axis feature selector + data type,
+      plot-type (violin/box) and show-points toggles, the stats-test controls
+      (global + pairwise + comparison list), cell-subset toggle, graphics controls
+    - right column: plot output with download row
+  Server counterpart: partials/server/violin-box.R.jinja.
+#}
+### violin-box page
+tabPanel(
+  HTML("Violinplot / Boxplot"),
+  h4("Cell information / assay expression violin plot / box plot"),
+  "In this tab, users can visualise the assay expression or continuous cell information ",
+  "(e.g. Number of UMIs / module score) across groups of cells (e.g. libary / clusters).",
+  br(), br(),
+  fluidRow(
+    column(
+      3, style = "border-right: 2px solid black",
+      selectInput("<< d.prefix >>b1inp1", "Cell information (X-axis):",
+                  choices = << d.prefix >>conf[grp == TRUE]$UI,
+                  selected = << d.prefix >>def$grp1) %>%
+        helper(type = "inline", size = "m", fade = TRUE,
+               title = "Cell information to group cells by",
+               content = c("Select categorical cell information to group cells by",
+                           "- Single cells are grouped by this categorical covariate",
+                           "- Plotted as the X-axis of the violin plot / box plot")),
+      selectInput("<< d.prefix >>b1inp2", "Cell Info / Feature name (Y-axis):", choices = NULL) %>%
+        helper(type = "inline", size = "m", fade = TRUE,
+               title = "Cell Info / Gene to plot",
+               content = c("Select cell info / feature to plot on Y-axis",
+                           "- Can be continuous cell information (e.g. nUMIs / scores)",
+                           "- Can also be feature expression")),
+      selectInput("<< d.prefix >>b1ass1", "Data type for Y-axis:",
+                  choices = c("Cell Information", paste0("Assay: ", << d.prefix >>def$assay)),
+                  selected = "Cell Information"),
+      radioButtons("<< d.prefix >>b1typ", "Plot type:",
+                   choices = c("violin", "boxplot"),
+                   selected = "violin", inline = TRUE),
+      checkboxInput("<< d.prefix >>b1pts", "Show data points", value = FALSE),
+      actionButton("<< d.prefix >>b1togT", "Toggle to perform stats test(s)"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>b1togT % 2 == 1",
+        radioButtons("<< d.prefix >>b1stg", "Perform global test:",
+                     choices = c("none", "kruskal.test", "anova"),
+                     selected = "none"),
+        radioButtons("<< d.prefix >>b1stp1", "Perform pairwise test:",
+                     choices = c("none", "wilcox.test", "t.test"),
+                     selected = "none"),
+        textAreaInput("<< d.prefix >>b1stp2", HTML("Pairwise comparisons to make <br />
+                                             (Separate each pair by new line and <br />
+                                             within each pair using , or ;):"),
+                      height = "150px", value = "none")
+      ), br(), br(),
+      actionButton("<< d.prefix >>b1togL", "Toggle to subset cells"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>b1togL % 2 == 1",
+        selectInput("<< d.prefix >>b1sub1", "Cell information to subset:",
+                    choices = << d.prefix >>conf[grp == TRUE]$UI,
+                    selected = << d.prefix >>def$grp1),
+        uiOutput("<< d.prefix >>b1sub1.ui"),
+        actionButton("<< d.prefix >>b1sub1all", "Select all groups", class = "btn btn-primary"),
+        actionButton("<< d.prefix >>b1sub1non", "Deselect all groups", class = "btn btn-primary")
+      ), br(), br(),
+      actionButton("<< d.prefix >>b1tog", "Toggle graphics controls"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>b1tog % 2 == 1",
+        sliderInput("<< d.prefix >>b1siz", "Data point size:",
+                    min = 0, max = 4, value = << d.ptsiz >>, step = 0.25),
+        radioButtons("<< d.prefix >>b1psz", "Plot size:",
+                     choices = c("Small", "Medium", "Large"),
+                     selected = "Medium", inline = TRUE),
+        radioButtons("<< d.prefix >>b1fsz", "Font size:",
+                     choices = c("Small", "Medium", "Large"),
+                     selected = "Medium", inline = TRUE),
+        checkboxInput("<< d.prefix >>b1noi", "Add noise to assay expr", value = TRUE))
+    ), # End of column (6 space)
+    column(9, uiOutput("<< d.prefix >>b1oup.ui"),
+    fluidRow(column(2, downloadButton("<< d.prefix >>b1oup.dl", "Download Plot")),
+             column(2, radioButtons("<< d.prefix >>b1oup.f", "Plot format:",
+                                    choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+             column(2, numericInput("<< d.prefix >>b1oup.h", "Plot height:",
+                                    min = 4, max = 20, value = 8, step = 0.5)),
+             column(2, numericInput("<< d.prefix >>b1oup.w", "Plot width:",
+                                    min = 4, max = 20, value = 10, step = 0.5))),
+    br()
+    ) # End of column (6 space)
+  ) # End of fluidRow (4 space)
+) # End of tab (2 space)
+,

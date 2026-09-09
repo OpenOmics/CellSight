@@ -1,0 +1,104 @@
+{#
+  deg-dimred page — server
+
+  Reactive logic for the "DEG dimred plot" page (differential-expression marker
+  table for a chosen cluster, with that cluster highlighted on the dimred).
+  Wires up:
+    - the cluster-label dropdown (grouped cell-info columns) and the dependent
+      cluster-value dropdown
+    - the scDRmarkerdt() marker datatable (p-value / log2FC / pct filters) with
+      copy / csv / excel export
+    - the scDRmarkerplot() highlight plot + download, and the subset UI
+  Reads DEG stats from <prefix>deg.h5. Pairs with partials/ui/deg-dimred.R.jinja.
+#}
+### deg-dimred page: populate cluster-label dropdown
+observe({
+  # Get all metadata columns that are grouped (grp == TRUE)
+  cluster_choices <- << d.prefix >>conf[grp == TRUE]$UI
+  updateSelectInput(session, "<< d.prefix >>d1deglab",
+                   choices = cluster_choices,
+                   selected = << d.prefix >>def$DEG)
+})
+
+### Populate cluster selection dropdown based on selected label
+observeEvent(input$<< d.prefix >>d1deglab, {
+  req(input$<< d.prefix >>d1deglab)
+  # Get the unique values for the selected cluster label
+  cluster_values <- strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>d1deglab]$fID, "\\|")[[1]]
+  updateSelectInput(session, "<< d.prefix >>d1degcluster",
+                   choices = cluster_values,
+                   selected = cluster_values[1])
+})
+
+### deg-dimred page: marker datatable
+output$<< d.prefix >>d1.dt <- renderDataTable({
+  ggData <- scDRmarkerdt(<< d.prefix >>conf, << d.prefix >>meta, << d.prefix >>def, paste0("./<< d.prefix >>deg.h5"),
+                         input$<< d.prefix >>d1degcluster, input$<< d.prefix >>d1pval, input$<< d.prefix >>d1pvaladj,
+                         input$<< d.prefix >>d1log2fc, input$<< d.prefix >>d1diff, input$<< d.prefix >>d1pctdiffmin,
+                         input$<< d.prefix >>d1pctdiffmax)
+  dt <- datatable(ggData,
+    rownames = FALSE,
+    extensions = "Buttons",
+    options = list(
+      pageLength = -1,
+      scrollX = TRUE,
+      scrollY = 800,
+      scroller = TRUE,
+      dom = "Bfrtip",
+      buttons = list(
+        "copy", "csv", "excel",
+        list(extend = "copy", text = "Copy Genes", exportOptions = list(columns = 1))
+      ),
+      columnDefs = list(list(className = "dt-center", targets = "_all"))
+    )
+  ) %>%
+    formatRound(columns = c("avg_log2FC"), digits = 2)
+  # Conditionally format pct.1, pct.2, and pctdiff if they exist
+  cols_to_format <- c("pct.1", "pct.2")
+  if ("pctdiff" %in% colnames(ggData)) {
+    cols_to_format <- c(cols_to_format, "pctdiff")
+  }
+  dt <- dt %>% formatRound(columns = cols_to_format, digits = 4)
+  dt
+})
+### deg-dimred page: highlight plot
+<< d.prefix >>d1oup1 <- reactive({
+  req(input$<< d.prefix >>d1degcluster, cancelOutput = TRUE)
+  req(input$<< d.prefix >>d1deglab, cancelOutput = TRUE)
+  scDRmarkerplot(
+    << d.prefix >>conf,
+    << d.prefix >>meta,
+    << d.prefix >>dimr,
+    << d.prefix >>def,
+    paste0("./<< d.prefix >>deg.h5"),
+    input$<< d.prefix >>d1degcluster,
+    input$<< d.prefix >>d1ass1,
+    input$<< d.prefix >>d1dr,
+    input$<< d.prefix >>d1deglab,
+    input$<< d.prefix >>d1siz,
+    pList3[[input$<< d.prefix >>d1psz]],
+    sList[[input$<< d.prefix >>d1fsz]],
+    input$<< d.prefix >>d1asp
+  )
+})
+output$<< d.prefix >>d1oup1 <- renderPlot({
+  << d.prefix >>d1oup1()
+})
+output$<< d.prefix >>d1oup1.ui <- renderUI({
+  plotOutput("<< d.prefix >>d1oup1", height = pList2[input$<< d.prefix >>d1psz])
+})
+output$<< d.prefix >>d1oup1.dl <- downloadHandler(
+  filename = function() {
+    paste0("<< d.prefix >>", input$<< d.prefix >>d1dr, "_", input$<< d.prefix >>d1ass1, "_", input$<< d.prefix >>d1deglab, ".", input$<< d.prefix >>d1oup1.f)
+  },
+  content = function(file) {
+    ggsav(file, height = input$<< d.prefix >>d1oup1.h, width = input$<< d.prefix >>d1oup1.w, plot = << d.prefix >>d1oup1())
+  }
+)
+output$<< d.prefix >>d1sub1.ui <- renderUI({
+  sub <- strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>d1sub1]$fID, "\\|")[[1]]
+  checkboxGroupInput("<< d.prefix >>d1sub2", "Select which cells to show",
+    inline = TRUE,
+    choices = sub, selected = sub
+  )
+})

@@ -1,0 +1,29 @@
+name: Lint Rendered Templates
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  render-and-lint:
+    runs-on: ubuntu-latest
+    container:
+      image: rroutsong/shinycell2_builder:latest
+      options: --user root
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Ensure lintr and styler are available
+        run: |
+          Rscript -e 'for (p in c("lintr", "styler")) if (!requireNamespace(p, quietly = TRUE)) install.packages(p, repos = "https://cloud.r-project.org")'
+
+      - name: Install cellsight from PR branch
+        run: |
+          Rscript -e 'if ("cellsight" %in% installed.packages()[,"Package"]) remove.packages("cellsight")'
+          Rscript -e 'install.packages(".", repos = NULL, type = "source")'
+
+      - name: Render templates and lint the generated app
+        run: Rscript tools/render-and-lint.R

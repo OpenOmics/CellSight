@@ -1,0 +1,89 @@
+{#
+  bubble-heatmap page — UI
+
+  tabPanel for "Bubbleplot / Heatmap". Layout:
+    - left column: gene-list textarea, assay selector, group-by selector,
+      plot-type (bubble/heatmap), scale / cluster-rows / cluster-cols toggles,
+      scale-max slider, expm1 toggle, cell-subset toggle, graphics controls
+    - right column: status text (genes found), plot output with download row
+  Server counterpart: partials/server/bubble-heatmap.R.jinja.
+#}
+### bubble-heatmap page
+tabPanel(
+  HTML("Bubbleplot / Heatmap"),
+  h4("Gene expression bubbleplot / heatmap"),
+  "In this tab, users can visualise the gene expression patterns of ",
+  "multiple genes grouped by categorical cell information (e.g. library / cluster).", br(),
+  "The normalised expression are averaged, log-transformed and then plotted.",
+  br(), br(),
+  fluidRow(
+    column(
+      3, style = "border-right: 2px solid black",
+      textAreaInput("<< d.prefix >>b3inp", HTML("List of gene names <br />
+                                        (Max 50 genes, separated <br />
+                                         by , or ; or newline):"),
+                    height = "250px",
+                    value = paste0(<< d.prefix >>def$genes[[1]], collapse = ", ")) %>%
+        helper(type = "inline", size = "m", fade = TRUE,
+               title = "List of genes to plot on bubbleplot / heatmap",
+               content = c("Input genes to plot",
+                           "- Maximum 50 genes (due to ploting space limitations)",
+                           "- Genes should be separated by comma, semicolon or newline")),
+      selectInput("<< d.prefix >>b3ass1", "Assay:",
+                  choices = << d.prefix >>def$assay,
+                  selected = << d.prefix >>def$assay[1]),
+      selectInput("<< d.prefix >>b3grp", "Group by:",
+                  choices = << d.prefix >>conf[grp == TRUE]$UI,
+                  selected = << d.prefix >>conf[grp == TRUE]$UI[1]) %>%
+        helper(type = "inline", size = "m", fade = TRUE,
+               title = "Cell information to group cells by",
+               content = c("Select categorical cell information to group cells by",
+                           "- Single cells are grouped by this categorical covariate",
+                           "- Plotted as the X-axis of the bubbleplot / heatmap")),
+      radioButtons("<< d.prefix >>b3plt", "Plot type:",
+                   choices = c("Bubbleplot", "Heatmap"),
+                   selected = "Bubbleplot", inline = TRUE),
+      checkboxInput("<< d.prefix >>b3scl", "Scale gene expression", value = TRUE),
+      checkboxInput("<< d.prefix >>b3row", "Cluster rows (genes)", value = TRUE),
+      checkboxInput("<< d.prefix >>b3col", "Cluster columns (samples)", value = FALSE),
+      sliderInput("<< d.prefix >>b3max", "Scale.max:", min = 1, max = 11, value = 3, step = 0.1),
+      checkboxInput("<< d.prefix >>b3exp", "expm1 before averaging (check for log-transformed data)",
+                    value = TRUE),
+      br(),
+      actionButton("<< d.prefix >>b3togL", "Toggle to subset cells"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>b3togL % 2 == 1",
+        selectInput("<< d.prefix >>b3sub1", "Cell information to subset:",
+                    choices = << d.prefix >>conf[grp == TRUE]$UI,
+                    selected = << d.prefix >>def$grp1),
+        uiOutput("<< d.prefix >>b3sub1.ui"),
+        actionButton("<< d.prefix >>b3sub1all", "Select all groups", class = "btn btn-primary"),
+        actionButton("<< d.prefix >>b3sub1non", "Deselect all groups", class = "btn btn-primary")
+      ), br(), br(),
+      actionButton("<< d.prefix >>b3tog", "Toggle graphics controls"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>b3tog % 2 == 1",
+        radioButtons("<< d.prefix >>b3cols", "Colour scheme:",
+                     choices = c("White-Red", "Blue-Yellow-Red",
+                                 "Yellow-Green-Purple"),
+                     selected = "Blue-Yellow-Red"),
+        radioButtons("<< d.prefix >>b3psz", "Plot size:",
+                     choices = c("Small", "Medium", "Large"),
+                     selected = "Medium", inline = TRUE),
+        radioButtons("<< d.prefix >>b3fsz", "Font size:",
+                     choices = c("Small", "Medium", "Large"),
+                     selected = "Medium", inline = TRUE))
+    ), # End of column (6 space)
+    column(9, h4(htmlOutput("<< d.prefix >>b3oupTxt")),
+           uiOutput("<< d.prefix >>b3oup.ui"),
+           fluidRow(column(2, downloadButton("<< d.prefix >>b3oup.dl", "Download Plot")),
+                    column(2, radioButtons("<< d.prefix >>b3oup.f", "Plot format:",
+                                           choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+                    column(2, numericInput("<< d.prefix >>b3oup.h", "Plot height:",
+                                           min = 4, max = 20, value = 10, step = 0.5)),
+                    column(2, numericInput("<< d.prefix >>b3oup.w", "Plot width:",
+                                           min = 4, max = 20, value = 10, step = 0.5))),
+           br()
+    ) # End of column (6 space)
+  ) # End of fluidRow (4 space)
+), # End of tab (2 space)

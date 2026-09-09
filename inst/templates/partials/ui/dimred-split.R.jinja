@@ -1,0 +1,129 @@
+{#
+  dimred-split page — UI
+
+  tabPanel for "Split-out DimRed" (one gene faceted across a categorical
+  variable). Layout:
+    - assay selector, reduction selector
+    - left column: split-by selector, gene/feature selectize, cell-subset toggle,
+      graphics controls, and colour / order plot controls
+    - right column: faceted plot output with PDF / PNG download and size inputs
+  Server counterpart: partials/server/dimred-split.R.jinja.
+#}
+### dimred-split page
+tabPanel(
+  HTML("Split-out DimRed"),
+  h4("Faceted plots for dimensional reduction"),
+  "Split on metadata",
+  br(), br(),
+  # Assay selection
+  fluidRow(
+    column(3, selectInput("<< d.prefix >>s3ass1", "Assay:",
+      choices = << d.prefix >>def$assay,
+      selected = << d.prefix >>def$assay[1]
+    ))
+  ),
+  # Reduction selection
+  fluidRow(
+    column(
+      3, fluidRow(
+        column(
+          12, selectInput("<< d.prefix >>s3dr", "Reduction:",
+            choices = << d.prefix >>def$dimrd,
+            selected = << d.prefix >>def$dimrd[1]
+          )
+        )
+      )
+    )
+  ), # End of column (6 space)
+  fluidRow(
+    column(
+      3,
+      style = "border-right: 2px solid black",
+      # Split by selection
+      selectInput("<< d.prefix >>s3inp3", "Split by",
+        choices = << d.prefix >>conf[grp == TRUE]$UI,
+        selected = << d.prefix >>def$grp1
+      ) %>% helper(
+          type = "inline", size = "m", fade = TRUE,
+          title = "Cell information to group cells by",
+          content = c("Select categorical cell information to split single cells by this categorical covariate")
+        ),
+      selectizeInput(
+        "<< d.prefix >>s3feat1",
+        "Gene/feature:",
+        choices = << d.prefix >>def$genes[[<< d.prefix >>def$assay[1]]],
+        selected = << d.prefix >>def$genes[[<< d.prefix >>def$assay[1]]][[1]],
+        options = list(
+          maxOptions = 7,
+          create = FALSE,
+          persist = TRUE
+        )
+      ),
+      br(), br(),
+      actionButton("<< d.prefix >>s3togL", "Toggle to subset cells"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>s3togL % 2 == 1",
+        selectInput("<< d.prefix >>s3sub1", "Cell information to subset:",
+          choices = << d.prefix >>conf[grp == TRUE]$UI,
+          selected = << d.prefix >>def$grp1
+        ),
+        uiOutput("<< d.prefix >>s3sub1.ui"),
+        actionButton("<< d.prefix >>s3sub1all", "Select all groups", class = "btn btn-primary"),
+        actionButton("<< d.prefix >>s3sub1non", "Deselect all groups", class = "btn btn-primary")
+      ),
+      br(), br(),
+      actionButton("<< d.prefix >>s3tog2", "Toggle graphics controls"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>s3tog2 % 2 == 1",
+        sliderInput("<< d.prefix >>s3siz", "Point size:",
+          min = 1, max = 4, value = 1.25, step = 0.25
+        ),
+        radioButtons("<< d.prefix >>s3psz", "Plot size:",
+          choices = c("Small", "Medium", "Large"),
+          selected = "Large", inline = TRUE
+        ),
+        radioButtons("<< d.prefix >>s3fsz", "Font size:",
+          choices = c("Small", "Medium", "Large"),
+          selected = "Large", inline = TRUE
+        ),
+        radioButtons("<< d.prefix >>s3asp", "Aspect ratio:",
+          choices = c("Square", "Fixed", "Free"),
+          selected = "Free", inline = TRUE
+        ),
+        checkboxInput("<< d.prefix >>s3txt", "Show axis text", value = FALSE)
+      ),
+      br(), br(),
+      actionButton("<< d.prefix >>s3tog3", "Toggle plot controls"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>s3tog3 % 2 == 1",
+        radioButtons("<< d.prefix >>s3col1", "Colour (Continuous data):",
+          choices = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple"),
+          selected = "Blue-Yellow-Red"
+        ),
+        radioButtons("<< d.prefix >>s3ord1", "Plot order:",
+          choices = c("Max-1st", "Min-1st", "Original", "Random"),
+          selected = "Original", inline = TRUE
+        )
+      ),
+    ), # End of column (6 space)
+    column(
+      9, uiOutput("<< d.prefix >>s3oup1.ui"),
+      downloadButton("<< d.prefix >>s3oup1.pdf", "Download PDF"),
+      downloadButton("<< d.prefix >>s3oup1.png", "Download PNG"), br(),
+      div(
+        style = "display:inline-block",
+        numericInput("<< d.prefix >>s3oup1.h", "PDF / PNG height:",
+          width = "138px",
+          min = 4, max = 20, value = 8, step = 0.5
+        )
+      ),
+      div(
+        style = "display:inline-block",
+        numericInput("<< d.prefix >>s3oup1.w", "PDF / PNG width:",
+          width = "138px",
+          min = 4, max = 20, value = 10, step = 0.5
+        )
+      )
+    ) # End of column (6 space)
+  ) # End of fluidRow (4 space)
+), # End of tab (2 space)

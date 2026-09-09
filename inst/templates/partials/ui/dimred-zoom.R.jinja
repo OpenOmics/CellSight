@@ -1,0 +1,128 @@
+{#
+  dimred-zoom page — UI
+
+  tabPanel for "Zoom-enable Dimred". Layout:
+    - top controls row: reduction selector, cell-subset toggle, graphics controls
+      (point size, plot/font size, aspect ratio, axis text)
+    - left column: colour-by data type + feature selector, the brushable preview
+      plot (draw a box to zoom), and the colour / cutoff / order plot controls
+    - middle column: main plot + legend outputs and their download rows
+    - right column: nBins input and the cell-number datatable
+  Server counterpart: partials/server/dimred-zoom.R.jinja.
+#}
+### dimred-zoom page
+tabPanel(
+  HTML("Zoom-enable Dimred"),
+  h4("Zoom-enable reduced dimensions overlaid with cell info or assay expression"),
+  "In this tab, users can visualise either cell information and gene expression ",
+  "in a zoom-enabled low-dimensional representions plots.",
+  br(), br(),
+  fluidRow(
+    column(
+      3, fluidRow(
+        column(
+          12, selectInput("<< d.prefix >>a1dr", "Reduction:", choices = << d.prefix >>def$dimrd,
+                          selected = << d.prefix >>def$dimrd[1]))
+      )
+    ), # End of column (6 space)
+    column(
+      3, actionButton("<< d.prefix >>a1togL", "Toggle to subset cells"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>a1togL % 2 == 1",
+        selectInput("<< d.prefix >>a1sub1", "Cell information to subset:",
+                    choices = << d.prefix >>conf[grp == TRUE]$UI,
+                    selected = << d.prefix >>def$grp1),
+        uiOutput("<< d.prefix >>a1sub1.ui"),
+        actionButton("<< d.prefix >>a1sub1all", "Select all groups", class = "btn btn-primary"),
+        actionButton("<< d.prefix >>a1sub1non", "Deselect all groups", class = "btn btn-primary")
+      )
+    ), # End of column (6 space)
+    column(
+      6, actionButton("<< d.prefix >>a1tog0", "Toggle graphics controls"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>a1tog0 % 2 == 1",
+        fluidRow(
+          column(
+            6, sliderInput("<< d.prefix >>a1siz", "Point size:",
+                           min = 0, max = 4, value = << d.ptsiz >>, step = 0.25),
+            radioButtons("<< d.prefix >>a1psz", "Plot size:",
+                         choices = c("Small", "Medium", "Large"),
+                         selected = "Medium", inline = TRUE),
+            radioButtons("<< d.prefix >>a1fsz", "Font size:",
+                         choices = c("Small", "Medium", "Large"),
+                         selected = "Medium", inline = TRUE)
+          ),
+          column(
+            6, radioButtons("<< d.prefix >>a1asp", "Aspect ratio:",
+                            choices = c("Square", "Fixed", "Free"),
+                            selected = "Square", inline = TRUE),
+            checkboxInput("<< d.prefix >>a1txt", "Show axis text", value = FALSE)
+          )
+        )
+      )
+    ) # End of column (6 space)
+  ), # End of fluidRow (4 space)
+  fluidRow(
+    column(
+      3, style = "border-right: 2px solid black", h4("Information to plot"),
+      selectInput("<< d.prefix >>a1ass1", "Data type to colour plot:",
+                  choices = c("Cell Information", paste0("Assay: ", << d.prefix >>def$assay)),
+                  selected = "Cell Information"),
+      selectInput("<< d.prefix >>a1inp1", "Cell Info / Feature Name:",
+                  choices = << d.prefix >>conf$UI,
+                  selected = << d.prefix >>conf$UI[1]) %>%
+        helper(type = "inline", size = "m", fade = TRUE,
+               title = "Cell Info / Gene to colour cells by",
+               content = c("Select cell info / feature to colour cells",
+                           "- Categorical covariates have a fixed colour palette",
+                           paste0("- Continuous covariates / gene expression are coloured ",
+                                  "in a Blue-Yellow-Red colour scheme, which can be ",
+                                  "changed in the plot controls"))),
+      strong("Draw box on plot below to zoom: "),
+      plotOutput("<< d.prefix >>a1oup1.br", height = "400px",
+                 brush = brushOpts(id = "<< d.prefix >>a1inp1.br", resetOnNew = TRUE)),
+      actionButton("<< d.prefix >>a1tog1", "Toggle plot controls"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>a1tog1 % 2 == 1",
+        radioButtons("<< d.prefix >>a1col1", "Colour (Continuous data):",
+                     choices = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple"),
+                     selected = "Blue-Yellow-Red"),
+        numericInput("<< d.prefix >>a1min1", "Min cutoff (q##):",
+                     min = 0, max = 50, value = 0, step = 1),
+        numericInput("<< d.prefix >>a1max1", "Max cutoff (q##):",
+                     min = 50, max = 100, value = 100, step = 1),
+        radioButtons("<< d.prefix >>a1ord1", "Plot order:",
+                     choices = c("Max-1st", "Min-1st", "Original", "Random"),
+                     selected = "Original", inline = TRUE),
+        checkboxInput("<< d.prefix >>a1lab1", "Show cell info labels", value = TRUE)
+      )
+    ), # End of column (6 space)
+    column(
+      6, style = "border-right: 2px solid black",
+      fluidRow(column(12, uiOutput("<< d.prefix >>a1oup1.ui"))),
+      fluidRow(column(12, uiOutput("<< d.prefix >>a1oup3.ui"))),
+      fluidRow(column(3, downloadButton("<< d.prefix >>a1oup1.dl", "Download Plot")),
+               column(3, radioButtons("<< d.prefix >>a1oup1.f", "Plot format:",
+                                      choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+               column(3, numericInput("<< d.prefix >>a1oup1.h", "Plot height:",
+                                      min = 4, max = 20, value = 8, step = 0.5)),
+               column(3, numericInput("<< d.prefix >>a1oup1.w", "Plot width:",
+                                      min = 4, max = 20, value = 8, step = 0.5))),
+      fluidRow(column(3, downloadButton("<< d.prefix >>a1oup3.dl", "Download Legend")),
+               column(3, radioButtons("<< d.prefix >>a1oup3.f", "Legend format:",
+                                      choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+               column(3, numericInput("<< d.prefix >>a1oup3.h", "Legend height:",
+                                      min = 0.2, max = 10, value = 2, step = 0.1)),
+               column(3, numericInput("<< d.prefix >>a1oup3.w", "Legend width:",
+                                      min = 4, max = 20, value = 8, step = 0.5))),
+      br()
+    ), # End of column (6 space)
+    column(
+      3, h4("Cell numbers"),
+      numericInput("<< d.prefix >>a1splt", "Split continuous cell info into nBins:",
+                   min = 2, max = 10, value = 4, step = 1),
+      dataTableOutput("<< d.prefix >>a1.dt")
+    ) # End of column (6 space)
+  ) # End of fluidRow (4 space)
+) # End of tab (2 space)
+,

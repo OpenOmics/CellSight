@@ -1,0 +1,44 @@
+{#
+  proportion page — server
+
+  Reactive logic for the "Proportion plot" page (stacked composition bar chart:
+  one categorical variable split across another). Wires up:
+    - the reorder-by-group selector (choices tracked from the group-by input)
+    - the cell-subset checkbox UI + select-all / deselect-all buttons
+    - the scProp() plot reactive, its plotOutput, and the download handler
+  Pairs with the UI in partials/ui/proportion.R.jinja.
+#}
+### proportion page
+observeEvent(input$<< d.prefix >>b2inp1, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>b2inp2]$fID, "\\|")[[1]]
+  updateSelectizeInput(session, "<< d.prefix >>b2ord1", choices = c("Original order", sub),
+                       server = TRUE, selected = "Original order", options = list(
+                       create = TRUE, persist = TRUE, render = I(optCrt)))
+})
+output$<< d.prefix >>b2sub1.ui <- renderUI({
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>b2sub1]$fID, "\\|")[[1]]
+  checkboxGroupInput("<< d.prefix >>b2sub2", "Select which cells to show", inline = TRUE,
+                     choices = sub, selected = sub)
+})
+observeEvent(input$<< d.prefix >>b2sub1non, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>b2sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>b2sub2", label = "Select which cells to show",
+                           choices = sub, selected = NULL, inline = TRUE)
+})
+observeEvent(input$<< d.prefix >>b2sub1all, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>b2sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>b2sub2", label = "Select which cells to show",
+                           choices = sub, selected = sub, inline = TRUE)
+})
+
+<< d.prefix >>b2oup <- reactive({
+  scProp(<< d.prefix >>conf, << d.prefix >>meta, input$<< d.prefix >>b2inp1, input$<< d.prefix >>b2inp2,
+         input$<< d.prefix >>b2sub1, input$<< d.prefix >>b2sub2, input$<< d.prefix >>b2ord1, input$<< d.prefix >>b2ord2,
+         input$<< d.prefix >>b2typ, input$<< d.prefix >>b2flp, sList[input$<< d.prefix >>b2fsz])
+})
+output$<< d.prefix >>b2oup <- renderPlot({<< d.prefix >>b2oup()})
+output$<< d.prefix >>b2oup.ui <- renderUI({plotOutput("<< d.prefix >>b2oup", height = pList2[input$<< d.prefix >>b2psz])})
+output$<< d.prefix >>b2oup.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>", input$<< d.prefix >>b2typ, "_", input$<< d.prefix >>b2inp1, "_", input$<< d.prefix >>b2inp2, ".", input$<< d.prefix >>b2oup.f) },
+  content = function(file) { ggsave(file, height = input$<< d.prefix >>b2oup.h, width = input$<< d.prefix >>b2oup.w, plot = << d.prefix >>b2oup())
+})

@@ -1,0 +1,319 @@
+{#
+  spatial-zoom page — server
+
+  Reactive logic for the "Zoom-enable Spatial" page (cell info / expression over
+  the tissue image, brushable to zoom, with per-slide image transforms). Wires
+  up:
+    - slide selection -> reactive image data (coords, lo/hi-res background,
+      scale factors) with a legacy single-slide fallback
+    - the cell-subset checkbox UI + select-all / deselect-all buttons
+    - rotate / flip / nudge transform state (remembered per slide) and reset
+    - brush -> zoom, the sc2Dspat() plot + zoomed redraw with point-size scaling,
+      the legend output, downloads, and the sc2Dnum() cell-number datatable
+  Pairs with the UI in partials/ui/spatial-zoom*.R.jinja.
+#}
+### spatial-zoom page
+# Reactive image data based on slide selection
+<< d.prefix >>s1image_data <- reactive({
+  # Check if multi-slide data structure exists
+  if (!is.null(<< d.prefix >>image$slide_names) && length(<< d.prefix >>image$slide_names) > 0) {
+    # Multi-slide structure exists
+    if (!is.null(input$<< d.prefix >>s1slide) && input$<< d.prefix >>s1slide != "") {
+      # User has selected a slide
+      slide_name <- input$<< d.prefix >>s1slide
+    } else {
+      # No slide selected yet, use first slide
+      slide_name <- << d.prefix >>image$slide_names[1]
+    }
+    result <- list(
+      coord = << d.prefix >>image$coords[[slide_name]],
+      bg_image = << d.prefix >>image$bg_images[[slide_name]],
+      bg_image_hires = << d.prefix >>image$bg_images_hires[[slide_name]],
+      lowres = << d.prefix >>image$lowres_factors[[slide_name]],
+      hires_factor = << d.prefix >>image$hires_factors[[slide_name]],
+      image_type = << d.prefix >>image$image_types[[slide_name]]
+    )
+  } else {
+    # Legacy single-slide structure
+    result <- list(
+      coord = << d.prefix >>image$coord,
+      bg_image = << d.prefix >>image$bg_image,
+      bg_image_hires = if (!is.null(<< d.prefix >>image$bg_image_hires)) << d.prefix >>image$bg_image_hires else << d.prefix >>image$bg_image,
+      lowres = << d.prefix >>image$lowres,
+      hires_factor = if (!is.null(<< d.prefix >>image$hires_factor)) << d.prefix >>image$hires_factor else 1.0,
+      image_type = << d.prefix >>image$image_type
+    )
+  }
+  # Validate that we have all required components
+  req(result$coord, result$bg_image, result$lowres)
+  return(result)
+})
+
+output$<< d.prefix >>s1sub1.ui <- renderUI({
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>s1sub1]$fID, "\\|")[[1]]
+  checkboxGroupInput("<< d.prefix >>s1sub2", "Select which cells to show", inline = TRUE,
+                     choices = sub, selected = sub)
+})
+observeEvent(input$<< d.prefix >>s1sub1non, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>s1sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>s1sub2", label = "Select which cells to show",
+                           choices = sub, selected = NULL, inline = TRUE)
+})
+observeEvent(input$<< d.prefix >>s1sub1all, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>s1sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>s1sub2", label = "Select which cells to show",
+                           choices = sub, selected = sub, inline = TRUE)
+})
+
+# Spatial transformation state (rotation, flip, and offset) with per-slide memory
+<< d.prefix >>s1transform <- reactiveValues(rotation = 0, flipH = FALSE, flipV = FALSE, offsetX = 0, offsetY = 0)
+# Per-slide transformation memory (survives slide switches)
+<< d.prefix >>s1slideTransforms <- reactiveValues()
+
+# Initialize current slide tracking
+observe({
+  req(input$<< d.prefix >>s1slide)
+  if (is.null(<< d.prefix >>s1slideTransforms$current_slide)) {
+    << d.prefix >>s1slideTransforms$current_slide <- input$<< d.prefix >>s1slide
+  }
+}, priority = 100)
+
+# Save current transform when switching slides
+observeEvent(input$<< d.prefix >>s1slide, {
+  req(<< d.prefix >>s1slideTransforms$current_slide)
+
+  # Save old slide's state before switching
+  if (<< d.prefix >>s1slideTransforms$current_slide != input$<< d.prefix >>s1slide) {
+    old_slide <- << d.prefix >>s1slideTransforms$current_slide
+    << d.prefix >>s1slideTransforms[[old_slide]] <- list(
+      rotation = << d.prefix >>s1transform$rotation,
+      flipH = << d.prefix >>s1transform$flipH,
+      flipV = << d.prefix >>s1transform$flipV,
+      offsetX = << d.prefix >>s1transform$offsetX,
+      offsetY = << d.prefix >>s1transform$offsetY
+    )
+
+    # Load new slide's saved state (or defaults)
+    new_slide <- input$<< d.prefix >>s1slide
+    << d.prefix >>s1slideTransforms$current_slide <- new_slide
+
+    if (!is.null(<< d.prefix >>s1slideTransforms[[new_slide]])) {
+      saved <- << d.prefix >>s1slideTransforms[[new_slide]]
+      << d.prefix >>s1transform$rotation <- saved$rotation
+      << d.prefix >>s1transform$flipH <- saved$flipH
+      << d.prefix >>s1transform$flipV <- saved$flipV
+      << d.prefix >>s1transform$offsetX <- saved$offsetX
+      << d.prefix >>s1transform$offsetY <- saved$offsetY
+    } else {
+      << d.prefix >>s1transform$rotation <- 0
+      << d.prefix >>s1transform$flipH <- FALSE
+      << d.prefix >>s1transform$flipV <- FALSE
+      << d.prefix >>s1transform$offsetX <- 0
+      << d.prefix >>s1transform$offsetY <- 0
+    }
+  }
+}, priority = 50)
+
+# Auto-save transformations to current slide whenever they change
+observe({
+  req(<< d.prefix >>s1slideTransforms$current_slide)
+  current <- << d.prefix >>s1slideTransforms$current_slide
+  << d.prefix >>s1slideTransforms[[current]] <- list(
+    rotation = << d.prefix >>s1transform$rotation,
+    flipH = << d.prefix >>s1transform$flipH,
+    flipV = << d.prefix >>s1transform$flipV,
+    offsetX = << d.prefix >>s1transform$offsetX,
+    offsetY = << d.prefix >>s1transform$offsetY
+  )
+})
+
+# Display current offset
+output$<< d.prefix >>s1offsetDisplay <- renderText({
+  paste0("X: ", << d.prefix >>s1transform$offsetX, ", Y: ", << d.prefix >>s1transform$offsetY)
+})
+
+# Reset transformation
+observeEvent(input$<< d.prefix >>s1reset, {
+  << d.prefix >>s1transform$rotation <- 0
+  << d.prefix >>s1transform$flipH <- FALSE
+  << d.prefix >>s1transform$flipV <- FALSE
+  << d.prefix >>s1transform$offsetX <- 0
+  << d.prefix >>s1transform$offsetY <- 0
+  << d.prefix >>s1oup1xy$x <- NULL
+  << d.prefix >>s1oup1xy$y <- NULL
+})
+
+# Rotate clockwise (add 90 degrees)
+observeEvent(input$<< d.prefix >>s1rotCW, {
+  << d.prefix >>s1transform$rotation <- (<< d.prefix >>s1transform$rotation + 90) %% 360
+})
+
+# Rotate counter-clockwise (subtract 90 degrees)
+observeEvent(input$<< d.prefix >>s1rotCCW, {
+  << d.prefix >>s1transform$rotation <- (<< d.prefix >>s1transform$rotation - 90) %% 360
+})
+
+# Flip horizontal
+observeEvent(input$<< d.prefix >>s1flipH, {
+  << d.prefix >>s1transform$flipH <- !<< d.prefix >>s1transform$flipH
+})
+
+# Flip vertical
+observeEvent(input$<< d.prefix >>s1flipV, {
+  << d.prefix >>s1transform$flipV <- !<< d.prefix >>s1transform$flipV
+})
+
+# Offset controls (d-pad) - zoom preserved
+observeEvent(input$<< d.prefix >>s1offsetUp, {
+  << d.prefix >>s1transform$offsetY <- << d.prefix >>s1transform$offsetY - 1
+})
+
+observeEvent(input$<< d.prefix >>s1offsetDown, {
+  << d.prefix >>s1transform$offsetY <- << d.prefix >>s1transform$offsetY + 1
+})
+
+observeEvent(input$<< d.prefix >>s1offsetLeft, {
+  << d.prefix >>s1transform$offsetX <- << d.prefix >>s1transform$offsetX - 1
+})
+
+observeEvent(input$<< d.prefix >>s1offsetRight, {
+  << d.prefix >>s1transform$offsetX <- << d.prefix >>s1transform$offsetX + 1
+})
+
+<< d.prefix >>s1oup1xy <- reactiveValues(x = NULL, y = NULL)
+
+observe({
+  brush <- input$<< d.prefix >>s1inp1.br
+  if (!is.null(brush)) {
+    # Update zoom coordinates when user makes a brush selection
+    << d.prefix >>s1oup1xy$x <- c(brush$xmin, brush$xmax)
+    << d.prefix >>s1oup1xy$y <- c(brush$ymin, brush$ymax)
+  }
+  # Note: We do NOT clear zoom when brush becomes NULL
+  # This prevents zoom from resetting when transformations cause plot to regenerate
+  # Zoom is only cleared by explicit reset button or double-click
+})
+
+# Clear zoom on double-click outside brush area
+observeEvent(input$<< d.prefix >>s1inp1.br_dblclick, {
+  << d.prefix >>s1oup1xy$x <- NULL
+  << d.prefix >>s1oup1xy$y <- NULL
+})
+
+<< d.prefix >>s1oup1br <- reactive({
+  req(input$<< d.prefix >>s1inp1)
+  # Pass zoom limits to sc2Dspat (NULL when not zoomed)
+  zoom_lim <- if (!is.null(<< d.prefix >>s1oup1xy$x)) {
+    list(x = << d.prefix >>s1oup1xy$x, y = << d.prefix >>s1oup1xy$y)
+  } else { NULL }
+  sc2Dspat(<< d.prefix >>conf, << d.prefix >>meta, << d.prefix >>s1image_data(), input$<< d.prefix >>s1alp,
+           input$<< d.prefix >>s1inp1, "<< d.prefix >>assay_", << d.prefix >>gene, "Cell Information",
+           input$<< d.prefix >>s1sub1, input$<< d.prefix >>s1sub2, input$<< d.prefix >>s1min1, input$<< d.prefix >>s1max1, input$<< d.prefix >>s1siz * 0.6,
+           cList[[input$<< d.prefix >>s1col1]], sList[input$<< d.prefix >>s1fsz] * 0.6, FALSE,
+           rotation = << d.prefix >>s1transform$rotation, flipH = << d.prefix >>s1transform$flipH, flipV = << d.prefix >>s1transform$flipV,
+           offsetX = << d.prefix >>s1transform$offsetX, offsetY = << d.prefix >>s1transform$offsetY,
+           zoom_limits = zoom_lim)
+})
+output$<< d.prefix >>s1oup1.br <- renderPlot({<< d.prefix >>s1oup1br() + theme(legend.position = "none")})
+
+<< d.prefix >>s1oup1 <- reactive({
+  req(input$<< d.prefix >>s1inp1)
+  # Pass zoom limits to sc2Dspat (NULL when not zoomed)
+  zoom_lim <- if (!is.null(<< d.prefix >>s1oup1xy$x)) {
+    list(x = << d.prefix >>s1oup1xy$x, y = << d.prefix >>s1oup1xy$y)
+  } else { NULL }
+  sc2Dspat(<< d.prefix >>conf, << d.prefix >>meta, << d.prefix >>s1image_data(), input$<< d.prefix >>s1alp,
+           input$<< d.prefix >>s1inp1, "<< d.prefix >>assay_", << d.prefix >>gene, "Cell Information",
+           input$<< d.prefix >>s1sub1, input$<< d.prefix >>s1sub2, input$<< d.prefix >>s1min1, input$<< d.prefix >>s1max1, input$<< d.prefix >>s1siz,
+           cList[[input$<< d.prefix >>s1col1]], sList[input$<< d.prefix >>s1fsz], input$<< d.prefix >>s1lab1,
+           rotation = << d.prefix >>s1transform$rotation, flipH = << d.prefix >>s1transform$flipH, flipV = << d.prefix >>s1transform$flipV,
+           offsetX = << d.prefix >>s1transform$offsetX, offsetY = << d.prefix >>s1transform$offsetY,
+           zoom_limits = zoom_lim)
+})
+output$<< d.prefix >>s1oup1 <- renderPlot({
+  if (is.null(<< d.prefix >>s1oup1xy$x[1])) {
+    << d.prefix >>s1oup1() + theme(legend.position = "none")
+  } else {
+    img_data <- << d.prefix >>s1image_data()
+    img_w <- dim(img_data$bg_image)[2] # Image width in pixels
+    img_h <- dim(img_data$bg_image)[1] # Image height in pixels
+    # Calculate zoom factor based on how much of the image is selected
+    zoom_factor_x <- img_w / diff(<< d.prefix >>s1oup1xy$x)
+    zoom_factor_y <- img_h / diff(<< d.prefix >>s1oup1xy$y)
+    zoom_factor <- min(zoom_factor_x, zoom_factor_y)
+    adjSiz <- input$<< d.prefix >>s1siz * zoom_factor
+    << d.prefix >>s1oup1() + theme(legend.position = "none") +
+      coord_fixed(ratio = 1,
+                 xlim = << d.prefix >>s1oup1xy$x,
+                 ylim = << d.prefix >>s1oup1xy$y, # Normal axis; brush coords already in flipped data space
+                 expand = FALSE) +
+      scale_size_continuous(range = c(0, adjSiz), limits = c(0, 1))
+  }
+})
+output$<< d.prefix >>s1oup1.ui <- renderUI({plotOutput("<< d.prefix >>s1oup1", height = pList[input$<< d.prefix >>s1psz])})
+output$<< d.prefix >>s1oup1.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>spatial_", input$<< d.prefix >>s1inp1, ".", input$<< d.prefix >>s1oup1.f) },
+  content = function(file) {
+    if (is.null(<< d.prefix >>s1oup1xy$x[1])) {
+      ggsav(file, height = input$<< d.prefix >>s1oup1.h, width = input$<< d.prefix >>s1oup1.w,
+            plot = << d.prefix >>s1oup1() + theme(legend.position = "none"))
+    } else {
+      img_data <- << d.prefix >>s1image_data()
+      img_w <- dim(img_data$bg_image)[2]
+      img_h <- dim(img_data$bg_image)[1]
+      zoom_factor_x <- img_w / diff(<< d.prefix >>s1oup1xy$x)
+      zoom_factor_y <- img_h / diff(<< d.prefix >>s1oup1xy$y)
+      zoom_factor <- min(zoom_factor_x, zoom_factor_y)
+      adjSiz <- input$<< d.prefix >>s1siz * zoom_factor
+      ggsav(file, height = input$<< d.prefix >>s1oup1.h, width = input$<< d.prefix >>s1oup1.w,
+            plot = << d.prefix >>s1oup1() + theme(legend.position = "none") +
+              coord_fixed(ratio = 1,
+                         xlim = << d.prefix >>s1oup1xy$x,
+                         ylim = << d.prefix >>s1oup1xy$y,
+                         expand = FALSE) +
+              scale_size_continuous(range = c(0, adjSiz), limits = c(0, 1)))
+    }
+})
+output$<< d.prefix >>s1oup3 <- renderPlot({grid.newpage(); grid.draw(g_legend(<< d.prefix >>s1oup1()))})
+output$<< d.prefix >>s1oup3.ui <- renderUI({plotOutput("<< d.prefix >>s1oup3", height = 72 * convertHeight(
+  grobHeight(g_legend(<< d.prefix >>s1oup1())), unitTo = "in", valueOnly = TRUE) + 50)})
+output$<< d.prefix >>s1oup3.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>spatial_", input$<< d.prefix >>s1inp1, "_leg.", input$<< d.prefix >>s1oup3.f) },
+  content = function(file) {
+    grid.newpage(); grid.draw(g_legend(<< d.prefix >>s1oup1()))
+    ggsav(file, height = input$<< d.prefix >>s1oup3.h, width = input$<< d.prefix >>s1oup3.w, plot = grid.grab())
+  })
+
+output$<< d.prefix >>s1.dt <- renderDataTable({
+  req(input$<< d.prefix >>s1inp1, input$<< d.prefix >>s1splt)
+  img_data <- << d.prefix >>s1image_data()
+  # Use imagerow and imagecol in correct order (matching Seurat)
+  ggData = data.table(img_data$coord[, c("imagerow", "imagecol")])
+  colnames(ggData) = c("UMAP_2", "UMAP_1")
+  # Scale coordinates by lowres factor
+  ggData$UMAP_2 = ggData$UMAP_2 * img_data$lowres
+  ggData$UMAP_1 = ggData$UMAP_1 * img_data$lowres
+  tmpdimr = list(); tmpdimr$umap = ggData
+
+  # Handle metadata subsetting - check if cellID matching is needed
+  spatial_cells <- rownames(img_data$coord)
+  if ("cellID" %in% colnames(<< d.prefix >>meta) && any(spatial_cells %in% << d.prefix >>meta$cellID)) {
+    # Case 1: cellID exists and matches - use proper subsetting
+    meta_subset <- << d.prefix >>meta[cellID %in% spatial_cells]
+    setkey(meta_subset, cellID)
+    # Ensure tmpdimr rows match meta_subset
+    tmpdimr$umap$cellID <- spatial_cells
+    setkey(tmpdimr$umap, cellID)
+    tmpdimr$umap <- meta_subset[tmpdimr$umap, on = "cellID"][, .(UMAP_1, UMAP_2)]
+  } else {
+    # Case 2: cellID doesn't match spatial_cells or doesn't exist
+    # Use direct indexing - assumes spatial and metadata are aligned
+    meta_subset <- << d.prefix >>meta[seq_len(nrow(img_data$coord))]
+  }
+
+  ggData = sc2Dnum(<< d.prefix >>conf, meta_subset, tmpdimr, "umap", << d.prefix >>s1oup1xy$x, << d.prefix >>s1oup1xy$y, input$<< d.prefix >>s1inp1,
+                   "<< d.prefix >>assay_", << d.prefix >>gene, "Cell Information", input$<< d.prefix >>s1sub1, input$<< d.prefix >>s1sub2, input$<< d.prefix >>s1splt)
+  datatable(ggData, rownames = FALSE, extensions = "Buttons",
+            options = list(pageLength = -1, dom = "tB", buttons = c("copy", "csv", "excel"))) %>%
+    formatRound(columns = c("pctZoom"), digits = 2)
+})

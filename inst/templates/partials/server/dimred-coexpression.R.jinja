@@ -1,0 +1,73 @@
+{#
+  dimred-coexpression page — server
+
+  Reactive logic for the "Gene coexpression" page (two genes blended into one
+  dimred scatter). Wires up:
+    - two feature selectors sharing one assay, with server-side selectize choices
+    - the cell-subset checkbox UI + select-all / deselect-all buttons
+    - scDRcoex() coexpression plot + download, scDRcoexLeg() 2D colour legend +
+      download, and the scDRcoexNum() cell-number datatable
+  Pairs with the UI in partials/ui/dimred-coexpression.R.jinja.
+#}
+### dimred-coexpression page
+getG<< d.prefix >>a3inp1 <- reactive({
+  req(input$<< d.prefix >>a3ass1)
+  res <- names(<< d.prefix >>gene[[input$<< d.prefix >>a3ass1]])
+  resDef1 <- << d.prefix >>def$gene1[[input$<< d.prefix >>a3ass1]]
+  resDef2 <- << d.prefix >>def$gene2[[input$<< d.prefix >>a3ass1]]
+  return(list(res, resDef1, resDef2))
+})
+observeEvent(input$<< d.prefix >>a3ass1, {
+  updateSelectizeInput(session, "<< d.prefix >>a3inp1", choices = getG<< d.prefix >>a3inp1()[[1]],
+                       server = TRUE, selected = getG<< d.prefix >>a3inp1()[[2]], options = list(
+                         maxOptions = 7, create = TRUE, persist = TRUE, render = I(optCrt)))
+})
+observeEvent(input$<< d.prefix >>a3ass1, {
+  updateSelectizeInput(session, "<< d.prefix >>a3inp2", choices = getG<< d.prefix >>a3inp1()[[1]],
+                       server = TRUE, selected = getG<< d.prefix >>a3inp1()[[3]], options = list(
+                         maxOptions = 7, create = TRUE, persist = TRUE, render = I(optCrt)))
+})
+output$<< d.prefix >>a3sub1.ui <- renderUI({
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>a3sub1]$fID, "\\|")[[1]]
+  checkboxGroupInput("<< d.prefix >>a3sub2", "Select which cells to show", inline = TRUE,
+                     choices = sub, selected = sub)
+})
+observeEvent(input$<< d.prefix >>a3sub1non, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>a3sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>a3sub2", label = "Select which cells to show",
+                           choices = sub, selected = NULL, inline = TRUE)
+})
+observeEvent(input$<< d.prefix >>a3sub1all, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>a3sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>a3sub2", label = "Select which cells to show",
+                           choices = sub, selected = sub, inline = TRUE)
+})
+<< d.prefix >>a3oup1 <- reactive({
+  scDRcoex(<< d.prefix >>conf, << d.prefix >>meta, << d.prefix >>dimr, input$<< d.prefix >>a3dr, input$<< d.prefix >>a3inp1, input$<< d.prefix >>a3inp2,
+           paste0("<< d.prefix >>assay_", input$<< d.prefix >>a3ass1, ".h5"), << d.prefix >>gene[[input$<< d.prefix >>a3ass1]],
+           input$<< d.prefix >>a3sub1, input$<< d.prefix >>a3sub2, input$<< d.prefix >>a3min1, input$<< d.prefix >>a3max1, input$<< d.prefix >>a3min2, input$<< d.prefix >>a3max2,
+           input$<< d.prefix >>a3siz, input$<< d.prefix >>a3col1, input$<< d.prefix >>a3ord1,
+           sList[input$<< d.prefix >>a3fsz], input$<< d.prefix >>a3asp, input$<< d.prefix >>a3txt)
+})
+output$<< d.prefix >>a3oup1 <- renderPlot({<< d.prefix >>a3oup1()})
+output$<< d.prefix >>a3oup1.ui <- renderUI({plotOutput("<< d.prefix >>a3oup1", height = pList2[input$<< d.prefix >>a3psz])})
+output$<< d.prefix >>a3oup1.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>", input$<< d.prefix >>a3dr, "_", input$<< d.prefix >>a3inp1, "_", input$<< d.prefix >>a3inp2, ".", input$<< d.prefix >>a3oup1.f) },
+  content = function(file) { ggsav(file, height = input$<< d.prefix >>a3oup1.h, width = input$<< d.prefix >>a3oup1.w, plot = << d.prefix >>a3oup1())
+})
+
+output$<< d.prefix >>a3oup2 <- renderPlot({scDRcoexLeg(input$<< d.prefix >>a3inp1, input$<< d.prefix >>a3inp2, input$<< d.prefix >>a3col1, sList[input$<< d.prefix >>a3fsz])})
+output$<< d.prefix >>a3oup2.ui <- renderUI({plotOutput("<< d.prefix >>a3oup2", height = "300px")})
+output$<< d.prefix >>a3oup2.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>", input$<< d.prefix >>a3dr, "_", input$<< d.prefix >>a3inp1, "_", input$<< d.prefix >>a3inp2, "_leg.", input$<< d.prefix >>a3oup2.f) },
+  content = function(file) { ggsav(file, height = 3, width = 4,
+                                   plot = scDRcoexLeg(input$<< d.prefix >>a3inp1, input$<< d.prefix >>a3inp2, input$<< d.prefix >>a3col1, sList[input$<< d.prefix >>a3fsz]))
+})
+output$<< d.prefix >>a3.dt <- renderDataTable({
+  ggData = scDRcoexNum(<< d.prefix >>conf, << d.prefix >>meta, input$<< d.prefix >>a3inp1, input$<< d.prefix >>a3inp2,
+                       paste0("<< d.prefix >>assay_", input$<< d.prefix >>a3ass1, ".h5"), << d.prefix >>gene[[input$<< d.prefix >>a3ass1]],
+                       input$<< d.prefix >>a3sub1, input$<< d.prefix >>a3sub2)
+  datatable(ggData, rownames = FALSE, extensions = "Buttons",
+            options = list(pageLength = -1, dom = "tB", buttons = c("copy", "csv", "excel"))) %>%
+    formatRound(columns = c("percent"), digits = 2)
+})

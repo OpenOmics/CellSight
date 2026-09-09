@@ -1,0 +1,158 @@
+{#
+  deg-dimred page — UI
+
+  tabPanel for "DEG dimred plot". Layout:
+    - left column: assay / reduction selectors, cluster-label + cluster selectors
+    - middle column: graphics controls toggle
+    - right column: marker-table filter controls (p-value, adjusted p-value,
+      log2FC, and optional pct-difference range)
+    - bottom row: highlight plot + download (left) and marker datatable (right)
+  Server counterpart: partials/server/deg-dimred.R.jinja.
+#}
+### deg-dimred page
+tabPanel(
+  HTML("DEG dimred plot"),
+  h4("Inspect cluster markers on dimensional reduction plots"),
+  "Select clusters from the drop down menu to visualise their expression ",
+  "patterns on low-dimensional representions.",
+  br(), br(),
+  fluidRow(
+    column(
+      3,
+      selectInput("<< d.prefix >>d1ass1", "Assay:",
+        choices = << d.prefix >>def$assay,
+        selected = << d.prefix >>def$assay[1]
+      ),
+      selectInput("<< d.prefix >>d1dr", "Reduction:",
+        choices = << d.prefix >>def$dimrd,
+        selected = << d.prefix >>def$dimrd[1]
+      ),
+      selectInput("<< d.prefix >>d1deglab", "Cluster labels:",
+        choices = << d.prefix >>def$DEG,
+        selected = << d.prefix >>def$DEG[[1]]
+      ),
+      selectInput("<< d.prefix >>d1degcluster", "Select cluster:",
+        choices = levels(as.data.frame(sc1meta)[, sc1def$meta2]),
+        selected = levels(as.data.frame(sc1meta)[, sc1def$meta2])[[1]]
+      ),
+    ), # End of column (6 space)
+    column(
+      4, actionButton("<< d.prefix >>d1tog0", "Toggle graphics controls"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>d1tog0 % 2 == 1",
+        fluidRow(
+          column(
+            6, sliderInput("<< d.prefix >>d1siz", "Point size:",
+              min = 0, max = 4, value = 1.25, step = 0.25
+            ),
+            radioButtons("<< d.prefix >>d1psz", "Plot size:",
+              choices = c("Small", "Medium", "Large"),
+              selected = "Medium", inline = TRUE
+            ),
+            radioButtons("<< d.prefix >>d1fsz", "Font size:",
+              choices = c("Small", "Medium", "Large"),
+              selected = "Medium", inline = TRUE
+            )
+          ),
+          column(
+            6, radioButtons("<< d.prefix >>d1asp", "Aspect ratio:",
+              choices = c("Square", "Fixed", "Free"),
+              selected = "Square", inline = TRUE
+            ),
+          )
+        )
+      )
+    ),
+    column(
+      5,
+      style = "border-right: 2px solid black",
+      h4(""),
+      actionButton("<< d.prefix >>d1tog1", "Toggle table controls"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>d1tog1 % 2 == 1",
+        fluidRow(
+          column(
+            6,
+            sliderInput(
+              "<< d.prefix >>d1pval",
+              "Maximum p-value:",
+              min = 0.001,
+              max = 1,
+              value = 0.05,
+              step = 0.001
+            ),
+            sliderInput(
+              "<< d.prefix >>d1pvaladj",
+              HTML("Maximum <u>adjusted</u> p-value:"),
+              min = 0.001,
+              max = 1,
+              value = 0.05,
+              step = 0.001
+            ),
+            sliderInput(
+              "<< d.prefix >>d1log2fc",
+              HTML("Minimum <u>absolute</u> log2 fold change:"),
+              min = 0,
+              max = 5,
+              value = 1.0,
+              step = 0.05
+            ),
+          ),
+          column(
+            6,
+            checkboxInput(
+              "<< d.prefix >>d1diff",
+              HTML("Show <b><u> absolute diff(pc.1, pc.2)</u></b>"),
+              value = FALSE
+            ),
+            conditionalPanel(
+              condition = "input.<< d.prefix >>d1diff == true",
+              sliderInput(
+                "<< d.prefix >>d1pctdiffmin",
+                HTML("Minimum pct.diff:"),
+                min = 0,
+                max = 1,
+                value = 0,
+                step = 0.05
+              ),
+              sliderInput(
+                "<< d.prefix >>d1pctdiffmax",
+                HTML("Maximum pct.diff:"),
+                min = 0,
+                max = 1,
+                value = 1.0,
+                step = 0.05
+              )
+            )
+          )
+        )
+      )
+    ), # End of column (6 space)
+  ), # End of fluidRow (4 space)
+  fluidRow(
+    column(
+      7,
+      style = "border-right: 2px solid black",
+      uiOutput("<< d.prefix >>d1oup1.ui"),
+      fluidRow(
+        column(3, downloadButton("<< d.prefix >>d1oup1.dl", "Download Plot")),
+        column(3, radioButtons("<< d.prefix >>d1oup1.f", "Plot format:",
+          choices = c("png", "pdf"), selected = "png", inline = TRUE
+        )),
+        column(3, numericInput("<< d.prefix >>d1oup1.h", "Plot height:",
+          min = 4, max = 20, value = 8, step = 0.5
+        )),
+        column(3, numericInput("<< d.prefix >>d1oup1.w", "Plot width:",
+          min = 4, max = 20, value = 8, step = 0.5
+        ))
+      ),
+      br()
+    ), # End of column (6 space)
+    column(
+      5,
+      br(), h4("DEG markers numbers"),
+      dataTableOutput("<< d.prefix >>d1.dt")
+    ) # End of column (6 space)
+  ) # End of fluidRow (4 space)
+) # End of tab (2 space)
+,

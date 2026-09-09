@@ -1,0 +1,160 @@
+{#
+  dimred-sidebyside page — server
+
+  Reactive logic for the "Side-by-side DimRed" page (two dimred scatters shown
+  together plus a comparison panel). Wires up:
+    - two colour-by feature selectors (left / right), each with server-side
+      selectize choices coloured by data type (categorical / continuous /
+      undetermined) via the shared optColor renderer
+    - the cell-subset checkbox UI + select-all / deselect-all buttons
+    - the two sc2Ddimr() plots, their legends, and download handlers
+    - the sc2Dcomp() comparison plot and sc2Dcnum() statistics datatable
+  Pairs with the UI in partials/ui/dimred-sidebyside.R.jinja.
+#}
+### dimred-sidebyside page
+# Selectize render that colours each option by the data type used in the table
+# calculations: categorical (green), continuous (blue), or undetermined (orange).
+#  - Categorical = Cell Information with a defined factor colour list (fCL).
+#  - Continuous  = Cell Information without an fCL whose values are numeric, plus
+#                  all gene/feature expression (always numeric). These take the
+#                  ggCont == TRUE path in sc2Dcnum / sc2Dcomp.
+#  - Undetermined = anything that is neither - no fCL and not numeric (e.g.
+#                  logical QC flags). Type cannot be exclusively determined.
+# Genes are not listed in either set; they fall through to the continuous
+# default below, which is correct.
+optColCat = jsonlite::toJSON(<< d.prefix >>conf[!is.na(fCL)]$UI)
+optColUnd = jsonlite::toJSON(<< d.prefix >>conf[is.na(fCL) &
+                             !sapply(ID, function(i) i %in% colnames(<< d.prefix >>meta) &&
+                                     is.numeric(<< d.prefix >>meta[[i]]))]$UI)
+optColFn = paste0(
+  "function(item, escape) {",
+  "  var cat = ", optColCat, "; var und = ", optColUnd, ";",
+  "  var c = cat.indexOf(item.value) > -1 ? '#1B7837' :",
+  "          (und.indexOf(item.value) > -1 ? '#E66101' : '#2166AC');",
+  "  return '<div style=\"color:' + c + ';font-weight:bold;text-align:center;\">' + escape(item.label) + '</div>';",
+  "}")
+optColor = paste0("{ option: ", optColFn, ", item: ", optColFn,
+                  ", option_create: function(data,escape) {return('<div class=\"create\"><strong>' + '</strong></div>');} }")
+getG<< d.prefix >>a2inp1 <- reactive({
+  req(gsub("^Assay: ", "", input$<< d.prefix >>a2ass1))
+  if (gsub("^Assay: ", "", input$<< d.prefix >>a2ass1) == "Cell Information") {
+    res <- << d.prefix >>conf$UI
+    resDef <- << d.prefix >>def$meta1
+    resLen <- length(res)
+  } else {
+    res <- names(<< d.prefix >>gene[[gsub("^Assay: ", "", input$<< d.prefix >>a2ass1)]])
+    resDef <- << d.prefix >>def$gene1[[gsub("^Assay: ", "", input$<< d.prefix >>a2ass1)]]
+    resLen <- 7
+  }
+  return(list(res, resDef, resLen))
+})
+observeEvent(gsub("^Assay: ", "", input$<< d.prefix >>a2ass1), {
+  updateSelectizeInput(session, "<< d.prefix >>a2inp1", choices = getG<< d.prefix >>a2inp1()[[1]],
+                       server = TRUE, selected = getG<< d.prefix >>a2inp1()[[2]], options = list(
+                         maxOptions = getG<< d.prefix >>a2inp1()[[3]], create = TRUE,
+                         persist = TRUE, render = I(optColor)))
+})
+getG<< d.prefix >>a2inp2 <- reactive({
+  req(gsub("^Assay: ", "", input$<< d.prefix >>a2ass2))
+  if (gsub("^Assay: ", "", input$<< d.prefix >>a2ass2) == "Cell Information") {
+    res <- << d.prefix >>conf$UI
+    resDef <- << d.prefix >>def$meta1
+    resLen <- length(res)
+  } else {
+    res <- names(<< d.prefix >>gene[[gsub("^Assay: ", "", input$<< d.prefix >>a2ass2)]])
+    resDef <- << d.prefix >>def$gene1[[gsub("^Assay: ", "", input$<< d.prefix >>a2ass2)]]
+    resLen <- 7
+  }
+  return(list(res, resDef, resLen))
+})
+observeEvent(gsub("^Assay: ", "", input$<< d.prefix >>a2ass2), {
+  updateSelectizeInput(session, "<< d.prefix >>a2inp2", choices = getG<< d.prefix >>a2inp2()[[1]],
+                       server = TRUE, selected = getG<< d.prefix >>a2inp2()[[2]], options = list(
+                         maxOptions = getG<< d.prefix >>a2inp2()[[3]], create = TRUE,
+                         persist = TRUE, render = I(optColor)))
+})
+output$<< d.prefix >>a2sub1.ui <- renderUI({
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>a2sub1]$fID, "\\|")[[1]]
+  checkboxGroupInput("<< d.prefix >>a2sub2", "Select which cells to show", inline = TRUE,
+                     choices = sub, selected = sub)
+})
+observeEvent(input$<< d.prefix >>a2sub1non, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>a2sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>a2sub2", label = "Select which cells to show",
+                           choices = sub, selected = NULL, inline = TRUE)
+})
+observeEvent(input$<< d.prefix >>a2sub1all, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>a2sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>a2sub2", label = "Select which cells to show",
+                           choices = sub, selected = sub, inline = TRUE)
+})
+
+<< d.prefix >>a2oup1 <- reactive({
+  sc2Ddimr(<< d.prefix >>conf, << d.prefix >>meta, << d.prefix >>dimr, input$<< d.prefix >>a2dr, input$<< d.prefix >>a2inp1,
+           "<< d.prefix >>assay_", << d.prefix >>gene, input$<< d.prefix >>a2ass1, input$<< d.prefix >>a2sub1, input$<< d.prefix >>a2sub2,
+           input$<< d.prefix >>a2min1, input$<< d.prefix >>a2max1, input$<< d.prefix >>a2siz, input$<< d.prefix >>a2ord1,
+           cList[[input$<< d.prefix >>a2col1]], sList[input$<< d.prefix >>a2fsz],
+           input$<< d.prefix >>a2asp, input$<< d.prefix >>a2txt, input$<< d.prefix >>a2lab1)
+})
+output$<< d.prefix >>a2oup1 <- renderPlot({<< d.prefix >>a2oup1() + theme(legend.position = "none")})
+output$<< d.prefix >>a2oup1.ui <- renderUI({plotOutput("<< d.prefix >>a2oup1", height = pList[input$<< d.prefix >>a2psz])})
+output$<< d.prefix >>a2oup1.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>", input$<< d.prefix >>a2dr, "_", input$<< d.prefix >>a2inp1, ".", input$<< d.prefix >>a2oup1.f) },
+  content = function(file) { ggsav(file, height = input$<< d.prefix >>a2oup1.h, width = input$<< d.prefix >>a2oup1.w,
+                                   plot = << d.prefix >>a2oup1() + theme(legend.position = "none"))
+})
+output$<< d.prefix >>a2oup3 <- renderPlot({grid.newpage(); grid.draw(g_legend(<< d.prefix >>a2oup1()))})
+output$<< d.prefix >>a2oup3.ui <- renderUI({plotOutput("<< d.prefix >>a2oup3", height = 72 * convertHeight(
+  grobHeight(g_legend(<< d.prefix >>a2oup1())), unitTo = "in", valueOnly = TRUE) + 50)})
+output$<< d.prefix >>a2oup3.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>", input$<< d.prefix >>a2dr, "_", input$<< d.prefix >>a2inp1, "_leg.", input$<< d.prefix >>a2oup3.f) },
+content = function(file) {
+  grid.newpage(); grid.draw(g_legend(<< d.prefix >>a2oup1()))
+  ggsav(file, height = input$<< d.prefix >>a2oup3.h, width = input$<< d.prefix >>a2oup3.w, plot = grid.grab())
+})
+
+<< d.prefix >>a2oup2 <- reactive({
+  sc2Ddimr(<< d.prefix >>conf, << d.prefix >>meta, << d.prefix >>dimr, input$<< d.prefix >>a2dr, input$<< d.prefix >>a2inp2,
+           "<< d.prefix >>assay_", << d.prefix >>gene, input$<< d.prefix >>a2ass2, input$<< d.prefix >>a2sub1, input$<< d.prefix >>a2sub2,
+           input$<< d.prefix >>a2min2, input$<< d.prefix >>a2max2, input$<< d.prefix >>a2siz, input$<< d.prefix >>a2ord2,
+           cList[[input$<< d.prefix >>a2col2]], sList[input$<< d.prefix >>a2fsz],
+           input$<< d.prefix >>a2asp, input$<< d.prefix >>a2txt, input$<< d.prefix >>a2lab2)
+})
+output$<< d.prefix >>a2oup2 <- renderPlot({<< d.prefix >>a2oup2() + theme(legend.position = "none")})
+output$<< d.prefix >>a2oup2.ui <- renderUI({plotOutput("<< d.prefix >>a2oup2", height = pList[input$<< d.prefix >>a2psz])})
+output$<< d.prefix >>a2oup2.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>", input$<< d.prefix >>a2dr, "_", input$<< d.prefix >>a2inp2, ".", input$<< d.prefix >>a2oup2.f) },
+  content = function(file) { ggsav(file, height = input$<< d.prefix >>a2oup2.h, width = input$<< d.prefix >>a2oup2.w,
+                                   plot = << d.prefix >>a2oup2() + theme(legend.position = "none"))
+})
+
+output$<< d.prefix >>a2oup4 <- renderPlot({grid.newpage(); grid.draw(g_legend(<< d.prefix >>a2oup2()))})
+output$<< d.prefix >>a2oup4.ui <- renderUI({plotOutput("<< d.prefix >>a2oup4", height = 72 * convertHeight(
+  grobHeight(g_legend(<< d.prefix >>a2oup2())), unitTo = "in", valueOnly = TRUE) + 50)})
+output$<< d.prefix >>a2oup4.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>", input$<< d.prefix >>a2dr, "_", input$<< d.prefix >>a2inp2, "_leg.", input$<< d.prefix >>a2oup4.f) },
+content = function(file) {
+  grid.newpage(); grid.draw(g_legend(<< d.prefix >>a2oup2()))
+  ggsav(file, height = input$<< d.prefix >>a2oup4.h, width = input$<< d.prefix >>a2oup4.w, plot = grid.grab())
+})
+
+<< d.prefix >>a2oup5 <- reactive({
+  sc2Dcomp(<< d.prefix >>conf, << d.prefix >>meta, input$<< d.prefix >>a2inp1, input$<< d.prefix >>a2inp2,
+           "<< d.prefix >>assay_", << d.prefix >>gene, input$<< d.prefix >>a2ass1, input$<< d.prefix >>a2ass2, input$<< d.prefix >>a2sub1, input$<< d.prefix >>a2sub2,
+           input$<< d.prefix >>a2min1, input$<< d.prefix >>a2max1, input$<< d.prefix >>a2min2, input$<< d.prefix >>a2max2,
+           input$<< d.prefix >>a2siz, cList[[input$<< d.prefix >>a2col2]], sList[input$<< d.prefix >>a2fsz])
+})
+output$<< d.prefix >>a2oup5 <- renderPlot({<< d.prefix >>a2oup5() + theme(legend.position = "none")})
+output$<< d.prefix >>a2oup5.ui <- renderUI({plotOutput("<< d.prefix >>a2oup5", height = pList[input$<< d.prefix >>a2psz])})
+output$<< d.prefix >>a2oup5.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>compare_", input$<< d.prefix >>a2inp1, "_", input$<< d.prefix >>a2inp2, ".", input$<< d.prefix >>a2oup5.f) },
+  content = function(file) { ggsav(file, height = input$<< d.prefix >>a2oup5.h, width = input$<< d.prefix >>a2oup5.w,
+                                   plot = << d.prefix >>a2oup5())
+})
+output$<< d.prefix >>a2.dt <- renderDataTable({
+  ggData = sc2Dcnum(<< d.prefix >>conf, << d.prefix >>meta, input$<< d.prefix >>a2inp1, input$<< d.prefix >>a2inp2,
+                    "<< d.prefix >>assay_", << d.prefix >>gene, input$<< d.prefix >>a2ass1, input$<< d.prefix >>a2ass2, input$<< d.prefix >>a2sub1, input$<< d.prefix >>a2sub2,
+                    input$<< d.prefix >>a2min1, input$<< d.prefix >>a2max1, input$<< d.prefix >>a2min2, input$<< d.prefix >>a2max2)
+  datatable(ggData, rownames = FALSE, extensions = "Buttons",
+            options = list(pageLength = -1, dom = "tB", buttons = c("copy", "csv", "excel")))
+})

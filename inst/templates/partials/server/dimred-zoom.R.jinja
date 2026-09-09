@@ -1,0 +1,119 @@
+{#
+  dimred-zoom page — server
+
+  Reactive logic for the "Zoom-enable Dimred" page (a single dimred scatter that
+  can be brushed to zoom). Wires up:
+    - the colour-by feature selector (cell-info vs assay expression) and its
+      server-side selectize choices
+    - the cell-subset checkbox UI + select-all / deselect-all buttons
+    - the brush -> zoom reactive, the main sc2Ddimr() plot + its zoomed redraw,
+      the legend output, and the plot / legend download handlers
+    - the sc2Dnum() cell-number datatable
+  Pairs with the UI in partials/ui/dimred-zoom.R.jinja.
+#}
+### dimred-zoom page
+getG<< d.prefix >>a1inp1 <- reactive({
+  req(gsub("^Assay: ", "", input$<< d.prefix >>a1ass1))
+  if (gsub("^Assay: ", "", input$<< d.prefix >>a1ass1) == "Cell Information") {
+    res <- << d.prefix >>conf$UI
+    resDef <- << d.prefix >>def$meta1
+    resLen <- length(res)
+  } else {
+    res <- names(<< d.prefix >>gene[[gsub("^Assay: ", "", input$<< d.prefix >>a1ass1)]])
+    resDef <- << d.prefix >>def$gene1[[gsub("^Assay: ", "", input$<< d.prefix >>a1ass1)]]
+    resLen <- 7
+  }
+  return(list(res, resDef, resLen))
+})
+observeEvent(gsub("^Assay: ", "", input$<< d.prefix >>a1ass1), {
+  updateSelectizeInput(session, "<< d.prefix >>a1inp1", choices = getG<< d.prefix >>a1inp1()[[1]],
+                       server = TRUE, selected = getG<< d.prefix >>a1inp1()[[1]][1], options = list(
+                         maxOptions = getG<< d.prefix >>a1inp1()[[3]], create = TRUE,
+                         persist = TRUE, render = I(optCrt)))
+})
+output$<< d.prefix >>a1sub1.ui <- renderUI({
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>a1sub1]$fID, "\\|")[[1]]
+  checkboxGroupInput("<< d.prefix >>a1sub2", "Select which cells to show", inline = TRUE,
+                     choices = sub, selected = sub)
+})
+observeEvent(input$<< d.prefix >>a1sub1non, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>a1sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>a1sub2", label = "Select which cells to show",
+                           choices = sub, selected = NULL, inline = TRUE)
+})
+observeEvent(input$<< d.prefix >>a1sub1all, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>a1sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>a1sub2", label = "Select which cells to show",
+                           choices = sub, selected = sub, inline = TRUE)
+})
+
+<< d.prefix >>a1oup1xy <- reactiveValues(x = NULL, y = NULL)
+observe({
+  brush <- input$<< d.prefix >>a1inp1.br
+  if (!is.null(brush)) {
+    << d.prefix >>a1oup1xy$x <- c(brush$xmin, brush$xmax)
+    << d.prefix >>a1oup1xy$y <- c(brush$ymin, brush$ymax)
+  } else {
+    << d.prefix >>a1oup1xy$x <- NULL; << d.prefix >>a1oup1xy$y <- NULL
+  }
+})
+<< d.prefix >>a1oup1br <- reactive({
+  req(input$<< d.prefix >>a1inp1, cancelOutput = TRUE)
+  req(nchar(input$<< d.prefix >>a1inp1) > 0, cancelOutput = TRUE)
+  sc2Ddimr(<< d.prefix >>conf, << d.prefix >>meta, << d.prefix >>dimr, input$<< d.prefix >>a1dr, input$<< d.prefix >>a1inp1,
+           "<< d.prefix >>assay_", << d.prefix >>gene, input$<< d.prefix >>a1ass1, input$<< d.prefix >>a1sub1, input$<< d.prefix >>a1sub2,
+           input$<< d.prefix >>a1min1, input$<< d.prefix >>a1max1, input$<< d.prefix >>a1siz / 2, input$<< d.prefix >>a1ord1,
+           cList[[input$<< d.prefix >>a1col1]], sList[input$<< d.prefix >>a1fsz] / 2,
+           input$<< d.prefix >>a1asp, FALSE, FALSE)
+})
+output$<< d.prefix >>a1oup1.br <- renderPlot({<< d.prefix >>a1oup1br() + theme(legend.position = "none")})
+
+<< d.prefix >>a1oup1 <- reactive({
+  req(input$<< d.prefix >>a1inp1, cancelOutput = TRUE)
+  req(nchar(input$<< d.prefix >>a1inp1) > 0, cancelOutput = TRUE)
+  sc2Ddimr(<< d.prefix >>conf, << d.prefix >>meta, << d.prefix >>dimr, input$<< d.prefix >>a1dr, input$<< d.prefix >>a1inp1,
+           "<< d.prefix >>assay_", << d.prefix >>gene, input$<< d.prefix >>a1ass1, input$<< d.prefix >>a1sub1, input$<< d.prefix >>a1sub2,
+           input$<< d.prefix >>a1min1, input$<< d.prefix >>a1max1, input$<< d.prefix >>a1siz, input$<< d.prefix >>a1ord1,
+           cList[[input$<< d.prefix >>a1col1]], sList[input$<< d.prefix >>a1fsz],
+           input$<< d.prefix >>a1asp, input$<< d.prefix >>a1txt, input$<< d.prefix >>a1lab1)
+})
+output$<< d.prefix >>a1oup1 <- renderPlot({
+  if (is.null(<< d.prefix >>a1oup1xy$x[1])) {
+    << d.prefix >>a1oup1() + theme(legend.position = "none")
+  } else {
+    << d.prefix >>a1oup1() + theme(legend.position = "none") +
+      scale_x_continuous(limits = << d.prefix >>a1oup1xy$x, expand = c(0, 0)) +
+      scale_y_continuous(limits = << d.prefix >>a1oup1xy$y, expand = c(0, 0))
+  }
+})
+output$<< d.prefix >>a1oup1.ui <- renderUI({plotOutput("<< d.prefix >>a1oup1", height = pList[input$<< d.prefix >>a1psz])})
+output$<< d.prefix >>a1oup1.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>", input$<< d.prefix >>a1dr, "_", input$<< d.prefix >>a1inp1, ".", input$<< d.prefix >>a1oup1.f) },
+  content = function(file) {
+    if (is.null(<< d.prefix >>a1oup1xy$x[1])) {
+      ggsav(file, height = input$<< d.prefix >>a1oup1.h, width = input$<< d.prefix >>a1oup1.w,
+            plot = << d.prefix >>a1oup1() + theme(legend.position = "none"))
+    } else {
+      ggsav(file, height = input$<< d.prefix >>a1oup1.h, width = input$<< d.prefix >>a1oup1.w,
+            plot = << d.prefix >>a1oup1() + theme(legend.position = "none") +
+              scale_x_continuous(limits = << d.prefix >>a1oup1xy$x, expand = c(0, 0)) +
+              scale_y_continuous(limits = << d.prefix >>a1oup1xy$y, expand = c(0, 0)))
+    }
+})
+output$<< d.prefix >>a1oup3 <- renderPlot({grid.newpage(); grid.draw(g_legend(<< d.prefix >>a1oup1()))})
+output$<< d.prefix >>a1oup3.ui <- renderUI({plotOutput("<< d.prefix >>a1oup3", height = 72 * convertHeight(
+  grobHeight(g_legend(<< d.prefix >>a1oup1())), unitTo = "in", valueOnly = TRUE) + 50)})
+output$<< d.prefix >>a1oup3.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>", input$<< d.prefix >>a1dr, "_", input$<< d.prefix >>a1inp1, "_leg.", input$<< d.prefix >>a1oup3.f) },
+  content = function(file) {
+    grid.newpage(); grid.draw(g_legend(<< d.prefix >>a1oup1()))
+    ggsav(file, height = input$<< d.prefix >>a1oup3.h, width = input$<< d.prefix >>a1oup3.w, plot = grid.grab())
+})
+
+output$<< d.prefix >>a1.dt <- renderDataTable({
+  ggData = sc2Dnum(<< d.prefix >>conf, << d.prefix >>meta, << d.prefix >>dimr, input$<< d.prefix >>a1dr, << d.prefix >>a1oup1xy$x, << d.prefix >>a1oup1xy$y, input$<< d.prefix >>a1inp1,
+                   "<< d.prefix >>assay_", << d.prefix >>gene, input$<< d.prefix >>a1ass1, input$<< d.prefix >>a1sub1, input$<< d.prefix >>a1sub2, input$<< d.prefix >>a1splt)
+  datatable(ggData, rownames = FALSE, extensions = "Buttons",
+            options = list(pageLength = -1, dom = "tB", buttons = c("copy", "csv", "excel"))) %>%
+    formatRound(columns = c("pctZoom"), digits = 2)
+})

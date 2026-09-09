@@ -1,0 +1,19 @@
+{#
+  deg-table page — server
+
+  Wires the shinydataviewer module to the full marker-gene table read from
+  <prefix>deg.h5. The data is read once (reactive, non-invalidating) and handed
+  to data_viewer_server() as a reactive returning a data.frame.
+  Pairs with partials/ui/deg-table.R.jinja.
+#}
+### deg-table page: raw marker-gene table viewer
+<< d.prefix >>degtbl_data <- reactive({
+  scDEGtable(paste0("./<< d.prefix >>deg.h5"))
+})
+shinydataviewer::data_viewer_server(
+  "<< d.prefix >>degtbl",
+  data = << d.prefix >>degtbl_data,
+  ### Turn off column resizing so the draggable resizer (and its overlapping
+  ### "arrow keys to resize" hint) is gone; keep the other column defaults.
+  default_col_def = reactable::colDef(minWidth = 120, resizable = FALSE)
+)

@@ -1,0 +1,170 @@
+{#
+  module-score page — server
+
+  Reactive logic for the "Module scoring" page (per-cell module score = mean of a
+  gene set minus a random background set, shown on a dimred and as a violin/box
+  plot). Wires up:
+    - the gene-list textarea + "genes found / not found" status text
+    - the cell-subset checkbox UI + select-all / deselect-all buttons
+    - the scModuleScore() score reactive (via scGeneList()), the dimred plot +
+      its legend + download, and the grouped violin/box plot + download
+  Pairs with the UI in partials/ui/module-score.R.jinja.
+#}
+### module-score page
+output$<< d.prefix >>comb_sub1.ui <- renderUI({
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>comb_sub1]$fID, "\\|")[[1]]
+  checkboxGroupInput("<< d.prefix >>comb_sub2", "Select which cells to show", inline = TRUE,
+                     choices = sub, selected = sub)
+})
+observeEvent(input$<< d.prefix >>comb_sub1non, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>comb_sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>comb_sub2",
+                           choices = sub, selected = NULL, inline = TRUE)
+})
+observeEvent(input$<< d.prefix >>comb_sub1all, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>comb_sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>comb_sub2",
+                           choices = sub, selected = sub, inline = TRUE)
+})
+
+output$<< d.prefix >>comb_mod_geneTxt <- renderUI({
+  geneList <- scGeneList(input$<< d.prefix >>comb_mod_inp, << d.prefix >>gene[[input$<< d.prefix >>comb_mod_ass]])
+  if (nrow(geneList) > 50) {
+    HTML("<span style='color:red'>More than 50 genes! Please reduce the list.</span>")
+  } else {
+    ok <- nrow(geneList[present == TRUE])
+    bad <- nrow(geneList[present == FALSE])
+    oup <- paste0(ok, " genes found and will be used for scoring")
+    if (bad > 0)
+      oup <- paste0(oup, "<br/><span style='color:orange'>", bad, " not found: ",
+                    paste0(geneList[present == FALSE]$gene, collapse = ", "), "</span>")
+    HTML(oup)
+  }
+})
+
+<< d.prefix >>comb_mod_score <- reactive({
+  geneList <- scGeneList(input$<< d.prefix >>comb_mod_inp, << d.prefix >>gene[[input$<< d.prefix >>comb_mod_ass]])
+  shiny::validate(
+    need(nrow(geneList[present == TRUE]) >= 2,
+         "Please provide at least 2 valid genes."),
+    need(nrow(geneList) <= 50,
+         "More than 50 genes - please reduce the list.")
+  )
+  inpH5 <- paste0("<< d.prefix >>assay_", input$<< d.prefix >>comb_mod_ass, ".h5")
+  scModuleScore(<< d.prefix >>gene[[input$<< d.prefix >>comb_mod_ass]], inpH5, geneList,
+                seed = 42)
+})
+
+<< d.prefix >>comb_mod_dr_oup <- reactive({
+  score <- << d.prefix >>comb_mod_score()
+  inpdr <- input$<< d.prefix >>comb_mod_dr
+  ggData <- data.table(<< d.prefix >>dimr[[inpdr]]); colnames(ggData) <- c("X", "Y")
+  rat <- (max(ggData$X) - min(ggData$X)) / (max(ggData$Y) - min(ggData$Y))
+  sub1 <- if (is.null(input$<< d.prefix >>comb_sub1)) << d.prefix >>conf$UI[1] else input$<< d.prefix >>comb_sub1
+  ggData$sub <- << d.prefix >>meta[, << d.prefix >>conf[UI == sub1]$ID, with = FALSE][[1]]
+  ggData$val <- score
+  bgCells <- FALSE
+  if (length(input$<< d.prefix >>comb_sub2) != 0 &&
+      length(input$<< d.prefix >>comb_sub2) != nlevels(ggData$sub)) {
+    bgCells <- TRUE
+    ggData2 <- ggData[!sub %in% input$<< d.prefix >>comb_sub2]
+    ggData <- ggData[sub %in% input$<< d.prefix >>comb_sub2]
+  }
+  if (input$<< d.prefix >>comb_mod_ord == "Max-1st") {
+    ggData <- ggData[order(val)]
+  } else if (input$<< d.prefix >>comb_mod_ord == "Min-1st") {
+    ggData <- ggData[order(-val)]
+  } else if (input$<< d.prefix >>comb_mod_ord == "Random") {
+    ggData <- ggData[sample(nrow(ggData))]
+  }
+  inpfsz <- sList[input$<< d.prefix >>comb_mod_fsz]
+  inpcol <- cList[[input$<< d.prefix >>comb_mod_col]]
+  ggOut <- ggplot(ggData, aes(X, Y, color = val))
+  if (bgCells)
+    ggOut <- ggOut + geom_point(data = ggData2, color = "snow2",
+                                size = input$<< d.prefix >>comb_mod_siz / 2, shape = 16)
+  ggOut <- ggOut +
+    geom_point(size = input$<< d.prefix >>comb_mod_siz, shape = 16) +
+    xlab(paste0(inpdr, "1")) + ylab(paste0(inpdr, "2")) +
+    sctheme(base_size = inpfsz, XYval = input$<< d.prefix >>comb_mod_txt) +
+    scale_color_gradientn("Module Score  ", colours = inpcol) +
+    guides(color = guide_colorbar(barwidth = 15))
+  asp <- input$<< d.prefix >>comb_mod_asp
+  if (asp == "Square") {
+    ggOut <- ggOut + coord_fixed(ratio = 1)
+  } else if (asp == "Fixed") {
+    ggOut <- ggOut + coord_fixed(ratio = rat)
+  }
+  ggOut
+})
+output$<< d.prefix >>comb_mod_dr_oup.ui <- renderUI({
+  plotOutput("<< d.prefix >>comb_mod_dr_oup", height = pList[input$<< d.prefix >>comb_mod_psz])
+})
+output$<< d.prefix >>comb_mod_dr_oup <- renderPlot({
+  << d.prefix >>comb_mod_dr_oup() + theme(legend.position = "none")
+})
+output$<< d.prefix >>comb_mod_leg_oup.ui <- renderUI({
+  plotOutput("<< d.prefix >>comb_mod_leg_oup",
+             height = 72 * convertHeight(
+               grobHeight(g_legend(<< d.prefix >>comb_mod_dr_oup())),
+               unitTo = "in", valueOnly = TRUE) + 50)
+})
+output$<< d.prefix >>comb_mod_leg_oup <- renderPlot({
+  grid.newpage(); grid.draw(g_legend(<< d.prefix >>comb_mod_dr_oup()))
+})
+output$<< d.prefix >>comb_mod_dr_oup.dl <- downloadHandler(
+  filename = function() {
+    paste0("<< d.prefix >>modscore_dimred_", input$<< d.prefix >>comb_mod_dr,
+           ".", input$<< d.prefix >>comb_mod_dr_oup.f)
+  },
+  content = function(file) {
+    p <- << d.prefix >>comb_mod_dr_oup() + theme(legend.position = "none")
+    ggsav(file, height = input$<< d.prefix >>comb_mod_dr_oup.h,
+           width = input$<< d.prefix >>comb_mod_dr_oup.w, plot = p)
+  }
+)
+
+<< d.prefix >>comb_mod_vln_oup <- reactive({
+  score <- << d.prefix >>comb_mod_score()
+  sub1 <- if (is.null(input$<< d.prefix >>comb_sub1)) << d.prefix >>conf$UI[1] else input$<< d.prefix >>comb_sub1
+  ggData <- data.table(
+    X   = << d.prefix >>meta[, << d.prefix >>conf[UI == input$<< d.prefix >>comb_grp]$ID, with = FALSE][[1]],
+    sub = << d.prefix >>meta[, << d.prefix >>conf[UI == sub1]$ID, with = FALSE][[1]],
+    val = score
+  )
+  if (length(input$<< d.prefix >>comb_sub2) != 0 &&
+      length(input$<< d.prefix >>comb_sub2) != nlevels(ggData$sub))
+    ggData <- ggData[sub %in% input$<< d.prefix >>comb_sub2]
+  ggCol <- strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>comb_grp]$fCL, "\\|")[[1]]
+  names(ggCol) <- levels(ggData$X)
+  ggLvl <- levels(ggData$X)[levels(ggData$X) %in% unique(ggData$X)]
+  ggData$X <- factor(ggData$X, levels = ggLvl)
+  ggCol <- ggCol[ggLvl]
+  inpfsz <- sList[input$<< d.prefix >>comb_mod_fsz]
+  if (input$<< d.prefix >>comb_mod_vln_typ == "violin") {
+    ggOut <- ggplot(ggData, aes(X, val, fill = X)) + geom_violin(scale = "width")
+  } else {
+    ggOut <- ggplot(ggData, aes(X, val, fill = X)) + geom_boxplot()
+  }
+  if (input$<< d.prefix >>comb_mod_vln_pts)
+    ggOut <- ggOut + geom_jitter(size = input$<< d.prefix >>comb_mod_siz, shape = 16)
+  ggOut +
+    xlab(input$<< d.prefix >>comb_grp) + ylab("Module Score") +
+    sctheme(base_size = inpfsz, Xang = 45, XjusH = 1) +
+    scale_fill_manual("", values = ggCol) +
+    theme(legend.position = "none")
+})
+output$<< d.prefix >>comb_mod_vln_oup.ui <- renderUI({
+  plotOutput("<< d.prefix >>comb_mod_vln_oup", height = pList2[input$<< d.prefix >>comb_mod_psz])
+})
+output$<< d.prefix >>comb_mod_vln_oup <- renderPlot({<< d.prefix >>comb_mod_vln_oup()})
+output$<< d.prefix >>comb_mod_vln_oup.dl <- downloadHandler(
+  filename = function() {
+    paste0("<< d.prefix >>modscore_violin_", input$<< d.prefix >>comb_grp,
+           ".", input$<< d.prefix >>comb_mod_vln_oup.f)
+  },
+  content = function(file) {
+    ggsav(file, height = input$<< d.prefix >>comb_mod_vln_oup.h,
+           width = input$<< d.prefix >>comb_mod_vln_oup.w, plot = << d.prefix >>comb_mod_vln_oup())
+  }
+)

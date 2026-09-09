@@ -1,0 +1,64 @@
+{#
+  bubble-heatmap page — server
+
+  Reactive logic for the "Bubbleplot / Heatmap" page (multi-gene expression
+  summarised per group as a bubble plot or heatmap). Wires up:
+    - the gene-list textarea (auto-filled from the chosen assay) and the
+      "genes found / not found" status text
+    - the cell-subset checkbox UI + select-all / deselect-all buttons
+    - the scBubbHeat() plot reactive, its plotOutput, and the download handler
+  Pairs with the UI in partials/ui/bubble-heatmap.R.jinja.
+#}
+### bubble-heatmap page
+getG<< d.prefix >>b3inp1 <- reactive({
+  req(input$<< d.prefix >>b3ass1)
+  resDef <- paste0(<< d.prefix >>def$genes[[input$<< d.prefix >>b3ass1]],
+                   collapse = ", ")
+  return(resDef)
+})
+observeEvent(input$<< d.prefix >>b3ass1, {
+  updateTextAreaInput(session, "<< d.prefix >>b3inp", value = getG<< d.prefix >>b3inp1())
+})
+output$<< d.prefix >>b3sub1.ui <- renderUI({
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>b3sub1]$fID, "\\|")[[1]]
+  checkboxGroupInput("<< d.prefix >>b3sub2", "Select which cells to show", inline = TRUE,
+                     choices = sub, selected = sub)
+})
+observeEvent(input$<< d.prefix >>b3sub1non, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>b3sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>b3sub2", label = "Select which cells to show",
+                           choices = sub, selected = NULL, inline = TRUE)
+})
+observeEvent(input$<< d.prefix >>b3sub1all, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>b3sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>b3sub2", label = "Select which cells to show",
+                           choices = sub, selected = sub, inline = TRUE)
+})
+output$<< d.prefix >>b3oupTxt <- renderUI({
+  geneList = scGeneList(input$<< d.prefix >>b3inp, << d.prefix >>gene[[input$<< d.prefix >>b3ass1]])
+  if (nrow(geneList) > 50) {
+    HTML("More than 50 input genes! Please reduce the gene list!")
+  } else {
+    oup = paste0(nrow(geneList[present == TRUE]), " genes OK and will be plotted")
+    if (nrow(geneList[present == FALSE]) > 0) {
+      oup = paste0(oup, "<br/>",
+                   nrow(geneList[present == FALSE]), " genes not found (",
+                   paste0(geneList[present == FALSE]$gene, collapse = ", "), ")")
+    }
+    HTML(oup)
+  }
+})
+
+<< d.prefix >>b3oup <- reactive({
+  scBubbHeat(<< d.prefix >>conf, << d.prefix >>meta, input$<< d.prefix >>b3inp, input$<< d.prefix >>b3grp, input$<< d.prefix >>b3plt,
+             paste0("<< d.prefix >>assay_", input$<< d.prefix >>b3ass1, ".h5"), << d.prefix >>gene[[input$<< d.prefix >>b3ass1]],
+             input$<< d.prefix >>b3sub1, input$<< d.prefix >>b3sub2, input$<< d.prefix >>b3scl,
+             input$<< d.prefix >>b3row, input$<< d.prefix >>b3col, cList[[input$<< d.prefix >>b3cols]], sList[input$<< d.prefix >>b3fsz],
+             input$<< d.prefix >>b3exp, input$<< d.prefix >>b3max)
+})
+output$<< d.prefix >>b3oup <- renderPlot({<< d.prefix >>b3oup()})
+output$<< d.prefix >>b3oup.ui <- renderUI({plotOutput("<< d.prefix >>b3oup", height = pList3[input$<< d.prefix >>b3psz])})
+output$<< d.prefix >>b3oup.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>", input$<< d.prefix >>b3plt, "_", input$<< d.prefix >>b3grp, ".", input$<< d.prefix >>b3oup.f) },
+  content = function(file) { ggsave(file, height = input$<< d.prefix >>b3oup.h, width = input$<< d.prefix >>b3oup.w, plot = << d.prefix >>b3oup())
+})

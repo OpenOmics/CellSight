@@ -1,0 +1,80 @@
+{#
+  server.R master template
+
+  Assembles the generated server.R. makeShinyCodes() supplies `datasets` (one
+  entry per dataset, with has_image / has_bw / has_deg flags) and renders this in
+  three phases:
+    1. library() calls (inlined below)
+    2. {% for d in datasets %} data-load block: reads <prefix>{conf,meta,gene,dimr,def};
+       plus data-load-spatial (if has_image) and data-load-track (if has_bw)
+    3. preamble: palettes, panel/font size lists, and shinyServer(function(){ ... open
+    4. {% for d in datasets %} one server partial per page, gated by data type:
+         spatial-zoom, spatial-sidebyside      (if has_image)
+         trackplot                             (if has_bw)
+         dimred-zoom, dimred-split, dimred-sidebyside
+         deg-dimred                            (if has_deg)
+         dimred-coexpression, violin-box, proportion, bubble-heatmap, module-score
+    5. closing: }) to close shinyServer
+  Keep the {% ... %} tags packed on one line — see README ("Whitespace in the
+  masters"). Per-page reactive logic lives in partials/server/<page>.R.jinja.
+#}
+library(shiny)
+library(shinyhelper)
+library(data.table)
+library(Matrix)
+library(DT)
+library(magrittr)
+library(ggplot2)
+library(ggrepel)
+library(hdf5r)
+library(ggdendro)
+library(grid)
+library(gridExtra)
+{% for d in datasets %}<< d.prefix >>conf = readRDS("./<< d.prefix >>conf.rds")
+<< d.prefix >>meta = readRDS("./<< d.prefix >>meta.rds")
+<< d.prefix >>gene = readRDS("./<< d.prefix >>gene.rds")
+<< d.prefix >>dimr = readRDS("./<< d.prefix >>dimr.rds")
+<< d.prefix >>def  = readRDS("./<< d.prefix >>def.rds")
+{% if d.has_image %}<< d.prefix >>image = readRDS("./<< d.prefix >>image.rds")
+if(is.null(<< d.prefix >>image$slide_display_names)) << d.prefix >>image$slide_display_names <- << d.prefix >>image$slide_names
+{% endif %}{% if d.has_bw %}<< d.prefix >>bw   = readRDS("./<< d.prefix >>bw.rds")
+{% endif %}{% endfor %}source("./shinyFunc.R")
+pdf(file = NULL)
+
+
+
+### Useful stuff
+# Colour palette
+cList = list(c("grey85","#FFF7EC","#FEE8C8","#FDD49E","#FDBB84",
+               "#FC8D59","#EF6548","#D7301F","#B30000","#7F0000"),
+             c("#4575B4","#74ADD1","#ABD9E9","#E0F3F8","#FFFFBF",
+               "#FEE090","#FDAE61","#F46D43","#D73027")[c(1,1:9,9)],
+             c("#FDE725","#AADC32","#5DC863","#27AD81","#21908C",
+               "#2C728E","#3B528B","#472D7B","#440154"))
+names(cList) = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple")
+
+# Panel sizes
+pList = c("400px", "600px", "800px")
+names(pList) = c("Small", "Medium", "Large")
+pList2 = c("500px", "700px", "900px")
+names(pList2) = c("Small", "Medium", "Large")
+pList3 = c("600px", "800px", "1000px")
+names(pList3) = c("Small", "Medium", "Large")
+sList = c(18,24,30)
+names(sList) = c("Small", "Medium", "Large")
+
+
+
+### Start server code
+shinyServer(function(input, output, session) {
+  ### For all tags and Server-side selectize
+  observe_helpers()
+  optCrt="{ option_create: function(data,escape) {return('<div class=\"create\"><strong>' + '</strong></div>');} }"
+  observe({
+    invalidateLater(30000) # ping every 30 seconds to keep connection alive
+    cat(".")
+  })
+
+{% for d in datasets %}{% if d.has_image %}{% include "partials/server/spatial-zoom.R.jinja" %}{% include "partials/server/spatial-sidebyside.R.jinja" %}{% endif %}{% if d.has_bw %}{% include "partials/server/trackplot.R.jinja" %}{% include "partials/server/spatial-sidebyside.R.jinja" %}{% endif %}{% if d.has_bw %}{% include "partials/server/trackplot.R.jinja" %}{% endif %}{% include "partials/server/dimred-zoom.R.jinja" %}{% include "partials/server/dimred-split.R.jinja" %}{% include "partials/server/dimred-sidebyside.R.jinja" %}{% if d.has_deg %}{% include "partials/server/deg-dimred.R.jinja" %}{% include "partials/server/deg-table.R.jinja" %}{% endif %}{% include "partials/server/dimred-coexpression.R.jinja" %}{% include "partials/server/violin-box.R.jinja" %}{% include "partials/server/proportion.R.jinja" %}{% include "partials/server/bubble-heatmap.R.jinja" %}{% include "partials/server/module-score.R.jinja" %}{% endfor %}})
+
+

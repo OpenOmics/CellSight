@@ -1,0 +1,79 @@
+name: PR Installation Gate
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  install-test:
+    runs-on: ubuntu-latest
+    container:
+      image: rroutsong/shinycell2_builder:latest
+      options: --user root  # Run as root to avoid permission issues
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Verify checkout and display file structure
+        run: |
+          echo "📂 Current working directory:"
+          pwd
+          echo ""
+          echo "📋 Repository files:"
+          ls -la
+          echo ""
+          echo "✅ DESCRIPTION file exists:"
+          if [ -f "DESCRIPTION" ]; then
+            cat DESCRIPTION | head -10
+          else
+            echo "❌ ERROR: DESCRIPTION file not found!"
+            exit 1
+          fi
+      
+      - name: Display R version
+        run: Rscript -e "cat('R version:', R.version.string, '\n')"
+      
+      - name: Uninstall existing cellsight
+        run: |
+          Rscript -e "if ('cellsight' %in% installed.packages()[,'Package']) { remove.packages('cellsight'); cat('✅ Removed existing cellsight\n') } else { cat('ℹ️  No existing cellsight to remove\n') }"
+      
+      - name: Install cellsight from PR branch
+        run: |
+          echo "📦 Installing cellsight from: $(pwd)"
+          Rscript -e 'install.packages(".", repos = NULL, type = "source")'
+          
+      - name: Test package loading
+        run: |
+          Rscript -e "library(cellsight)" || { echo "❌ Failed to load cellsight package"; exit 1; }
+          echo "✅ cellsight package loaded successfully"
+      
+      - name: Display package version
+        run: Rscript -e "cat('cellsight version:', as.character(packageVersion('cellsight')), '\n')"
+      
+      - name: Test template helpers and assets
+        run: |
+          Rscript -e "
+          library(cellsight)
+          # The wr* writer functions were replaced by jinjar templates rendered
+          # via makeShinyCodes(); check the helpers and shipped templates instead.
+          if (!exists('scJinjaCfg')) stop('scJinjaCfg helper not found')
+          if (!exists('scTrim')) stop('scTrim helper not found')
+          tdir <- system.file('templates', package = 'cellsight')
+          if (tdir == '' || !file.exists(file.path(tdir, 'server.R.jinja')))
+            stop('templates not installed under inst/templates')
+          cat('✅ Template helpers and assets present\n')
+          "
+      
+      - name: Test user-facing API functions
+        run: |
+          Rscript -e "
+          library(cellsight)
+          # Test that main user API functions exist
+          if (!exists('makeShinyFiles')) stop('makeShinyFiles function not found')
+          if (!exists('makeShinyCodes')) stop('makeShinyCodes function not found')
+          if (!exists('makeShinyFilesSpatial')) stop('makeShinyFilesSpatial function not found')
+          if (!exists('makeShinyFilesDEG')) stop('makeShinyFilesDEG function not found')
+          cat('✅ All user-facing API functions exist\n')
+          "

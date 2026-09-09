@@ -1,0 +1,122 @@
+{#
+  module-score page — UI
+
+  tabPanel for "Module scoring". Layout:
+    - top row: group-by selector and cell-subset toggle
+    - left column: gene-list textarea + assay selector, genes-found status text,
+      and graphics controls (point/plot/font size, palette, reduction, aspect,
+      order, violin/box type, show-points)
+    - middle column: module score on the dimred + legend and download row
+    - right column: module score violin/box plot and download row
+  Server counterpart: partials/server/module-score.R.jinja.
+#}
+### module-score page
+tabPanel(
+  HTML("Module scoring"),
+  h4("Gene Module Score: Violin + Dimred"),
+  "Compute a per-cell module score (mean expression of a gene list minus the mean of ",
+  "a random background gene set of equal size), then visualise across cell groups ",
+  "and on a reduced-dimension plot.",
+  br(), br(),
+  fluidRow(
+    column(
+      4,
+      selectInput("<< d.prefix >>comb_grp", "Group by:",
+                  choices = << d.prefix >>conf[grp == TRUE]$UI,
+                  selected = << d.prefix >>def$grp1)
+    ),
+    column(
+      4,
+      actionButton("<< d.prefix >>comb_togL", "Toggle to subset cells"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>comb_togL % 2 == 1",
+        selectInput("<< d.prefix >>comb_sub1", "Cell information to subset:",
+                    choices = << d.prefix >>conf[grp == TRUE]$UI,
+                    selected = << d.prefix >>def$grp1),
+        uiOutput("<< d.prefix >>comb_sub1.ui"),
+        actionButton("<< d.prefix >>comb_sub1all", "Select all groups", class = "btn btn-primary"),
+        actionButton("<< d.prefix >>comb_sub1non", "Deselect all groups", class = "btn btn-primary")
+      )
+    )
+  ),
+  fluidRow(
+    column(
+      3, style = "border-right: 2px solid black",
+      textAreaInput("<< d.prefix >>comb_mod_inp",
+                    HTML("Gene list for module score<br/>(max 50, separated by , ; or newline):"),
+                    height = "200px",
+                    value = paste0(<< d.prefix >>def$genes[[1]], collapse = ", ")) %>%
+        helper(type = "inline", size = "m", fade = TRUE,
+               title = "Genes for module score",
+               content = c("Input target genes to score per cell",
+                           "- Score = mean(target genes) - mean(random background genes)",
+                           "- Background pool size equals the target gene list size",
+                           "- Separate genes by comma, semicolon, or newline")),
+      selectInput("<< d.prefix >>comb_mod_ass", "Assay:",
+                  choices = << d.prefix >>def$assay,
+                  selected = << d.prefix >>def$assay[1]),
+      h4(htmlOutput("<< d.prefix >>comb_mod_geneTxt")),
+      br(),
+      actionButton("<< d.prefix >>comb_mod_tog", "Toggle graphics controls"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>comb_mod_tog % 2 == 1",
+        sliderInput("<< d.prefix >>comb_mod_siz", "Point size:",
+                    min = 0, max = 4, value = 1.25, step = 0.25),
+        radioButtons("<< d.prefix >>comb_mod_psz", "Plot size:",
+                     choices = c("Small", "Medium", "Large"),
+                     selected = "Medium", inline = TRUE),
+        radioButtons("<< d.prefix >>comb_mod_fsz", "Font size:",
+                     choices = c("Small", "Medium", "Large"),
+                     selected = "Medium", inline = TRUE),
+        radioButtons("<< d.prefix >>comb_mod_col", "Dimred colour palette:",
+                     choices = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple"),
+                     selected = "Blue-Yellow-Red"),
+        radioButtons("<< d.prefix >>comb_mod_dr", "Reduction:",
+                     choices = << d.prefix >>def$dimrd,
+                     selected = << d.prefix >>def$dimrd[1]),
+        radioButtons("<< d.prefix >>comb_mod_asp", "Aspect ratio:",
+                     choices = c("Square", "Fixed", "Free"),
+                     selected = "Square", inline = TRUE),
+        checkboxInput("<< d.prefix >>comb_mod_txt", "Show axis text on dimred", value = FALSE),
+        radioButtons("<< d.prefix >>comb_mod_ord", "Dimred plot order:",
+                     choices = c("Max-1st", "Min-1st", "Original", "Random"),
+                     selected = "Max-1st", inline = TRUE),
+        radioButtons("<< d.prefix >>comb_mod_vln_typ", "Violin/boxplot type:",
+                     choices = c("violin", "boxplot"),
+                     selected = "violin", inline = TRUE),
+        checkboxInput("<< d.prefix >>comb_mod_vln_pts", "Show data points on violin", value = FALSE)
+      )
+    ),
+    column(
+      5, style = "border-right: 2px solid black",
+      h4("Module score on reduced dimensions"),
+      uiOutput("<< d.prefix >>comb_mod_dr_oup.ui"),
+      fluidRow(column(6, uiOutput("<< d.prefix >>comb_mod_leg_oup.ui"))),
+      fluidRow(
+        column(3, downloadButton("<< d.prefix >>comb_mod_dr_oup.dl", "Download")),
+        column(3, radioButtons("<< d.prefix >>comb_mod_dr_oup.f", "Format:",
+                               choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+        column(3, numericInput("<< d.prefix >>comb_mod_dr_oup.h", "Height:",
+                               min = 4, max = 20, value = 8, step = 0.5)),
+        column(3, numericInput("<< d.prefix >>comb_mod_dr_oup.w", "Width:",
+                               min = 4, max = 20, value = 8, step = 0.5))
+      ),
+      br()
+    ),
+    column(
+      4,
+      h4("Module score violin / boxplot"),
+      uiOutput("<< d.prefix >>comb_mod_vln_oup.ui"),
+      fluidRow(
+        column(3, downloadButton("<< d.prefix >>comb_mod_vln_oup.dl", "Download")),
+        column(3, radioButtons("<< d.prefix >>comb_mod_vln_oup.f", "Format:",
+                               choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+        column(3, numericInput("<< d.prefix >>comb_mod_vln_oup.h", "Height:",
+                               min = 4, max = 20, value = 8, step = 0.5)),
+        column(3, numericInput("<< d.prefix >>comb_mod_vln_oup.w", "Width:",
+                               min = 4, max = 20, value = 8, step = 0.5))
+      ),
+      br()
+    )
+  ) # End of fluidRow (4 space)
+) # End of tab (2 space)

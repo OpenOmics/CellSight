@@ -1,0 +1,152 @@
+{#
+  spatial-sidebyside page — UI (multi-slide variant)
+
+  Same as the single-slide spatial-sidebyside page but adds a "Select Slide"
+  dropdown. Selected by ui.R.jinja when d.multislide is true. See
+  partials/ui/spatial-sidebyside.R.jinja for the full layout notes.
+  Server counterpart: partials/server/spatial-sidebyside.R.jinja.
+#}
+  ### spatial-sidebyside page
+  tabPanel(
+    HTML("Side-by-side Spatial"),
+    h4("Cell information vs assay expression on spatial coordinates"),
+    "In this tab, users can visualise both cell information and gene ",
+    "expression side-by-side on spatial plot.",
+    br(), br(),
+    fluidRow(
+      column(
+        3, fluidRow(
+          column(
+            12, sliderInput("<< d.prefix >>s2alp", "Dot transparency: ",
+                            min = 0, max = 1, value = 1, step = 0.05))
+        )
+      ), # End of column (6 space)
+      column(
+        3, actionButton("<< d.prefix >>s2togL", "Toggle to subset cells"),
+        conditionalPanel(
+          condition = "input.<< d.prefix >>s2togL % 2 == 1",
+          selectInput("<< d.prefix >>s2sub1", "Cell information to subset:",
+                      choices = << d.prefix >>conf[grp == TRUE]$UI,
+                      selected = << d.prefix >>def$grp1),
+          uiOutput("<< d.prefix >>s2sub1.ui"),
+          actionButton("<< d.prefix >>s2sub1all", "Select all groups", class = "btn btn-primary"),
+          actionButton("<< d.prefix >>s2sub1non", "Deselect all groups", class = "btn btn-primary")
+        )
+      ), # End of column (6 space)
+      column(
+        6, actionButton("<< d.prefix >>s2tog0", "Toggle graphics controls"),
+        conditionalPanel(
+          condition = "input.<< d.prefix >>s2tog0 % 2 == 1",
+          fluidRow(
+            column(
+              6, sliderInput("<< d.prefix >>s2siz", "Point size:",
+                             min = << d.slider_min >>, max = << d.slider_max >>, value = << d.ptsiz_val >>, step = << d.slider_step >>),
+              radioButtons("<< d.prefix >>s2psz", "Plot size:",
+                           choices = c("Small", "Medium", "Large"),
+                           selected = "Medium", inline = TRUE),
+              radioButtons("<< d.prefix >>s2fsz", "Font size:",
+                           choices = c("Small", "Medium", "Large"),
+                           selected = "Medium", inline = TRUE)
+            )
+          )
+        )
+      ) # End of column (6 space)
+    ), # End of fluidRow (4 space)
+    fluidRow(
+      column(
+        6, style = "border-right: 2px solid black",
+selectInput("<< d.prefix >>s2slide", "Select Slide:",
+choices = setNames(<< d.prefix >>image$slide_names, << d.prefix >>image$slide_display_names),
+selected = << d.prefix >>image$slide_names[1]), fluidRow(
+          column(
+            6, selectInput("<< d.prefix >>s2inp1", "Cell metadata to colour plot:", choices = << d.prefix >>conf$UI, selected = << d.prefix >>def$meta1) %>%
+              helper(type = "inline", size = "m", fade = TRUE,
+                     title = "Cell metadata to colour cells by",
+                     content = c("Select cell metadata to colour cells",
+                                 "- Categorical covariates have a fixed colour palette",
+                                 paste0("- Continuous covariates are coloured ",
+                                        "in a Blue-Yellow-Red colour scheme, which can be ",
+                                        "changed in the plot controls")))
+          ),
+          column(
+            6, actionButton("<< d.prefix >>s2tog1", "Toggle plot controls"),
+            conditionalPanel(
+              condition = "input.<< d.prefix >>s2tog1 % 2 == 1",
+              radioButtons("<< d.prefix >>s2col1", "Colour (Continuous data):",
+                           choices = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple"),
+                           selected = "Blue-Yellow-Red"),
+              numericInput("<< d.prefix >>s2min1", "Min cutoff (q##):",
+                           min = 0, max = 50, value = 0, step = 1),
+              numericInput("<< d.prefix >>s2max1", "Max cutoff (q##):",
+                           min = 50, max = 100, value = 100, step = 1),
+              checkboxInput("<< d.prefix >>s2lab1", "Show cell info labels", value = TRUE)
+            )
+          )
+        ),
+        fluidRow(column(12, uiOutput("<< d.prefix >>s2oup1.ui"))),
+        fluidRow(column(12, uiOutput("<< d.prefix >>s2oup3.ui"))),
+        fluidRow(column(3, downloadButton("<< d.prefix >>s2oup1.dl", "Download Plot")),
+                 column(3, radioButtons("<< d.prefix >>s2oup1.f", "Plot format:",
+                                        choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+                 column(3, numericInput("<< d.prefix >>s2oup1.h", "Plot height:",
+                                        min = 4, max = 20, value = 8, step = 0.5)),
+                 column(3, numericInput("<< d.prefix >>s2oup1.w", "Plot width:",
+                                        min = 4, max = 20, value = 8, step = 0.5))),
+        fluidRow(column(3, downloadButton("<< d.prefix >>s2oup3.dl", "Download Legend")),
+                 column(3, radioButtons("<< d.prefix >>s2oup3.f", "Legend format:",
+                                        choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+                 column(3, numericInput("<< d.prefix >>s2oup3.h", "Legend height:",
+                                        min = 0.2, max = 10, value = 2, step = 0.1)),
+                 column(3, numericInput("<< d.prefix >>s2oup3.w", "Legend width:",
+                                        min = 4, max = 20, value = 8, step = 0.5))),
+        br()
+      ), # End of column (6 space)
+      column(
+        6,
+        fluidRow(
+          column(
+            6, selectInput("<< d.prefix >>s2inp2", "Cell metadata to colour plot:", choices = << d.prefix >>conf$UI, selected = << d.prefix >>def$meta2) %>%
+              helper(type = "inline", size = "m", fade = TRUE,
+                     title = "Cell metadata to colour cells by",
+                     content = c("Select cell metadata to colour cells",
+                                 "- Categorical covariates have a fixed colour palette",
+                                 paste0("- Continuous covariates are coloured ",
+                                        "in a Blue-Yellow-Red colour scheme, which can be ",
+                                        "changed in the plot controls")))
+          ),
+          column(
+            6, actionButton("<< d.prefix >>s2tog2", "Toggle plot controls"),
+            conditionalPanel(
+              condition = "input.<< d.prefix >>s2tog2 % 2 == 1",
+              radioButtons("<< d.prefix >>s2col2", "Colour:",
+                           choices = c("White-Red", "Blue-Yellow-Red", "Yellow-Green-Purple"),
+                           selected = "White-Red"),
+              numericInput("<< d.prefix >>s2min2", "Min cutoff (q##):",
+                           min = 0, max = 50, value = 0, step = 1),
+              numericInput("<< d.prefix >>s2max2", "Max cutoff (q##):",
+                           min = 50, max = 100, value = 100, step = 1),
+              checkboxInput("<< d.prefix >>s2lab2", "Show cell info labels", value = TRUE)
+            )
+          )
+        ),
+        fluidRow(column(12, uiOutput("<< d.prefix >>s2oup2.ui"))),
+        fluidRow(column(12, uiOutput("<< d.prefix >>s2oup4.ui"))),
+        fluidRow(column(3, downloadButton("<< d.prefix >>s2oup2.dl", "Download Plot")),
+                 column(3, radioButtons("<< d.prefix >>s2oup2.f", "Plot format:",
+                                        choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+                 column(3, numericInput("<< d.prefix >>s2oup2.h", "Plot height:",
+                                        min = 4, max = 20, value = 8, step = 0.5)),
+                 column(3, numericInput("<< d.prefix >>s2oup2.w", "Plot width:",
+                                        min = 4, max = 20, value = 8, step = 0.5))),
+        fluidRow(column(3, downloadButton("<< d.prefix >>s2oup4.dl", "Download Legend")),
+                 column(3, radioButtons("<< d.prefix >>s2oup4.f", "Legend format:",
+                                        choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+                 column(3, numericInput("<< d.prefix >>s2oup4.h", "Legend height:",
+                                        min = 0.2, max = 10, value = 2, step = 0.1)),
+                 column(3, numericInput("<< d.prefix >>s2oup4.w", "Legend width:",
+                                        min = 4, max = 20, value = 8, step = 0.5))),
+        br()
+      ) # End of column (6 space)
+    ) # End of fluidRow (4 space)
+  ) # End of tab (2 space)
+  ,

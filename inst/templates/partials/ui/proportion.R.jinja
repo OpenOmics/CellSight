@@ -1,0 +1,76 @@
+{#
+  proportion page — UI
+
+  tabPanel for "Proportion plot" (stacked composition bar chart). Layout:
+    - left column: X-axis selector, group/colour-by selector, plot-value
+      (proportion / cell numbers), flip-XY toggle, reorder controls, cell-subset
+      toggle, and graphics controls
+    - right column: plot output with download row
+  Server counterpart: partials/server/proportion.R.jinja.
+#}
+### proportion page
+tabPanel(
+  HTML("Proportion plot"),
+  h4("Proportion / cell numbers across different cell information"),
+  "In this tab, users can visualise the composition of single cells based on one discrete ",
+  "cell information across another discrete cell information. ",
+  "Usage examples include the library or cellcycle composition across clusters.",
+  br(), br(),
+  fluidRow(
+    column(
+      3, style = "border-right: 2px solid black",
+      selectInput("<< d.prefix >>b2inp1", "Cell information to plot (X-axis):",
+                  choices = << d.prefix >>conf[grp == TRUE]$UI,
+                  selected = << d.prefix >>def$grp2) %>%
+        helper(type = "inline", size = "m", fade = TRUE,
+               title = "Cell information to plot cells by",
+               content = c("Select categorical cell information to plot cells by",
+                           "- Plotted as the X-axis of the proportion plot")),
+      selectInput("<< d.prefix >>b2inp2", "Cell information to group / colour by:",
+                  choices = << d.prefix >>conf[grp == TRUE]$UI,
+                  selected = << d.prefix >>def$grp1) %>%
+        helper(type = "inline", size = "m", fade = TRUE,
+               title = "Cell information to group / colour cells by",
+               content = c("Select categorical cell information to group / colour cells by",
+                           "- Proportion / cell numbers are shown in different colours")),
+      radioButtons("<< d.prefix >>b2typ", "Plot value:",
+                   choices = c("Proportion", "CellNumbers"),
+                   selected = "Proportion", inline = TRUE),
+      checkboxInput("<< d.prefix >>b2flp", "Flip X/Y", value = FALSE),
+      selectInput("<< d.prefix >>b2ord1", "Reorder X-axis by which group:", choices = NULL),
+      radioButtons("<< d.prefix >>b2ord2", "Reorder in which order:",
+                   choices = c("Decreasing", "Increasing"),
+                   selected = "Decreasing", inline = TRUE),
+      actionButton("<< d.prefix >>b2togL", "Toggle to subset cells"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>b2togL % 2 == 1",
+        selectInput("<< d.prefix >>b2sub1", "Cell information to subset:",
+                    choices = << d.prefix >>conf[grp == TRUE]$UI,
+                    selected = << d.prefix >>def$grp1),
+        uiOutput("<< d.prefix >>b2sub1.ui"),
+        actionButton("<< d.prefix >>b2sub1all", "Select all groups", class = "btn btn-primary"),
+        actionButton("<< d.prefix >>b2sub1non", "Deselect all groups", class = "btn btn-primary")
+      ), br(), br(),
+      actionButton("<< d.prefix >>b2tog", "Toggle graphics controls"),
+      conditionalPanel(
+        condition = "input.<< d.prefix >>b2tog % 2 == 1",
+        radioButtons("<< d.prefix >>b2psz", "Plot size:",
+                     choices = c("Small", "Medium", "Large"),
+                     selected = "Medium", inline = TRUE),
+        radioButtons("<< d.prefix >>b2fsz", "Font size:",
+                     choices = c("Small", "Medium", "Large"),
+                     selected = "Medium", inline = TRUE))
+    ), # End of column (6 space)
+    column(9, uiOutput("<< d.prefix >>b2oup.ui"),
+           fluidRow(column(2, downloadButton("<< d.prefix >>b2oup.dl", "Download Plot")),
+                    column(2, radioButtons("<< d.prefix >>b2oup.f", "Plot format:",
+                                           choices = c("png", "pdf"), selected = "png", inline = TRUE)),
+                    column(2, numericInput("<< d.prefix >>b2oup.h", "Plot height:",
+                                           min = 4, max = 20, value = 8, step = 0.5)),
+                    column(2, numericInput("<< d.prefix >>b2oup.w", "Plot width:",
+                                           min = 4, max = 20, value = 10, step = 0.5))),
+           br()
+    ) # End of column (6 space)
+  ) # End of fluidRow (4 space)
+) # End of tab (2 space)
+,

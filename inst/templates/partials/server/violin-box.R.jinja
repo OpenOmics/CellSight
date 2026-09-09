@@ -1,0 +1,61 @@
+{#
+  violin-box page — server
+
+  Reactive logic for the "Violinplot / Boxplot" page (a continuous value or gene
+  expression shown per group as a violin or box plot). Wires up:
+    - the Y-axis feature selector (cell-info vs assay expression) with
+      server-side selectize choices
+    - the cell-subset checkbox UI + select-all / deselect-all buttons
+    - the scVioBox() plot reactive (incl. optional stats tests), its plotOutput,
+      and the download handler
+  Pairs with the UI in partials/ui/violin-box.R.jinja.
+#}
+### violin-box page
+getG<< d.prefix >>b1inp1 <- reactive({
+  req(gsub("^Assay: ", "", input$<< d.prefix >>b1ass1))
+  if (gsub("^Assay: ", "", input$<< d.prefix >>b1ass1) == "Cell Information") {
+    res <- << d.prefix >>conf[is.na(fID)]$UI
+    resDef <- << d.prefix >>conf[is.na(fID)]$UI[1]
+    resLen <- length(res)
+  } else {
+    res <- names(<< d.prefix >>gene[[gsub("^Assay: ", "", input$<< d.prefix >>b1ass1)]])
+    resDef <- << d.prefix >>def$gene1[[gsub("^Assay: ", "", input$<< d.prefix >>b1ass1)]]
+    resLen <- 7
+  }
+  return(list(res, resDef, resLen))
+})
+observeEvent(gsub("^Assay: ", "", input$<< d.prefix >>b1ass1), {
+  updateSelectizeInput(session, "<< d.prefix >>b1inp2", choices = getG<< d.prefix >>b1inp1()[[1]],
+                       server = TRUE, selected = getG<< d.prefix >>b1inp1()[[2]], options = list(
+                         maxOptions = getG<< d.prefix >>b1inp1()[[3]], create = TRUE,
+                         persist = TRUE, render = I(optCrt)))
+})
+output$<< d.prefix >>b1sub1.ui <- renderUI({
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>b1sub1]$fID, "\\|")[[1]]
+  checkboxGroupInput("<< d.prefix >>b1sub2", "Select which cells to show", inline = TRUE,
+                     choices = sub, selected = sub)
+})
+observeEvent(input$<< d.prefix >>b1sub1non, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>b1sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>b1sub2", label = "Select which cells to show",
+                           choices = sub, selected = NULL, inline = TRUE)
+})
+observeEvent(input$<< d.prefix >>b1sub1all, {
+  sub = strsplit(<< d.prefix >>conf[UI == input$<< d.prefix >>b1sub1]$fID, "\\|")[[1]]
+  updateCheckboxGroupInput(session, inputId = "<< d.prefix >>b1sub2", label = "Select which cells to show",
+                           choices = sub, selected = sub, inline = TRUE)
+})
+
+<< d.prefix >>b1oup <- reactive({
+  scVioBox(<< d.prefix >>conf, << d.prefix >>meta, input$<< d.prefix >>b1inp1, input$<< d.prefix >>b1inp2,
+           "<< d.prefix >>assay_", << d.prefix >>gene, input$<< d.prefix >>b1ass1,
+           input$<< d.prefix >>b1sub1, input$<< d.prefix >>b1sub2, input$<< d.prefix >>b1typ, input$<< d.prefix >>b1pts,
+           input$<< d.prefix >>b1stg, input$<< d.prefix >>b1stp1, input$<< d.prefix >>b1stp2,
+           input$<< d.prefix >>b1siz, sList[input$<< d.prefix >>b1fsz], input$<< d.prefix >>b1noi)
+})
+output$<< d.prefix >>b1oup <- renderPlot({<< d.prefix >>b1oup()})
+output$<< d.prefix >>b1oup.ui <- renderUI({plotOutput("<< d.prefix >>b1oup", height = pList2[input$<< d.prefix >>b1psz])})
+output$<< d.prefix >>b1oup.dl <- downloadHandler(
+  filename = function() { paste0("<< d.prefix >>", input$<< d.prefix >>b1typ, "_", input$<< d.prefix >>b1inp1, "_", input$<< d.prefix >>b1inp2, ".", input$<< d.prefix >>b1oup.f) },
+  content = function(file) { ggsave(file, height = input$<< d.prefix >>b1oup.h, width = input$<< d.prefix >>b1oup.w, plot = << d.prefix >>b1oup())
+})
