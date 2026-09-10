@@ -32,6 +32,8 @@ This readme is broken down into the following sections:
 
 - [Installation](#installation) on how to install `cellsight`
 
+- [Docker Image](#docker-image)
+
 - [Quick Start Guide](#quick-start-guide) to rapidly deploy a shiny app with a few lines of code
 
 - [Frequently Asked Questions](#frequently-asked-questions)
@@ -93,6 +95,18 @@ The repository includes:
 
 
 # Installation
+
+## Dependency groups in `DESCRIPTION`
+
+CellSight uses three dependency layers:
+
+- **`Depends`**: rigid/base requirements for the CellSight package itself.
+      These are required for core package functionality.
+- **`Suggests`**: additional requirements for building CellSight instances,
+      including modality-specific workflows (for example Seurat/Signac/ArchR)
+      and developer tooling.
+- **`Config/Needs/viz`**: requirements used to run the generated
+      visualization application (Shiny app runtime stack).
 
 ## Building  requirements
 
@@ -162,6 +176,102 @@ make
 make check
 make install
 ```
+
+# Docker Image
+
+Container assets for CellSight are available under:
+
+- `tools/docker/CellSight/Dockerfile`
+- `tools/docker/CellSight/build_cellsight.R`
+
+Helper scripts included in the same folder:
+
+- `tools/docker/CellSight/ingest_10x.R`
+- `tools/docker/CellSight/seurat_inspector.R`
+
+Below is a standard workflow for building, publishing, and using the image.
+
+## Helper scripts in the Docker image
+
+- **`ingest_10x.R`**
+      - Purpose: ingest 10x Visium HD output into a Seurat object, run QC,
+            normalization, PCA, clustering, and UMAP, then write an `.rds` object plus
+            QC/summary plots.
+      - Use this when your starting point is a raw 10x spatial output directory and
+            you need a ready-to-build Seurat object for CellSight.
+
+- **`seurat_inspector.R`**
+      - Purpose: print a detailed audit of a Seurat object (assays, reductions,
+            metadata columns, cluster summary, and spatial image/slide structure).
+      - Use this before `build_cellsight.R` to validate object structure and catch
+            missing metadata/reduction issues early.
+
+Example helper-script usage inside the container:
+
+```bash
+docker run --rm -it \
+      -v /path/to/10x_output:/input \
+      -v /path/to/output:/output \
+      ghcr.io/<org-or-user>/cellsight:latest \
+      Rscript /usr/bin/ingest_10x.R \
+      --data-dir /input \
+      --outdir /output
+```
+
+```bash
+docker run --rm -it \
+      -v /path/to/output:/output \
+      ghcr.io/<org-or-user>/cellsight:latest \
+      Rscript /usr/bin/seurat_inspector.R /output/visium_hd_sample_16um.rds
+```
+
+## 1) How to build
+
+```bash
+cd CellSight/tools/docker/CellSight
+docker build -t cellsight:latest .
+```
+
+## 2) How to deploy (publish image)
+
+Tag and push to your registry of choice (example shown with GHCR):
+
+```bash
+docker tag cellsight:latest ghcr.io/<org-or-user>/cellsight:latest
+docker push ghcr.io/<org-or-user>/cellsight:latest
+```
+
+If you version releases, also push a version tag:
+
+```bash
+docker tag cellsight:latest ghcr.io/<org-or-user>/cellsight:v0.0.1
+docker push ghcr.io/<org-or-user>/cellsight:v0.0.1
+```
+
+## 3) How to pull down and use
+
+Pull and run the image:
+
+```bash
+docker pull ghcr.io/<org-or-user>/cellsight:latest
+docker run --rm -it ghcr.io/<org-or-user>/cellsight:latest bash
+```
+
+Run the CellSight build script inside the container (example):
+
+```bash
+docker run --rm -it \
+      -v /path/to/input:/input \
+      -v /path/to/output:/output \
+      ghcr.io/<org-or-user>/cellsight:latest \
+      Rscript /usr/bin/build_cellsight.R \
+      --obj /input/seurat_obj.rds \
+      --outdir /output \
+      --proj "My CellSight App"
+```
+
+> Replace `<org-or-user>` and mounted paths with your real registry namespace
+> and local directories.
 
 # Quick Start Guide
 In short, the `cellsight` package takes in an input single-cell object and 
