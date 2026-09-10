@@ -4,13 +4,13 @@
 #' plotting metadata with gene expression or when plotting two metadata 
 #' simultaneously. Default2 is used when plotting two metadata simultaneously.
 #'
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #' @param default1 metadata to set as the 1st default metadata to display. 
 #'   Users can either use the actual metadata column names or display names
 #' @param default2 metadata to set as the 2nd default metadata to display. 
 #'   Users can either use the actual metadata column names or display names
 #' 
-#' @return updated shinycell config data.table
+#' @return updated CellSight config data.table
 #'
 #' @author John F. Ouyang
 #'
@@ -31,14 +31,14 @@ modDefault <- function(scConf, default1, default2){
   } else if(default1 %in% scConf$UI){
     useID1 = FALSE  # Use UIs
   } else {
-    stop("default1 not found in shinycell config!")
+    stop("default1 not found in CellSight config!")
   }
   if(default2 %in% scConf$ID){
     useID2 = TRUE   # Use IDs
   } else if(default2 %in% scConf$UI){
     useID2 = FALSE  # Use UIs
   } else {
-    stop("default2 not found in shinycell config!")
+    stop("default2 not found in CellSight config!")
   }
   
   # Start changing the defaults

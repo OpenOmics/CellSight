@@ -2,7 +2,7 @@
 #'
 #' Add a metadata to be included in the shiny app.
 #'
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #' @param meta.to.add metadata to add from the single-cell metadata.  
 #'   Must match one of the following:
 #'   \itemize{
@@ -15,7 +15,7 @@
 #' @param maxLevels maximum number of levels allowed for categorical metadata.
 #'   Metadata with nlevels > maxLevels will throw up an error message
 #' 
-#' @return updated shinycell config data.table
+#' @return updated CellSight config data.table
 #'
 #' @author John F. Ouyang
 #'

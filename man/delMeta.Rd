@@ -7,14 +7,14 @@
 delMeta(scConf, meta.to.del)
 }
 \arguments{
-\item{scConf}{shinycell config data.table}
+\item{scConf}{CellSight config data.table}
 
 \item{meta.to.del}{metadata to delete. Users can either use the original 
 metadata column names or display names. For more information regarding 
 display name, see \code{?modMetaName}. Multiple metadata can be specified.}
 }
 \value{
-updated shinycell config data.table
+updated CellSight config data.table
 }
 \description{
 Remove a metadata from being included in the shiny app.

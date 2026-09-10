@@ -2,13 +2,13 @@
 #'
 #' Modify the legend labels for categorical metadata.
 #'
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #' @param meta.to.mod metadata for which to modify the legend labels. Users 
 #'   can either use the actual metadata column names or display names. Please 
 #'   specify only one metadata
 #' @param new.labels character vector of new legend labels
 #' 
-#' @return updated shinycell config data.table
+#' @return updated CellSight config data.table
 #'
 #' @author John F. Ouyang
 #'
@@ -31,7 +31,7 @@ modLabels <- function(scConf, meta.to.mod, new.labels){
   } else if(meta.to.mod %in% scConf$UI){
     useID = FALSE  # Use UIs
   } else {
-    stop("meta.to.mod not found in shinycell config!")
+    stop("meta.to.mod not found in CellSight config!")
   }
   
   # Check if meta.to.mod is categorical and if length(new.labels) matches 

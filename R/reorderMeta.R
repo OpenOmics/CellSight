@@ -3,11 +3,11 @@
 #' Reorder the order in which metadata appear in the dropdown menu in the 
 #' shiny app.
 #'
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #' @param new.meta.order character vector containing new order. All metadata 
 #'   names must be included, which can be found at \code{scConf$ID}
 #' 
-#' @return updated shinycell config data.table
+#' @return updated CellSight config data.table
 #'
 #' @author John F. Ouyang
 #'

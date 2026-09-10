@@ -7,7 +7,7 @@
 showLegend(scConf, fontSize = 14)
 }
 \arguments{
-\item{scConf}{shinycell config data.table}
+\item{scConf}{CellSight config data.table}
 
 \item{fontSize}{font size of legends. Decrease it if you have too many 
 items to display}
@@ -16,7 +16,7 @@ items to display}
 gtable plot showing the legends for different metadata
 }
 \description{
-Shows the legends for single-cell metadata based on the shinycell config 
+Shows the legends for single-cell metadata based on the CellSight config 
 data.table. This allows user to visualise the different metadata to be 
 plotted and make any modifications if necessary. Note that the display name 
 is shown here instead of the actual name. For more information regarding 

@@ -14,7 +14,7 @@ makeShinyFilesSpatial(
 \arguments{
 \item{obj}{input Seurat (v3+) object or input file path for h5ad file}
 
-\item{scConf}{shinycell config data.table}
+\item{scConf}{CellSight config data.table}
 
 \item{shiny.prefix}{specify file prefix}
 

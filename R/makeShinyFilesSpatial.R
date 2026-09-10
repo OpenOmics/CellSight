@@ -5,7 +5,7 @@
 #' single-cell datasets in a single Shiny app.
 #'
 #' @param obj input Seurat (v3+) object or input file path for h5ad file
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #' @param shiny.prefix specify file prefix 
 #' @param shiny.dir specify directory to create the shiny app in
 #'

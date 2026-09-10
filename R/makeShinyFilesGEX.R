@@ -2,7 +2,7 @@
 #'
 #' Generate data files required for shiny app, specifically scRNA-seq data
 #' Six files will be generated, namely 
-#' (i) the shinycell config \code{prefix_conf.rds}, 
+#' (i) the CellSight config \code{prefix_conf.rds}, 
 #' (ii) the single-cell metadata \code{prefix_meta.rds}, 
 #' (iii) the single-cell assays \code{prefix_assay_X.h5}, 
 #' (iv) the feature mapping object config \code{prefix_gene.rds}, 
@@ -12,7 +12,7 @@
 #' single-cell datasets in a single Shiny app.
 #'
 #' @param obj input Seurat (v3+) object or input file path for h5ad file
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #' @param gex.assay assay(s) in single-cell data object to use. Multiple assays
 #'   can now be incorporated and all assays are used by default (with the first 
 #'   assay being the default assay), which must match one of the following:

@@ -84,7 +84,11 @@ shinyUI(fluidPage(
 {% endif %}{% endif %}br(),
   p({% if is_list %}strong("Reference: "),{% if existsIn(fn, "author") %}"<< fn.author >> ",{% endif %}{% if existsIn(fn, "title") %}"<< fn.title >> ",{% endif %}{% if existsIn(fn, "journal") %}em("<< fn.journal >> "),{% endif %}{% if existsIn(fn, "volume") %}strong("<< fn.volume >>, "),{% endif %}{% if existsIn(fn, "page") %}"<< fn.page >> ",{% endif %}{% if existsIn(fn, "year") %}"(<< fn.year >>) ",{% endif %}{% if existsIn(fn, "doi") %}"doi: << fn.doi >> ",{% endif %}{% if existsIn(fn, "link") %}a("[Link]", href = "<< fn.link >>", target="_blank"),{% endif %}style = "font-size: 125%;"{% else %}"<< text >>", style = "font-size: 125%;"{% endif %}),
   p(em("This webpage was made using "), a("cellsight",
-     href = "https://github.com/the-ouyang-lab/cellsight",target="_blank")),
+    href = "https://github.com/OpenOmics/CellSight",target="_blank")),
+  p(em("CellSight is free software licensed under GPL-3.0 and is provided without warranty. "),
+    a("License", href = "https://www.gnu.org/licenses/gpl-3.0.html", target = "_blank"),
+    " | ",
+    a("Source code", href = "https://github.com/OpenOmics/CellSight", target = "_blank")),
   br(),br(),br(),br(),br()
 )))
 

@@ -1,6 +1,6 @@
-#' Create a shinycell config data.table
+#' Create a CellSight config data.table
 #'
-#' Create a shinycell config data.table containing (i) the single-cell 
+#' Create a CellSight config data.table containing (i) the single-cell 
 #' metadata to display on the Shiny app, (ii) ordering of factors / 
 #' categories of categorical metadata and (iii) colour palettes associated 
 #' with each metadata.
@@ -20,7 +20,7 @@
 #' @param maxLevels maximum number of levels allowed for categorical metadata.
 #'   Metadata with nlevels > maxLevels will be discarded automatically
 #'
-#' @return shinycell config data.table
+#' @return CellSight config data.table
 #'
 #' @author John F. Ouyang
 #'
@@ -64,7 +64,7 @@ createConfig <- function(obj, meta.to.include = NA, legendCols = 4,
     stop("Only Seurat/ArchR objects or h5ad file paths are accepted!")
   }
   if(!drExist){
-    stop(paste0("ShinyCell did not detect any dimension reduction data \n", 
+    stop(paste0("CellSight did not detect any dimension reduction data \n", 
                 "       e.g. umap / tsne. Has any analysis been performed?"))
   }
   
@@ -118,7 +118,7 @@ createConfig <- function(obj, meta.to.include = NA, legendCols = 4,
   
   # STOP if there is no single multi-level covariate
   if(nrow(scConf[grp == TRUE]) == 0){
-    stop(paste0("ShinyCell did not detect any multi-group cell metadata \n", 
+    stop(paste0("CellSight did not detect any multi-group cell metadata \n", 
                 "       e.g. library / cluster. Has any analysis been performed?"))
   }
   

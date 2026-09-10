@@ -9,7 +9,7 @@ jobs:
   render-and-lint:
     runs-on: ubuntu-latest
     container:
-      image: rroutsong/shinycell2_builder:latest
+      image: rroutsong/cellsight2_builder:latest
       options: --user root
 
     steps:

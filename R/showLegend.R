@@ -1,12 +1,12 @@
 #' Shows the legends for single-cell metadata
 #'
-#' Shows the legends for single-cell metadata based on the shinycell config 
+#' Shows the legends for single-cell metadata based on the CellSight config 
 #' data.table. This allows user to visualise the different metadata to be 
 #' plotted and make any modifications if necessary. Note that the display name 
 #' is shown here instead of the actual name. For more information regarding 
 #' display name, see \code{?modMetaName}.
 #'
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #' @param fontSize font size of legends. Decrease it if you have too many 
 #'   items to display
 #'

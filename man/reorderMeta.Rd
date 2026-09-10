@@ -7,13 +7,13 @@
 reorderMeta(scConf, new.meta.order)
 }
 \arguments{
-\item{scConf}{shinycell config data.table}
+\item{scConf}{CellSight config data.table}
 
 \item{new.meta.order}{character vector containing new order. All metadata 
 names must be included, which can be found at \code{scConf$ID}}
 }
 \value{
-updated shinycell config data.table
+updated CellSight config data.table
 }
 \description{
 Reorder the order in which metadata appear in the dropdown menu in the 

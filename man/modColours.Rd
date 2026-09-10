@@ -7,7 +7,7 @@
 modColours(scConf, meta.to.mod, new.colours)
 }
 \arguments{
-\item{scConf}{shinycell config data.table}
+\item{scConf}{CellSight config data.table}
 
 \item{meta.to.mod}{metadata for which to modify the colour palette. Users 
 can either use the actual metadata column names or display names. Please 
@@ -16,7 +16,7 @@ specify only one metadata}
 \item{new.colours}{character vector of new colour palette}
 }
 \value{
-updated shinycell config data.table
+updated CellSight config data.table
 }
 \description{
 Modify the colour palette for categorical metadata.

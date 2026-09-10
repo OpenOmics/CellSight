@@ -26,7 +26,7 @@ makeShinyFiles(
 \arguments{
 \item{obj}{input Seurat (v3+) object or input file path for h5ad file}
 
-\item{scConf}{shinycell config data.table}
+\item{scConf}{CellSight config data.table}
 
 \item{bigWigGroup}{categorical group in scATAC datasets to group cells by for
 the generation of bigWig files for track plot. Default is NA which does

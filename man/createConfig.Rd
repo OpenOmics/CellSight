@@ -2,7 +2,7 @@
 % Please edit documentation in R/createConfig.R
 \name{createConfig}
 \alias{createConfig}
-\title{Create a shinycell config data.table}
+\title{Create a CellSight config data.table}
 \usage{
 createConfig(obj, meta.to.include = NA, legendCols = 4, maxLevels = 50)
 }
@@ -26,10 +26,10 @@ legends of categorical metadata}
 Metadata with nlevels > maxLevels will be discarded automatically}
 }
 \value{
-shinycell config data.table
+CellSight config data.table
 }
 \description{
-Create a shinycell config data.table containing (i) the single-cell 
+Create a CellSight config data.table containing (i) the single-cell 
 metadata to display on the Shiny app, (ii) ordering of factors / 
 categories of categorical metadata and (iii) colour palettes associated 
 with each metadata.

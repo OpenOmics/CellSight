@@ -1,0 +1,29 @@
+CellSight - License and Upstream Attribution Notice
+
+This repository is distributed under the GNU General Public License,
+version 3.0 (GPL-3.0). See the `LICENSE` file for the full license text.
+
+Upstream provenance
+-------------------
+CellSight includes work derived from:
+  ShinyCell2 (https://github.com/the-ouyang-lab/ShinyCell2)
+
+ShinyCell2 is distributed under GPL-3.0.
+
+Original upstream authors (from upstream metadata)
+--------------------------------------------------
+  Beijun Chen
+  John F. Ouyang
+
+Local modifications
+-------------------
+CellSight contains modifications, extensions, refactors, and documentation
+changes relative to upstream. These modifications are maintained by the
+CellSight contributors and are distributed under GPL-3.0.
+Primary derivative-work notice date: 2026-09-10.
+
+No warranty
+-----------
+This program is distributed WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See GPL-3.0
+(`LICENSE`) for details.

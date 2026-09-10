@@ -4,8 +4,14 @@ Title: cellsight: spatial sequencing visualization
 Version: 0.0.1
 Author: Ryan Routsong, Skyler Kuhn, Brittney Dulek, Neelam Redekar
 Maintainer: Ryan Routsong <ryan.routsong@nih.gov>
-Description: 
+Description: CellSight is a GPL-3.0-licensed toolkit for generating interactive
+  Shiny applications for single-cell multi-omics and spatial transcriptomics
+  data. This project includes modifications and extensions derived from
+  ShinyCell2 (the-ouyang-lab/ShinyCell2), while preserving GPL-3.0 license
+  terms and required attribution notices.
 License: GPL-3
+URL: https://github.com/OpenOmics/CellSight,
+  https://github.com/the-ouyang-lab/ShinyCell2
 Depends:
   data.table   (>= 1.14.8),
   Matrix       (>= 1.5.3),

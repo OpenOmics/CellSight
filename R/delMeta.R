@@ -2,12 +2,12 @@
 #'
 #' Remove a metadata from being included in the shiny app.
 #'
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #' @param meta.to.del metadata to delete. Users can either use the original 
 #'   metadata column names or display names. For more information regarding 
 #'   display name, see \code{?modMetaName}. Multiple metadata can be specified.
 #'
-#' @return updated shinycell config data.table
+#' @return updated CellSight config data.table
 #'
 #' @author John F. Ouyang
 #'
@@ -24,7 +24,7 @@ delMeta <- function(scConf, meta.to.del){
   } else if(all(meta.to.del %in% scConf$UI)){
     useID = FALSE  # Use UIs
   } else {
-    stop("meta.to.del not found in shinycell config!")
+    stop("meta.to.del not found in CellSight config!")
   }
   
   # Start removing meta.data

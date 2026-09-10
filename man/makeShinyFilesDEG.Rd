@@ -17,7 +17,7 @@ makeShinyFilesDEG(
 \arguments{
 \item{obj}{input Seurat (v3+) object or input file path for h5ad file}
 
-\item{scConf}{shinycell config data.table}
+\item{scConf}{CellSight config data.table}
 
 \item{shiny.dir}{specify directory to create the shiny app in}
 
@@ -61,7 +61,7 @@ data files required for shiny app
 \description{
 Generate data files required for shiny app, specifically scRNA-seq data
 Six files will be generated, namely
-(i) the shinycell config \code{prefix_conf.rds},
+(i) the CellSight config \code{prefix_conf.rds},
 (ii) the single-cell metadata \code{prefix_meta.rds},
 (iii) the single-cell assays \code{prefix_assay_X.h5},
 (iv) the feature mapping object config \code{prefix_gene.rds},

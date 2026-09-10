@@ -7,14 +7,14 @@
 #' metadata i.e. the names that will be displayed on the shiny app. Note that 
 #' \code{showLegend} shows the display name instead of the actual name.
 #'
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #' @param meta.to.mod metadata for which to modify the display name. Users can 
 #'   either use the actual metadata column names or display names. Multiple 
 #'   metadata can be specified. It is reccomended to use the original metadata 
 #'   column names to reduce confusion.
 #' @param new.name new display names for the corresponding metadata
 #'
-#' @return updated shinycell config data.table
+#' @return updated CellSight config data.table
 #'
 #' @author John F. Ouyang
 #'
@@ -33,7 +33,7 @@ modMetaName <- function(scConf, meta.to.mod, new.name){
   } else if(all(meta.to.mod %in% scConf$UI)){
     useID = FALSE  # Use UIs
   } else {
-    stop("meta.to.mod not found in shinycell config!")
+    stop("meta.to.mod not found in CellSight config!")
   }
   
   # Check replacement length

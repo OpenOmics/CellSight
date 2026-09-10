@@ -1,8 +1,7 @@
 # cellsight <img src="man/figures/logo.png" align="right" height="139" alt="cellsight logo" />
 `cellsight` is an enhanced R package for creating interactive, lightweight, 
 and shareable web applications to explore single-cell multi-omics and spatial 
-transcriptomics data. Building on the simplicity of the original ShinyCell, 
-cellsight introduces powerful new features tailored for modern single-cell 
+transcriptomics data. CellSight introduces powerful features tailored for modern single-cell 
 modalities, including support for CITE-seq, scATAC-seq, and spatial 
 transcriptomics. It integrates seamlessly with popular analysis tools like 
 Seurat, Scanpy, Signac, and ArchR, and offers advanced visualizations such as 
@@ -11,10 +10,6 @@ customizable and deployable with minimal dependencies. Designed for both
 computational and experimental researchers, cellsight empowers intuitive 
 exploration, cross-modality comparison, and statistical analysis of 
 high-dimensional data without requiring extensive coding or setup. 
-
-If you are using `cellsight`, please cite the [biorxiv preprint](
-https://www.biorxiv.org/content/10.1101/2025.04.22.650045v1). 
-The manuscript is currently under review.
 
 Key features of `cellsight` include:
 
@@ -31,21 +26,6 @@ plots.
 - Easily extendable, with support for user-defined visualizations through R for 
 tailored analysis workflows.
 
-We also compared `cellsight` with other popular single cell data visualisation 
-tools, which further highlights the key features of `cellsight`.
-
-| Feature                    | cellxgene                               | Vitessce                              | WebAtlas                              | cellsight                            |
-|:---------------------------|:---------------------------------------:|:-------------------------------------:|:-------------------------------------:|:-------------------------------------:|
-| Framework                  | JavaScript/Python/R                     | JavaScript/Python/R                   | Vitessce-based                        | R/Shiny                               |
-| Spatial data support       | <span style="color:red;">limited</span> | <span style="color:green;">yes</span> | <span style="color:green;">yes</span> | <span style="color:green;">yes</span> |
-| Multi-omics integration    | <span style="color:red;">limited</span> | <span style="color:green;">yes</span> | <span style="color:green;">yes</span> | <span style="color:green;">yes</span> |
-| Cross-model queries        | <span style="color:red;">limited</span> | <span style="color:green;">yes</span> | <span style="color:green;">yes</span> | <span style="color:green;">yes</span> |
-| Configuration Complexity   | low, via command line                   | high, via multiple joson files        | low, via parameter file               | low, via config object                |
-| Customisation              | limited                                 | extensive but req. expertise          | limited                               | extensive and user-friendly           |
-| R/Bioconductor Integration | via cellxgenedp package                 | via vitessceR package                 | <span style="color:red;">no</span>    | <span style="color:green;">full</span> |
-| Deployment                 | primarily web-based                     | primarily web-based                   | primarily web-based                   | local and web-based                   |
-| Local Deployment           | yes via R                               | local http server                     | local http server                     | yes, via Rstudio / Rstudio server     |
-
 
 # Table of Contents and Additional Information / Tutorials
 This readme is broken down into the following sections:
@@ -56,12 +36,67 @@ This readme is broken down into the following sections:
 
 - [Frequently Asked Questions](#frequently-asked-questions)
 
+- [Developer Template Editing Support](#developer-template-editing-support)
+
+- [Frontend Scripting (Templates)](#frontend-scripting-templates)
+
+- [License and Upstream Attribution](#license-and-upstream-attribution)
+
+
+# Developer Template Editing Support
+
+CellSight includes a bundled VS Code syntax extension archive for contributors
+who edit R-Jinja template files (for example `*.R.jinja`):
+
+- `inst/extdata/vscode-rjinja/rjinja-syntax.tar.gz`
+
+See `inst/extdata/vscode-rjinja/README.md` for details on what it is, what it
+does, and how to install/use it in VS Code.
+
+
+# Frontend Scripting (Templates)
+
+CellSight's frontend is generated from Jinja-based R templates. This is the
+recommended workflow for customizing UI/server behavior:
+
+1. Edit template source files under `inst/templates/`.
+      - `ui.R.jinja` and `server.R.jinja` control app structure and menu layout.
+      - `partials/ui/*.R.jinja` and `partials/server/*.R.jinja` control individual
+           tab/page blocks.
+      - `shinyFunc.R.jinja` holds shared plotting/helper functions.
+2. Reinstall/reload CellSight so template changes are available.
+3. Regenerate app code with `makeShinyCodes()` (after `makeShinyFiles()`).
+4. Validate rendered outputs by running `tools/render-and-lint.R`.
+
+For a full template map, context variables (`<< d.prefix >>`, `d.has_image`,
+etc.), and linting/rendering details, see `inst/templates/README.md`.
+
+
+# License and Upstream Attribution
+
+CellSight is distributed under **GPL-3.0** and includes derivative work from
+[`the-ouyang-lab/ShinyCell2`](https://github.com/the-ouyang-lab/ShinyCell2),
+which is also GPL-3.0 licensed.
+
+To keep downstream redistribution compliant:
+
+- Keep the full GPL-3.0 license text with the source distribution
+      (see `LICENSE`).
+- Preserve upstream attribution and derivative-work notice
+      (see `NOTICE`).
+- Distribute modifications under GPL-3.0 terms.
+
+The repository includes:
+
+- `LICENSE`: full GPL-3.0 text
+- `NOTICE`: upstream provenance and derivative attribution details
+
 
 # Installation
 
 ## Building  requirements
 
-The default required packages for ShinyCell3 are the packages required to build
+The default required packages for CellSight are the packages required to build
 a CellSight shiny app instance. These packages will be install by default when 
 install installing CellSight:
 
@@ -97,7 +132,7 @@ and install them if required:
 
 ```r
 install.packages("pak", dependencies = TRUE)
-pak::pkg_install("ShinyCell3", dependencies = c("Depends", "Imports", "Config/Needs/viz"))
+pak::pkg_install("CellSight", dependencies = c("Depends", "Imports", "Config/Needs/viz"))
 ```
 
 
@@ -131,7 +166,7 @@ make install
 # Quick Start Guide
 In short, the `cellsight` package takes in an input single-cell object and 
 generates a cellsight config `scConf` containing labelling and colour palette 
-information for the single-cell metadata. The ShinyCell config and single-cell 
+information for the single-cell metadata. The CellSight config and single-cell 
 object are then used to generate the files and code required for the shiny app. 
 
 In this example, we will use single-cell CITE-seq data in the form of a Seurat 
@@ -158,75 +193,9 @@ the default output folder). To run the app locally, use RStudio to open either
 right corner. The shiny app can also be deployed online via online platforms 
 e.g. [shinyapps.io](https://www.shinyapps.io/) and Amazon Web Services (AWS) 
 or be hosted via Shiny Server. For further details, refer to 
-[Instructions on how to deploy ShinyCell apps online](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/cloud.html).
+[Instructions on how to deploy CellSight apps online](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/cloud.html).
 
 More details on the various visualisations in the `cellsight` can be found in
 [Additional information on new visualisations tailored for spatial / scATAC-seq / multiomics](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/addNewVis.html)
 and [Additional information on enhanced visualisation features](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/addEnhanVis.html)
-
-
-
-# Frequently Asked Questions
-- Q: How much memory / storage space does `cellsight` and the app consume?
-  - A: The `cellsight` app consumes very little memory and is meant to be a 
-       heavy-duty app where multiple users can access the app simultaneously. 
-       Unlike typical R objects, the entire gene expression matrix is stored 
-       on disk and *not on memory* via the hdf5 file system. Also, the hdf5 
-       file system offers superior file compression and takes up less storage 
-       space than native R file formats such as rds / Rdata files.
-  - A: It should be noted that a large amount of memory is required when 
-       *building* the `cellsight` app. This is because the whole single-cell 
-       object has to be loaded onto memory and additional memory is required to 
-       generate the required files. From experience, a typical laptop with 8GB 
-       RAM can handle datasets around 30k cells while 16GB RAM machines can 
-       handle around 60k-70k cells for scRNA-seq data. More memory will be 
-       required for multiomics and especially scATAC-seq data. As a rule of 
-       thumb, if you are able to perform analysis e.g. dimension reduction on 
-       the machine, the machine should be able to build the `cellsight` app.
-       
-- Q: I have both RNA and integrated data in my Seurat object. How do I specify 
-which gene expression assay to plot in the Shiny app?
-  - A: Unlike the original ShinyCell, `cellsight` now supports multiple assays 
-       within a single `cellsight` app. Thus, both the RNA and integrated data 
-       will be incorporated and users can choose to visualise either assays or 
-       even compare their expression in the `cellsight` app.
-
-- Q: What types of single-cell data can cellsight handle?
-  - A: cellsight supports various multi-omics formats including CITE-seq, 
-       scATAC-seq, and both standard and spatial scRNA-seq data. It can 
-       seamlessly switch between different data modalities such as RNA 
-       expression and protein abundance.
-
-- Q: How does cellsight improve upon its predecessor?
-  - A: cellsight introduces enhanced features for multi-assay visualisation, 
-       improved plotting capabilities, and advanced analysis tools. It offers 
-       better UMAP visualisation with zooming, flexible data ordering, 
-       customisable colour scales, and integrated statistical analysis tools.
-
-- Q: Can I deploy cellsight apps locally and on the web?
-  - A: Yes, cellsight apps can be run locally using RStudio and can also be 
-       deployed online via platforms like shinyapps.io and Amazon Web Services 
-       (AWS), or hosted via Shiny Server.
-
-- Q: What are the main visualisation features of cellsight?
-  - A: cellsight offers six common tabs: Zoom-enable DimRed, Side-by-side 
-       DimRed, Gene coexpression, Violinplot/Boxplot, Proportional plot, and 
-       Bubbleplot/Heatmap. It also has specific tabs for spatial data and 
-       scATAC-seq data.
-
-- Q: How does cellsight handle spatial transcriptomics data?
-  - A: cellsight provides two spatial-specific tabs: "Zoom-enable Spatial" and 
-       "Side-by-side Spatial", allowing users to visualise cell information or 
-       gene expression overlaid on tissue images with zooming capabilities.
-
-- Q: What special features does cellsight offer for scATAC-seq data?
-  - A: For scATAC-seq data, cellsight offers a "Track plot" feature to 
-       visualise open chromatin regions. It supports custom annotations (in 
-       .bed file) and flexible region selection by gene or chromosomal region.
-
-- Q: How does cellsight compare to other single-cell visualisation tools?
-  - A: Compared to tools like cellxgene and Vitessce, cellsight offers more 
-       extensive customisation options, full R/Bioconductor integration, and a 
-       user-friendly interface with low configuration complexity.
-
 

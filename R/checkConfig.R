@@ -1,12 +1,12 @@
-#' Checks if shinycell config data.table contains any errors
+#' Checks if CellSight config data.table contains any errors
 #'
-#' Checks if shinycell config data.table contains any errors. It is useful and 
-#' reccomended to run this function if users have motified the shinycell 
+#' Checks if CellSight config data.table contains any errors. It is useful and 
+#' reccomended to run this function if users have motified the CellSight 
 #' config manually. Errors can include (i) levels in scConf does not match 
 #' that in the Seurat/SingleCellExperiment object, (ii) number of levels does 
 #' not match number of colours and (iii) specified colours are invalid colours.
 #'
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #' @param obj input single-cell object for Seurat (v3+) / SingleCellExperiment 
 #'   data or input file path for h5ad / loom files
 #'
@@ -99,9 +99,9 @@ checkConfig <- function(scConf, obj){
   
   # Final output
   if(nErr == 0){
-    message("ALL OK! No errors found in shinycell config!")
+    message("ALL OK! No errors found in CellSight config!")
   } else {
-    message(paste0("Total of ", nErr, " errors found in shinycell config!"))
+    message(paste0("Total of ", nErr, " errors found in CellSight config!"))
   }
   # return(scConf)
 }

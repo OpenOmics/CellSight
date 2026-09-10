@@ -7,7 +7,7 @@
 modDefault(scConf, default1, default2)
 }
 \arguments{
-\item{scConf}{shinycell config data.table}
+\item{scConf}{CellSight config data.table}
 
 \item{default1}{metadata to set as the 1st default metadata to display. 
 Users can either use the actual metadata column names or display names}
@@ -16,7 +16,7 @@ Users can either use the actual metadata column names or display names}
 Users can either use the actual metadata column names or display names}
 }
 \value{
-updated shinycell config data.table
+updated CellSight config data.table
 }
 \description{
 Set the default metadata to display in the shiny app. Default1 is used when 

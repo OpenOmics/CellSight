@@ -7,7 +7,7 @@
 modLabels(scConf, meta.to.mod, new.labels)
 }
 \arguments{
-\item{scConf}{shinycell config data.table}
+\item{scConf}{CellSight config data.table}
 
 \item{meta.to.mod}{metadata for which to modify the legend labels. Users 
 can either use the actual metadata column names or display names. Please 
@@ -16,7 +16,7 @@ specify only one metadata}
 \item{new.labels}{character vector of new legend labels}
 }
 \value{
-updated shinycell config data.table
+updated CellSight config data.table
 }
 \description{
 Modify the legend labels for categorical metadata.

@@ -5,7 +5,7 @@
 #' single-cell datasets in a single Shiny app.
 #'
 #' @param obj input Seurat (v3+) object or input file path for h5ad file
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #' @param bigWigGroup categorical group in scATAC datasets to group cells by for
 #'   the generation of bigWig files for track plot. Default is NA which does
 #'   not generate any bigWig files.

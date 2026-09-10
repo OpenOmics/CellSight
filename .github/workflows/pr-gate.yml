@@ -9,7 +9,7 @@ jobs:
   install-test:
     runs-on: ubuntu-latest
     container:
-      image: rroutsong/shinycell2_builder:latest
+      image: rroutsong/cellsight2_builder:latest
       options: --user root  # Run as root to avoid permission issues
     
     steps:

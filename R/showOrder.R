@@ -4,7 +4,7 @@
 #' helps users to decide if the display order is ok. If not, users can use 
 #' \code{reorderMeta} to change the order in which metadata will be displayed.
 #' 
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #'
 #' @return table showing the order in which metadata will be displayed
 #'

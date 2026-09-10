@@ -7,7 +7,7 @@
 addMeta(scConf, meta.to.add, obj, maxLevels = 50)
 }
 \arguments{
-\item{scConf}{shinycell config data.table}
+\item{scConf}{CellSight config data.table}
 
 \item{meta.to.add}{metadata to add from the single-cell metadata.
 Must match one of the following:
@@ -24,7 +24,7 @@ Must match one of the following:
 Metadata with nlevels > maxLevels will throw up an error message}
 }
 \value{
-updated shinycell config data.table
+updated CellSight config data.table
 }
 \description{
 Add a metadata to be included in the shiny app.

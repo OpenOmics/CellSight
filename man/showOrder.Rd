@@ -7,7 +7,7 @@
 showOrder(scConf)
 }
 \arguments{
-\item{scConf}{shinycell config data.table}
+\item{scConf}{CellSight config data.table}
 }
 \value{
 table showing the order in which metadata will be displayed

@@ -2,7 +2,7 @@
 #'
 #' Generate data files required for shiny app, specifically scATAC-seq data
 #' Six files will be generated, namely 
-#' (i) the shinycell config \code{prefix_conf.rds}, 
+#' (i) the CellSight config \code{prefix_conf.rds}, 
 #' (ii) the single-cell metadata \code{prefix_meta.rds}, 
 #' (iii) the single-cell assays \code{prefix_assay_X.h5}, 
 #' (iv) the feature mapping object config \code{prefix_gene.rds}, 
@@ -13,7 +13,7 @@
 #' single-cell datasets in a single Shiny app.
 #'
 #' @param obj input ArhcR object
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #' @param bigWigGroup categorical group in ArhcR meta.data to group cells by for 
 #'   the generation of bigWig files for track plot. Default is NA which does 
 #'   not generate any bigWig files.

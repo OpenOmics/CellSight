@@ -5,6 +5,26 @@ and `shinyFunc.R` — from the [jinjar](https://davidchall.github.io/jinjar/)
 templates in this directory. To change what the generated app contains, edit
 the template that owns that piece and reinstall the package.
 
+## Using the new frontend scripting workflow
+
+The frontend is now scriptable through template composition rather than
+manually editing generated `ui.R` / `server.R` files.
+
+1. **Edit the source template, not generated code**
+  - Structure and orchestration: `ui.R.jinja`, `server.R.jinja`
+  - Per-page behavior: `partials/ui/*.R.jinja`, `partials/server/*.R.jinja`
+  - Shared plotting/helpers: `shinyFunc.R.jinja`
+2. **Regenerate the app frontend**
+  - Run your normal `makeShinyFiles(...)` + `makeShinyCodes(...)` flow.
+3. **Validate before commit**
+  - Run `tools/render-and-lint.R` to render a fully featured app and lint the
+    rendered R output.
+4. **Iterate quickly**
+  - Keep partials readable; let `styler` normalize final layout after render.
+
+This keeps frontend customization reproducible, reviewable, and aligned with
+the generated code path users actually run.
+
 ## Layout
 
 ```
@@ -130,5 +150,5 @@ It renders a fully-featured app (multi-dataset, spatial multi-slide, ATAC, DEG),
 checks the generated R parses, and lints it. It exits non-zero if a template
 fails to render, the output is not valid R, or any lint remains — and runs in CI
 on every PR (`.github/workflows/lint-templates.yml`). The linter config there
-lets styler own layout (indentation off) and allows the upstream ShinyCell house
+lets styler own layout (indentation off) and allows the upstream CellSight house
 style (`=` assignment, camelCase/dotted names, explicit `return()`, etc.).

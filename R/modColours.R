@@ -2,13 +2,13 @@
 #'
 #' Modify the colour palette for categorical metadata.
 #'
-#' @param scConf shinycell config data.table
+#' @param scConf CellSight config data.table
 #' @param meta.to.mod metadata for which to modify the colour palette. Users 
 #'   can either use the actual metadata column names or display names. Please 
 #'   specify only one metadata
 #' @param new.colours character vector of new colour palette
 #' 
-#' @return updated shinycell config data.table
+#' @return updated CellSight config data.table
 #'
 #' @author John F. Ouyang
 #'
@@ -31,7 +31,7 @@ modColours <- function(scConf, meta.to.mod, new.colours){
   } else if(meta.to.mod %in% scConf$UI){
     useID = FALSE  # Use UIs
   } else {
-    stop("meta.to.mod not found in shinycell config!")
+    stop("meta.to.mod not found in CellSight config!")
   }
   
   # Check if new.colours are valid colours

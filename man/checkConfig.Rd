@@ -2,12 +2,12 @@
 % Please edit documentation in R/checkConfig.R
 \name{checkConfig}
 \alias{checkConfig}
-\title{Checks if shinycell config data.table contains any errors}
+\title{Checks if CellSight config data.table contains any errors}
 \usage{
 checkConfig(scConf, obj)
 }
 \arguments{
-\item{scConf}{shinycell config data.table}
+\item{scConf}{CellSight config data.table}
 
 \item{obj}{input single-cell object for Seurat (v3+) / SingleCellExperiment 
 data or input file path for h5ad / loom files}
@@ -16,8 +16,8 @@ data or input file path for h5ad / loom files}
 any potential error messages
 }
 \description{
-Checks if shinycell config data.table contains any errors. It is useful and 
-reccomended to run this function if users have motified the shinycell 
+Checks if CellSight config data.table contains any errors. It is useful and 
+reccomended to run this function if users have motified the CellSight 
 config manually. Errors can include (i) levels in scConf does not match 
 that in the Seurat/SingleCellExperiment object, (ii) number of levels does 
 not match number of colours and (iii) specified colours are invalid colours.

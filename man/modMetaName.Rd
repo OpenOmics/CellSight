@@ -7,7 +7,7 @@
 modMetaName(scConf, meta.to.mod, new.name)
 }
 \arguments{
-\item{scConf}{shinycell config data.table}
+\item{scConf}{CellSight config data.table}
 
 \item{meta.to.mod}{metadata for which to modify the display name. Users can 
 either use the actual metadata column names or display names. Multiple 
@@ -17,7 +17,7 @@ column names to reduce confusion.}
 \item{new.name}{new display names for the corresponding metadata}
 }
 \value{
-updated shinycell config data.table
+updated CellSight config data.table
 }
 \description{
 Modify the display name of metadata. It is possible that the original 

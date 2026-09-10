@@ -24,7 +24,7 @@ suppressMessages({
 fail <- function(...) { message("ERROR: ", ...); quit(status = 1) }
 
 ## ---- 1. Render a fully-featured app (exercises every template) --------------
-app_dir <- tempfile("shinycell_render_")
+app_dir <- tempfile("CellSight_render_")
 dir.create(app_dir)
 
 ## Two datasets exercise the multi-dataset (navbarMenu) layout; the first carries
@@ -66,7 +66,7 @@ for (f in rendered) {
 ## ---- 3. Lint the (already styler-formatted) rendered files ------------------
 ## Layout is owned by styler (run inside makeShinyCodes), so indentation_linter
 ## is off to avoid the well-known styler/lintr hanging-indent disagreement. The
-## other disabled linters reflect the upstream ShinyCell house style / generated
+## other disabled linters reflect the upstream CellSight house style / generated
 ## code (= assignment, camelCase & dotted names, long UI lines, explanatory
 ## commented snippets, `&`/`|` in scalar conditions, explicit return()), plus the
 ## non-standard-evaluation symbols (data.table columns, ggplot aes).
