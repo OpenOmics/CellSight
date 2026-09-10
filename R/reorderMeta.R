@@ -14,7 +14,9 @@
 #' @import data.table
 #'
 #' @examples
+#' \dontrun{
 #' scConf = reorderMeta(scConf, scConf$ID[c(1,3,2,4:length(scConf$ID))])
+#' }
 #'
 #' @export
 reorderMeta <- function(scConf, new.meta.order){

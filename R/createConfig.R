@@ -27,7 +27,9 @@
 #' @import data.table reticulate hdf5r
 #'
 #' @examples
+#' \dontrun{
 #' scConf = createConfig(obj)
+#' }
 #'
 #' @export
 createConfig <- function(obj, meta.to.include = NA, legendCols = 4,

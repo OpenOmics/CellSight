@@ -11,6 +11,9 @@ computational and experimental researchers, cellsight empowers intuitive
 exploration, cross-modality comparison, and statistical analysis of 
 high-dimensional data without requiring extensive coding or setup. 
 
+📖 **Full documentation: <https://openomics.github.io/CellSight/>** — function
+reference, guides for each modality, deployment, and the template internals.
+
 Key features of `cellsight` include:
 
 - Supports seamless integration and visualization of single-cell multi-omics, 

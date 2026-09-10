@@ -15,8 +15,8 @@
 #' @import data.table hdf5r reticulate
 #'
 #' @export
-makeH5fromSeurat <- function(obj, sc1meta, filename, 
-                             gex.assay, gex.slot, chunkSize){
+makeH5fromAnndata <- function(obj, sc1meta, filename,
+                              gex.assay, chunkSize){
   # Create h5 file and get ready
   ad <- import("anndata", convert = FALSE)
   sp <- import('scipy.sparse', convert = FALSE)

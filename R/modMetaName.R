@@ -21,9 +21,11 @@
 #' @import data.table
 #'
 #' @examples
+#' \dontrun{
 #' scConf = modMetaName(scConf, 
 #'                      meta.to.mod = c("orig.ident", "seurat_clusters"), 
 #'                      new.name = c("library", "cluster"))
+#' }
 #'
 #' @export
 modMetaName <- function(scConf, meta.to.mod, new.name){

@@ -17,7 +17,9 @@
 #' @import data.table reticulate hdf5r
 #'
 #' @examples
+#' \dontrun{
 #' checkConfig(scConf, seu)
+#' }
 #'
 #' @export
 checkConfig <- function(scConf, obj){

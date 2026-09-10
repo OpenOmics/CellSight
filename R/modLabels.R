@@ -15,8 +15,10 @@
 #' @import data.table
 #'
 #' @examples
+#' \dontrun{
 #' scConf = modLabels(scConf, meta.to.mod = "library", 
 #'                    new.labels = c("Fib", "Primed", "Naive", "RSeT"))
+#' }
 #'
 #' @export
 modLabels <- function(scConf, meta.to.mod, new.labels){

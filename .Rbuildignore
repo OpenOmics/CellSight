@@ -1,0 +1,9 @@
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^LICENSE\.md$
+^\.github$
+^\.gitignore$
+^.*\.Rproj$
+^\.Rproj\.user$
+^revdep$

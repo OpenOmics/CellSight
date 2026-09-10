@@ -46,8 +46,10 @@
 #' @import data.table hdf5r reticulate
 #'
 #' @examples
+#' \dontrun{
 #' makeShinyFilesATACarchr(ArchR, scConf, 
 #'                         shiny.prefix = "sc1", shiny.dir = "shinyApp/")
+#' }
 #'
 #' @export
 makeShinyFilesATACarchr <- function(

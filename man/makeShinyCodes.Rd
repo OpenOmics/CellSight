@@ -49,9 +49,18 @@ The prefix used in \code{makeShinyFiles} have to be then supplied in this
 function.
 }
 \details{
-
+The three output files (\code{server.R}, \code{ui.R}, \code{shinyFunc.R})
+are assembled from jinjar templates shipped under \code{inst/templates}.
+The master templates (\code{server.R.jinja}, \code{ui.R.jinja},
+\code{shinyFunc.R.jinja}) contain the orchestration logic - which tab blocks
+to include for each dataset, gated on the presence of spatial / ATAC / DEG
+data - and \code{{\% include \%}} one partial per tab block. All per-dataset
+facts (prefix, headers, point sizes, spatial slider parameters and which
+data types are present) are computed here in R and passed as the template
+context.
 }
 \examples{
+\dontrun{
 # Example citation
 citation = list(
   author  = "Liu X., Ouyang J.F., Rossello F.J. et al.",
@@ -66,6 +75,7 @@ makeShinyCodes(shiny.title = "scRNA-seq shiny app", shiny.footnotes = "",
                shiny.prefix = c("sc1", "sc2"), defPtSiz = c(1.25, 1.5),
                shiny.headers = c("dataset1", "dataset2"),
                shiny.dir = "shinyApp/")
+}
 
 }
 \author{

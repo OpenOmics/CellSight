@@ -43,12 +43,14 @@
 #' @import data.table hdf5r reticulate hdf5r
 #'
 #' @examples
+#' \dontrun{
 #' makeShinyFiles(seu, scConf,
 #'   shiny.prefix = "sc1", shiny.dir = "shinyApp/",
 #'   default.gene1 = "POU5F1", default.gene2 = "APOA1",
 #'   default.multigene = c("POU5F1", "APOA1", "GPRC5A", "TBXT", "ISL1"),
 #'   default.dimred = "umap"
 #' )
+#' }
 #'
 #' @export
 makeShinyFiles <- function(

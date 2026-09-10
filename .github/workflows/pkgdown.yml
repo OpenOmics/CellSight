@@ -1,0 +1,57 @@
+name: pkgdown
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main, develop ]
+    types: [opened, synchronize, reopened]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+concurrency:
+  group: pkgdown-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  pkgdown:
+    runs-on: ubuntu-latest
+    container:
+      image: rroutsong/cellsight2_builder:latest
+      options: --user root
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Ensure pkgdown and vignette tooling are available
+        run: |
+          Rscript -e 'for (p in c("pkgdown", "knitr", "rmarkdown", "styler")) if (!requireNamespace(p, quietly = TRUE)) install.packages(p, repos = "https://cloud.r-project.org")'
+
+      - name: Install cellsight
+        run: |
+          Rscript -e 'if ("cellsight" %in% installed.packages()[,"Package"]) remove.packages("cellsight")'
+          Rscript -e 'install.packages(".", repos = NULL, type = "source")'
+
+      - name: Build site
+        run: |
+          Rscript -e 'pkgdown::build_site(".", examples = FALSE, preview = FALSE, new_process = FALSE, install = FALSE)'
+
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkgdown-site
+          path: docs
+          retention-days: 14
+
+      - name: Deploy to GitHub Pages
+        if: github.event_name != 'pull_request'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: docs
+          clean: true

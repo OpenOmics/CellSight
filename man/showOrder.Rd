@@ -18,7 +18,9 @@ helps users to decide if the display order is ok. If not, users can use
 \code{reorderMeta} to change the order in which metadata will be displayed.
 }
 \examples{
+\dontrun{
 showOrder(scConf)
+}
 
 }
 \author{

@@ -17,7 +17,9 @@
 #' @import data.table
 #'
 #' @examples
+#' \dontrun{
 #' scConf = modDefault(scConf, default1 = "library", default2 = "cluster")
+#' }
 #'
 #' @export
 modDefault <- function(scConf, default1, default2){

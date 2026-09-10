@@ -47,10 +47,12 @@
 #' @import data.table hdf5r reticulate hdf5r
 #'
 #' @examples
+#' \dontrun{
 #' makeShinyFilesGEX(seu, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/",
 #'                   default.gene1 = "POU5F1", default.gene2 = "APOA1",
 #'                   default.multigene = c("POU5F1","APOA1","GPRC5A","TBXT","ISL1"),
 #'                   default.dimred = "umap")
+#' }
 #'
 #' @export
 makeShinyFilesGEX <- function(
@@ -193,7 +195,7 @@ makeShinyFilesGEX <- function(
     
     # ADDED: Handle NULL or non-vector return
     if(is.null(tmpG) || !is.vector(tmpG) || length(tmpG) == 0){
-      stop(paste("makeH5fromSeurat returned invalid gene names for assay", iAssay))
+      stop(paste("h5 writer returned invalid gene names for assay", iAssay))
     }
     
     tmpOut = seq_along(tmpG); names(tmpOut) = tmpG

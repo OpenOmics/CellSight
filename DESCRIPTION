@@ -2,16 +2,26 @@ Package: cellsight
 Type: Package
 Title: cellsight: spatial sequencing visualization
 Version: 0.0.1
-Author: Ryan Routsong, Skyler Kuhn, Brittney Dulek, Neelam Redekar
-Maintainer: Ryan Routsong <ryan.routsong@nih.gov>
+Authors@R: c(
+  person("Ryan", "Routsong", email = "ryan.routsong@nih.gov",
+         role = c("aut", "cre")),
+  person("Skyler", "Kuhn", role = "aut"),
+  person("Brittney", "Dulek", role = "aut"),
+  person("Neelam", "Redekar", role = "aut"),
+  person("John F.", "Ouyang", role = c("aut", "cph"),
+         comment = "Author of ShinyCell2, from which CellSight is derived; see NOTICE"),
+  person("Beijun", "Chen", role = c("aut", "cph"),
+         comment = "Author of ShinyCell2, from which CellSight is derived; see NOTICE"))
 Description: CellSight is a GPL-3.0-licensed toolkit for generating interactive
   Shiny applications for single-cell multi-omics and spatial transcriptomics
   data. This project includes modifications and extensions derived from
   ShinyCell2 (the-ouyang-lab/ShinyCell2), while preserving GPL-3.0 license
   terms and required attribution notices.
 License: GPL-3
-URL: https://github.com/OpenOmics/CellSight,
+URL: https://openomics.github.io/CellSight/,
+  https://github.com/OpenOmics/CellSight,
   https://github.com/the-ouyang-lab/ShinyCell2
+BugReports: https://github.com/OpenOmics/CellSight/issues
 Depends:
   data.table   (>= 1.14.8),
   Matrix       (>= 1.5.3),
@@ -39,7 +49,12 @@ Suggests:
   ggrepel,
   ggdendro,
   ggpubr,
-  shinydataviewer
+  shinydataviewer,
+  knitr,
+  rmarkdown
+VignetteBuilder: knitr
+Config/Needs/website:
+  pkgdown
 Config/Needs/viz:
   shiny,
   shinyhelper,

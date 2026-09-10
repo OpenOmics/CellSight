@@ -54,4 +54,6 @@ RUN cd /opt2/work; ./git_installs.sh
 RUN Rscript -e 'remotes::install_github("OpenOmics/CellSight")'
 ADD build_cellsight.R /usr/bin/build_cellsight.R
 ADD seurat_inspector.R /usr/bin/seurat_inspector.R
-RUN chmod +x /usr/bin/build_cellsight.R /usr/bin/seurat_inspector.R
+ADD ingest_10x.R /usr/bin/ingest_10x.R
+RUN chmod +x /usr/bin/build_cellsight.R /usr/bin/seurat_inspector.R \
+        /usr/bin/ingest_10x.R

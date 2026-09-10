@@ -13,7 +13,9 @@
 #' @import data.table grid gridExtra
 #'
 #' @examples
+#' \dontrun{
 #' showOrder(scConf)
+#' }
 #' 
 #' @export
 showOrder <- function(scConf){

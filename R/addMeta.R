@@ -22,7 +22,9 @@
 #' @import data.table reticulate hdf5r
 #'
 #' @examples
+#' \dontrun{
 #' scConf = addMeta(scConf, c("orig.ident"), seu)
+#' }
 #'
 #' @export
 addMeta <- function(scConf, meta.to.add, obj, maxLevels = 50){

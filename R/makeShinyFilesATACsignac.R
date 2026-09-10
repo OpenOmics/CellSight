@@ -46,8 +46,10 @@
 #' @import data.table hdf5r reticulate
 #'
 #' @examples
+#' \dontrun{
 #' makeShinyFilesATACsignac(sig, scConf, 
 #'                          shiny.prefix = "sc1", shiny.dir = "shinyApp/")
+#' }
 #'
 #' @export
 makeShinyFilesATACsignac <- function(

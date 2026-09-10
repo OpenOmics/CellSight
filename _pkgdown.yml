@@ -1,0 +1,142 @@
+url: https://openomics.github.io/CellSight/
+
+template:
+  bootstrap: 5
+  bslib:
+    primary: "#1f6f8b"
+    base_font: {google: "Inter"}
+    heading_font: {google: "Inter"}
+    code_font: {google: "JetBrains Mono"}
+
+development:
+  mode: auto
+
+home:
+  title: CellSight - interactive apps for single-cell multi-omics and spatial data
+  description: >
+    Generate lightweight, shareable Shiny applications for single-cell
+    multi-omics, peak-based and spatial transcriptomics data from Seurat,
+    Scanpy, Signac and ArchR objects.
+  sidebar:
+    structure: [links, license, community, citation, authors, dev]
+  links:
+  - text: Report a bug
+    href: https://github.com/OpenOmics/CellSight/issues
+  - text: Upstream project (ShinyCell2)
+    href: https://github.com/the-ouyang-lab/ShinyCell2
+
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [credits, search, github]
+  components:
+    articles:
+      text: Articles
+      menu:
+      - text: "Building an app"
+      - text: Configuring metadata and colours
+        href: articles/configuration.html
+      - text: Working with each modality
+        href: articles/modalities.html
+      - text: -------
+      - text: "Shipping an app"
+      - text: Deploying a CellSight app
+        href: articles/deployment.html
+      - text: Using the Docker image
+        href: articles/docker.html
+      - text: -------
+      - text: "Contributing"
+      - text: Editing the frontend templates
+        href: articles/templates.html
+    credits:
+      text: Credits
+      href: articles/credits.html
+
+reference:
+- title: Building an app
+  desc: >
+    The two functions that make up the standard workflow. `makeShinyFiles()`
+    writes the app's data files, then `makeShinyCodes()` writes the app itself.
+  contents:
+  - makeShinyFiles
+  - makeShinyCodes
+
+- title: Configuring metadata
+  desc: >
+    A CellSight config (`scConf`) is a `data.table` describing which cell
+    metadata appears in the app, how it is labelled, ordered and coloured.
+    Create one with `createConfig()`, then refine it with the `mod*` helpers.
+  contents:
+  - createConfig
+  - checkConfig
+  - addMeta
+  - delMeta
+  - modMetaName
+  - modLabels
+  - modColours
+  - modDefault
+  - reorderMeta
+  - showOrder
+  - showLegend
+
+- title: Modality-specific writers
+  desc: >
+    `makeShinyFiles()` dispatches to these based on the object it is given.
+    Call them directly only when you need to write a single modality, or to
+    pass modality-specific arguments.
+  contents:
+  - makeShinyFilesGEX
+  - makeShinyFilesSpatial
+  - makeShinyFilesATACsignac
+  - makeShinyFilesATACarchr
+  - makeShinyFilesDEG
+
+- title: HDF5 writers
+  desc: >
+    Lower-level functions that stream expression matrices and data frames into
+    the chunked HDF5 files the generated app reads from.
+  contents:
+  - makeH5fromSeurat
+  - makeH5fromAnndata
+  - makeH5fromArchR
+  - write_df_chunked_hdf5r
+
+- title: Template helpers
+  desc: >
+    Used by the code writers to render the bundled jinjar templates. Of
+    interest mainly to contributors - see
+    `vignette("templates", package = "cellsight")`.
+  contents:
+  - scJinjaCfg
+  - scTrim
+
+articles:
+- title: Building an app
+  navbar: Building an app
+  contents:
+  - configuration
+  - modalities
+
+- title: Shipping an app
+  navbar: Shipping an app
+  contents:
+  - deployment
+  - docker
+
+- title: Contributing
+  navbar: Contributing
+  contents:
+  - templates
+
+- title: About
+  contents:
+  - credits
+
+footer:
+  structure:
+    left: [developed_by, upstream]
+    right: [built_with]
+  components:
+    upstream: >
+      Derived from <a href="https://github.com/the-ouyang-lab/ShinyCell2">ShinyCell2</a>
+      under GPL-3.0.

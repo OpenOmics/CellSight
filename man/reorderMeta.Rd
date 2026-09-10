@@ -20,7 +20,9 @@ Reorder the order in which metadata appear in the dropdown menu in the
 shiny app.
 }
 \examples{
+\dontrun{
 scConf = reorderMeta(scConf, scConf$ID[c(1,3,2,4:length(scConf$ID))])
+}
 
 }
 \author{

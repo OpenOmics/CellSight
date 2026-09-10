@@ -16,7 +16,9 @@
 #' @import data.table hdf5r reticulate hdf5r
 #'
 #' @examples
+#' \dontrun{
 #' makeShinyFilesSpatial(seu, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/")
+#' }
 #'
 #' @export
 makeShinyFilesSpatial <- function(

@@ -28,9 +28,11 @@ metadata i.e. the names that will be displayed on the shiny app. Note that
 \code{showLegend} shows the display name instead of the actual name.
 }
 \examples{
+\dontrun{
 scConf = modMetaName(scConf, 
                      meta.to.mod = c("orig.ident", "seurat_clusters"), 
                      new.name = c("library", "cluster"))
+}
 
 }
 \author{

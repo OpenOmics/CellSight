@@ -1,0 +1,192 @@
+---
+title: "Get started with CellSight"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Get started with CellSight}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+CellSight turns a single-cell or spatial object into a self-contained Shiny
+app. You do not write any Shiny code: you describe *what to show* in a config
+object, and CellSight writes both the app's data files and the app's source.
+
+The code in this article is not evaluated when the site is built, because
+building an app needs a real dataset. Run it against your own object.
+
+## The two-step workflow
+
+Every CellSight app is built in two steps, in this order:
+
+1. **`makeShinyFiles()`** reads your object and writes the app's *data* into
+   `shiny.dir` — chunked HDF5 expression matrices plus `.rds` files holding the
+   config and cell metadata, all prefixed with `shiny.prefix` (`sc1` by
+   default).
+2. **`makeShinyCodes()`** writes the app's *code* into the same directory —
+   `server.R`, `ui.R` and `shinyFunc.R`.
+
+The split matters because the data step is the slow one, and because the prefix
+is what ties the two together. Whatever you pass as `shiny.prefix` to
+`makeShinyFiles()` must be passed again to `makeShinyCodes()`.
+
+## A minimal app
+
+Using the [multimodal PBMC CITE-seq
+object](https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1)
+(162,000 cells, 228 antibodies):
+
+```{r}
+library(Seurat)
+library(cellsight)
+
+seu <- readRDS("multimodal_pbmc.rds")
+
+scConf <- createConfig(seu)
+
+makeShinyFiles(seu, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/")
+
+makeShinyCodes(
+  shiny.title  = "PBMC multiomics",
+  shiny.prefix = "sc1",
+  shiny.dir    = "shinyApp/"
+)
+```
+
+That leaves a complete app in `shinyApp/`. Open `shinyApp/ui.R` in RStudio and
+click **Run App**, or from the console:
+
+```{r}
+shiny::runApp("shinyApp")
+```
+
+See `vignette("deployment")` for hosting it somewhere other than your laptop.
+
+## The config object
+
+`createConfig()` inspects your object's cell metadata and returns a
+`data.table` — conventionally called `scConf` — with one row per metadata
+column it will expose in the app. It decides which columns are usable,
+picks a colour palette for each categorical one, and guesses which two should
+be shown by default.
+
+```{r}
+scConf <- createConfig(seu)
+showOrder(scConf)
+```
+
+You will usually want to adjust it: rename metadata for display, drop
+uninteresting columns, fix the colours. That is what the `mod*` helpers are
+for, and it is worth doing before you build — see
+`vignette("configuration")`.
+
+Two arguments are worth knowing up front:
+
+```{r}
+# Only expose specific metadata columns
+scConf <- createConfig(seu, meta.to.include = c("orig.ident", "seurat_clusters", "celltype"))
+
+# Allow more categories per metadata column (default 50; anything above is dropped)
+scConf <- createConfig(seu, maxLevels = 100)
+```
+
+`createConfig()` errors if it finds no multi-level metadata at all, since an
+app with nothing to group cells by would be empty. If you hit that, your object
+probably has not been clustered yet.
+
+Before building, check the config still matches the object:
+
+```{r}
+checkConfig(scConf, seu)
+```
+
+## Setting sensible defaults
+
+The app opens on whichever metadata and genes you nominate. Setting these saves
+every future visitor a few clicks:
+
+```{r}
+scConf <- modDefault(scConf, "celltype", "seurat_clusters")
+
+makeShinyFiles(
+  seu, scConf,
+  shiny.prefix      = "sc1",
+  shiny.dir         = "shinyApp/",
+  default.gene1     = "CD3E",
+  default.gene2     = "MS4A1",
+  default.multigene = c("CD3E", "MS4A1", "CD14", "NKG7", "PPBP"),
+  default.dimred    = "umap"
+)
+```
+
+`default.dimred` is also how you choose between reductions when your object has
+several; `dimred.to.use` restricts which ones are written at all.
+
+## Beyond gene expression
+
+`makeShinyFiles()` looks at the object you hand it and writes every modality it
+finds — spatial images, ATAC coverage, precomputed DEG tables — without you
+calling anything extra. The details of what triggers each one, and the arguments
+each needs, are in `vignette("modalities")`.
+
+## Several datasets in one app
+
+Pass a vector of prefixes to `makeShinyCodes()`, one per `makeShinyFiles()`
+call, plus a header for each. Each dataset's tabs are grouped under its own
+navbar dropdown:
+
+```{r}
+makeShinyFiles(seu1, scConf1, shiny.prefix = "sc1", shiny.dir = "shinyApp/")
+makeShinyFiles(seu2, scConf2, shiny.prefix = "sc2", shiny.dir = "shinyApp/")
+
+makeShinyCodes(
+  shiny.title   = "Two-dataset atlas",
+  shiny.prefix  = c("sc1", "sc2"),
+  shiny.headers = c("Healthy", "Disease"),
+  defPtSiz      = c(1.25, 1.5),
+  shiny.dir     = "shinyApp/"
+)
+```
+
+`shiny.headers` is ignored for a single dataset, but its length must match
+`shiny.prefix` when you have more than one. `defPtSiz` takes either one value
+for all datasets or one per dataset — reach for a smaller value when a dataset
+has enough cells that the default overplots.
+
+## Footnotes and citations
+
+`shiny.footnotes` accepts either a string or a named list, which is rendered as
+a formatted citation in the app's footer:
+
+```{r}
+makeShinyCodes(
+  shiny.title = "PBMC multiomics",
+  shiny.footnotes = list(
+    author  = "Liu X., Ouyang J.F., Rossello F.J. et al.",
+    title   = "",
+    journal = "Nature",
+    volume  = "586",
+    page    = "101-107",
+    year    = "2020",
+    doi     = "10.1038/s41586-020-2734-6",
+    link    = "https://www.nature.com/articles/s41586-020-2734-6"
+  ),
+  shiny.prefix = "sc1",
+  shiny.dir    = "shinyApp/"
+)
+```
+
+## Where to go next
+
+* `vignette("configuration")` — shape the config: labels, colours, ordering.
+* `vignette("modalities")` — spatial, scATAC-seq, DEG and `.h5ad` inputs.
+* `vignette("deployment")` — run the app somewhere other than your laptop.
+* `vignette("docker")` — the prebuilt container and its helper scripts.
+* `vignette("templates")` — change what the generated app itself contains.
