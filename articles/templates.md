@@ -1,0 +1,209 @@
+# Editing the frontend templates
+
+This article is for contributors changing what a generated CellSight app
+*contains*. If you only want to change what your app shows, the config
+helpers in
+[`vignette("configuration")`](https://openomics.github.io/CellSight/articles/configuration.md)
+are the right tool and you do not need any of this.
+
+CellSight’s frontend is generated, not hand-written.
+[`makeShinyCodes()`](https://openomics.github.io/CellSight/reference/makeShinyCodes.md)
+assembles `server.R`, `ui.R` and `shinyFunc.R` from
+[jinjar](https://davidchall.github.io/jinjar/) templates shipped in
+`inst/templates`. The rule that follows from that: **edit the template,
+never the generated file.** Anything you change in a generated `ui.R` is
+lost the next time anyone rebuilds.
+
+## The workflow
+
+1.  Edit the template that owns the piece you are changing (see the map
+    below).
+2.  Reinstall CellSight so the updated templates are on disk — they are
+    read from the *installed* package, not your source tree.
+3.  Regenerate an app with your normal
+    [`makeShinyFiles()`](https://openomics.github.io/CellSight/reference/makeShinyFiles.md) +
+    [`makeShinyCodes()`](https://openomics.github.io/CellSight/reference/makeShinyCodes.md)
+    call.
+4.  Run `Rscript tools/render-and-lint.R` before you commit.
+
+Step 2 is the one people skip.
+[`makeShinyCodes()`](https://openomics.github.io/CellSight/reference/makeShinyCodes.md)
+reads `system.file("templates", package = "cellsight")`, so editing
+`inst/templates/ui.R.jinja` in your checkout has no effect until you
+reinstall:
+
+``` r
+
+devtools::install(".")
+# or: install.packages(".", repos = NULL, type = "source")
+```
+
+## Layout
+
+    templates/
+      server.R.jinja          master: orders the server.R blocks
+      ui.R.jinja              master: orders the ui.R blocks (+ single/multi layout)
+      shinyFunc.R.jinja       self-contained: the full shinyFunc.R
+      partials/
+        server/…              one file per server.R block
+        ui/…                  one file per ui.R block
+
+The division of labour is what tells you which file to open:
+
+- The **masters** (`server.R.jinja`, `ui.R.jinja`) hold orchestration —
+  which blocks appear, in what order, gated on whether a dataset has
+  spatial / ATAC / DEG data, and the single- versus multi-dataset
+  layout. Edit a master to change *which* blocks appear or their order.
+- A **partial** holds the content of one block. Edit a partial to change
+  what one tab does.
+- `shinyFunc.R.jinja` is essentially a plain R file of shared plotting
+  functions, with one trailing
+  `{% for d in datasets %}{% if d.has_bw %}…{% endif %}{% endfor %}`
+  block that appends the ATAC track-plot helpers once per ATAC dataset.
+  Edit it as ordinary R and leave that trailing block in place.
+
+## Partial reference
+
+Each interactive tab is one partial in both `server/` (reactive logic)
+and `ui/` (layout), named for the tab’s purpose:
+
+| file (server/ + ui/)  | tab title in the app |
+|-----------------------|----------------------|
+| `dimred-zoom`         | Zoom-enable Dimred   |
+| `dimred-sidebyside`   | Side-by-side DimRed  |
+| `dimred-coexpression` | Gene coexpression    |
+| `dimred-split`        | Split-out DimRed     |
+| `deg-dimred`          | DEG dimred plot      |
+| `spatial-zoom`        | Zoom-enable Spatial  |
+| `spatial-sidebyside`  | Side-by-side Spatial |
+| `trackplot`           | Track plot (ATAC)    |
+| `violin-box`          | Violinplot / Boxplot |
+| `proportion`          | Proportion plot      |
+| `bubble-heatmap`      | Bubbleplot / Heatmap |
+| `module-score`        | Module scoring       |
+
+### Spatial layout variants
+
+The spatial tabs need variants that the masters choose between:
+
+| file | when it is used |
+|----|----|
+| `spatial-zoom` / `spatial-sidebyside` | single-slide dataset |
+| `spatial-zoom-multislide` / `spatial-sidebyside-multislide` | multi-slide dataset; adds a slide selector |
+| `spatial-sidebyside-extra` | **unused.** A legacy duplicate of `spatial-sidebyside`, no longer included after the menus were regrouped. Kept for reference only — do not add to it |
+
+### Blocks with no partial
+
+Short, structural or rarely-edited blocks live directly in the masters:
+
+| block | where it lives |
+|----|----|
+| library calls | top of `server.R.jinja` and `ui.R.jinja` |
+| preamble (palettes, panel sizes, `shinyServer(...)` / `shinyUI(...)` open, helpers) | after the library calls in each master |
+| per-dataset data loads | the first `{% for d in datasets %}` loop in each master, with `-spatial` / `-track` variants gated on `d.has_image` / `d.has_bw` |
+| closing lines | end of `server.R.jinja` and `ui.R.jinja` |
+| `google-analytics.html` | the `ga_html` string in `R/makeShinyCodes.R` |
+
+## Template syntax
+
+The templates use **non-default jinjar delimiters**, because the
+generated R code is full of its own `{` and `}` that must pass through
+untouched:
+
+- `<< var >>` — variable interpolation (jinjar’s usual `{{ }}` is
+  remapped)
+- `{% if %}` / `{% for %}` / `{% include %}` — control tags (jinjar
+  defaults)
+
+That remapping is done by
+[`scJinjaCfg()`](https://openomics.github.io/CellSight/reference/scJinjaCfg.md),
+so any new rendering code should use it rather than a bare
+`jinjar::jinjar_config()`.
+
+## The template context
+
+Everything the templates can see is built in R, in
+[`makeShinyCodes()`](https://openomics.github.io/CellSight/reference/makeShinyCodes.md).
+Inside a `{% for d in datasets %}` loop the per-dataset fields are
+`<< d.prefix >>`, `<< d.ptsiz >>` and so on. The fields available on
+each `d`:
+
+| field | meaning |
+|----|----|
+| `prefix` | the dataset’s `shiny.prefix` |
+| `header` | its navbar header (multi-dataset layouts) |
+| `ptsiz` | default point size |
+| `has_image` | spatial data present |
+| `has_bw` | ATAC bigWig data present |
+| `has_deg` | precomputed DEG data present |
+| `multislide` | more than one spatial slide |
+| `slider_min` / `slider_max` / `slider_step` / `ptsiz_val` | spatial point-size slider parameters |
+| `slider_*_first` / `ptsiz_val_first` | first-dataset variants, for the extra spatial tab in the multi-dataset layout |
+
+The three `has_*` flags are **detected from disk**, not passed in:
+[`makeShinyCodes()`](https://openomics.github.io/CellSight/reference/makeShinyCodes.md)
+tests for `<prefix>image.rds`, `<prefix>bw.rds` and `<prefix>deg.h5` in
+`shiny.dir`. So a tab that fails to appear usually means
+[`makeShinyFiles()`](https://openomics.github.io/CellSight/reference/makeShinyFiles.md)
+did not write that file — check the app directory before suspecting the
+template.
+
+If you need a new fact in a template, add it to the `datasets` list in
+`R/makeShinyCodes.R` first; templates cannot compute it themselves.
+
+## Formatting
+
+Do **not** try to keep a partial’s indentation “correct” for the final
+app. A partial is `{% include %}`d at different nesting depths — a tab
+sits inside a content `navbarMenu(...)` in both layouts, and one level
+deeper again in the multi-dataset layout — so no single indentation
+could be right everywhere.
+
+Instead,
+[`makeShinyCodes()`](https://openomics.github.io/CellSight/reference/makeShinyCodes.md)
+runs [styler](https://styler.r-lib.org) on the fully-assembled files,
+which re-indents and re-spaces the complete programs. styler is
+formatting-only and optional: without it installed the generated files
+are still valid, just un-styled.
+
+Write partials to be readable on their own; leave final layout to
+styler.
+
+### Whitespace still matters in the masters
+
+styler tidies spacing but not structure, and jinjar emits any text
+*between* control tags, newlines included. Keep the `{% … %}` tags in
+the masters on a single line with no spaces between them — a stray
+newline between two `{% include %}` tags injects a blank line into the
+output, and a structural line break in the wrong place can change the
+assembled program.
+
+## Linting and validation
+
+Templates are linted **as rendered**, never as fragments: the fragments
+contain jinjar tokens and are not valid R on their own.
+`tools/render-and-lint.R` renders a fully-featured app — multi-dataset,
+spatial multi-slide, ATAC and DEG, so every partial is exercised — then
+checks the output parses and lints it:
+
+``` bash
+Rscript tools/render-and-lint.R
+```
+
+It is strict, and exits non-zero if a template fails to render, if the
+generated R does not parse, or if the linter reports *any* finding. It
+runs on every pull request via `.github/workflows/lint-templates.yml`,
+so a failure there is worth reproducing locally first.
+
+The lint configuration lets styler own layout (indentation off) and
+allows the inherited house style — `=` assignment, camelCase and dotted
+names, explicit [`return()`](https://rdrr.io/r/base/function.html). If
+you add a lint exclusion, do it in that script so CI and local runs
+agree.
+
+## Editor support
+
+For syntax highlighting in mixed R + Jinja files, a VS Code extension is
+bundled at `inst/extdata/vscode-rjinja/rjinja-syntax.tar.gz`. Extract it
+and install via **Install from VSIX…**. It is optional and aimed at
+contributors editing `*.R.jinja` files.
