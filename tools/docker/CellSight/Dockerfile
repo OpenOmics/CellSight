@@ -34,6 +34,7 @@ RUN apt-get update \
         wget \
         zlib1g-dev \
         pigz \
+        rsync \
         vim \
     && apt-get clean && apt-get purge \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
