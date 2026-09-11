@@ -81,11 +81,11 @@ makeShinyFilesATACsignac <- function(
       warning(paste0(iGrp, " is not present in bigWigGroup. Skipping bigWig generation!"))
     }
   }
-  # Copy over gtf
+  # Copy over gtf (downloaded on demand and cached via BiocFileCache)
   scGenome <- obj@assays[["peaks"]]@annotation@seqinfo@genome[1]
   # scGenome <- unlist(strsplit(getGenome(obj), "\\."))
   # scGenome <- scGenome[grepl("hg|mm", scGenome)]
-  srcPath <- system.file("extdata", paste0(scGenome,".refGene.gtf.gz"), package = "cellsight")
+  srcPath <- getRefGeneGTF(scGenome)
   tarPath <- paste0(shiny.dir,"/",shiny.prefix,"bw.gtf.gz")
   file.copy(srcPath, tarPath)
   # Generate geneIndex and chrom.sizes
