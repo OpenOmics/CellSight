@@ -20,16 +20,15 @@
 #' @author John F. Ouyang
 #'
 #' @import data.table reticulate hdf5r
+#' @importFrom methods is
 #'
 #' @examples
-#' \dontrun{
 #' scConf = addMeta(scConf, c("orig.ident"), seu)
-#' }
 #'
 #' @export
 addMeta <- function(scConf, meta.to.add, obj, maxLevels = 50){
   # Extract corresponding metadata
-  if(class(obj)[1] == "Seurat"){
+  if(is(obj, "Seurat")){
     # Seurat Object
     objMeta = obj@meta.data
     

@@ -10,8 +10,7 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  eval = FALSE
+  comment = "#>"
 )
 ```
 
@@ -198,3 +197,9 @@ showLegend(scConf)
 ```
 
 Then build, as in `vignette("cellsight")`.
+
+## Session info
+
+```{r}
+sessionInfo()
+```

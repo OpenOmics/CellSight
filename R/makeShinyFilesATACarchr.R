@@ -2,12 +2,12 @@
 #'
 #' Generate data files required for shiny app, specifically scATAC-seq data
 #' Six files will be generated, namely 
-#' (i) the CellSight config \code{prefix_conf.rds}, 
-#' (ii) the single-cell metadata \code{prefix_meta.rds}, 
+#' (i) the CellSight config \code{prefix_conf.qs2.rds}, 
+#' (ii) the single-cell metadata \code{prefix_meta.qs2.rds}, 
 #' (iii) the single-cell assays \code{prefix_assay_X.h5}, 
-#' (iv) the feature mapping object config \code{prefix_gene.rds}, 
-#' (v) the dimension reduction embeddings \code{prefix_dimr.rds} and 
-#' (vi) the defaults for the Shiny app \code{prefix_def.rds} and
+#' (iv) the feature mapping object config \code{prefix_gene.qs2.rds}, 
+#' (v) the dimension reduction embeddings \code{prefix_dimr.qs2.rds} and 
+#' (vi) the defaults for the Shiny app \code{prefix_def.qs2.rds} and
 #' (vii) the bigwig files for trackplot \code{prefix_bw_GRP}. 
 #' A prefix is specified for each set of files to allow for multiple 
 #' single-cell datasets in a single Shiny app.
@@ -44,12 +44,11 @@
 #' @author John F. Ouyang
 #'
 #' @import data.table hdf5r reticulate
+#' @importFrom qs2 qs_save
 #'
 #' @examples
-#' \dontrun{
 #' makeShinyFilesATACarchr(ArchR, scConf, 
 #'                         shiny.prefix = "sc1", shiny.dir = "shinyApp/")
-#' }
 #'
 #' @export
 makeShinyFilesATACarchr <- function(
@@ -58,7 +57,7 @@ makeShinyFilesATACarchr <- function(
   default.gene1 = NA, default.gene2 = NA, default.multigene = NA, 
   default.dimred = NA, ...){
   ### Preprocessing and checks
-  if(class(obj) != "ArchRProject"){stop("obj is not of ArchR format!")}
+  if(!is(obj, "ArchRProject")){stop("obj is not of ArchR format!")}
   # Generate defaults for assay
   if(is.na(assay[1])){
     assay = ArchR::getAvailableMatrices(ArchRProj = obj)
@@ -84,7 +83,7 @@ makeShinyFilesATACarchr <- function(
 
   
   ### Actual object generation
-  # Make prefix_conf.rds / prefix_meta.rds
+  # Make prefix_conf.qs2.rds / prefix_meta.qs2.rds
   sc1conf = scConf
   sc1meta = sc1meta[, c("cellID", as.character(sc1conf$ID)), with = FALSE]
   # Factor metadata again
@@ -96,7 +95,7 @@ makeShinyFilesATACarchr <- function(
   }
   sc1conf$ID = as.character(sc1conf$ID)     # Remove levels
   
-  # Make prefix_dimr.rds
+  # Make prefix_dimr.qs2.rds
   sc1dimr = list()
   for(iDR in dimred.to.use){
     drMat = as.matrix(ArchR::getEmbedding(ArchRProj = obj, embedding = iDR, returnDF = TRUE))
@@ -106,7 +105,7 @@ makeShinyFilesATACarchr <- function(
     sc1dimr[[iDR]] = drMat
   }
   
-  # Make prefix_assay_X.h5 / prefix_gene.rds
+  # Make prefix_assay_X.h5 / prefix_gene.qs2.rds
   sc1gene = list()
   if(!dir.exists(shiny.dir)){dir.create(shiny.dir)}
   for(iAssay in assay){
@@ -158,7 +157,7 @@ makeShinyFilesATACarchr <- function(
                           end = end(chrGene))
     sc1bw <- list(chrSize = chrSize, chrGene = chrGene,
                   genome = scGenome)
-    saveRDS(sc1bw,   file = paste0(shiny.dir, "/", shiny.prefix, "bw.rds"))
+    qs_save(sc1bw,   file = paste0(shiny.dir, "/", shiny.prefix, "bw.qs2.rds"))
   }
   
   # Check (again) default.gene1 / default.gene2 / default.multigene
@@ -202,7 +201,7 @@ makeShinyFilesATACarchr <- function(
     }
   }
   
-  # Make prefix_def.rds
+  # Make prefix_def.qs2.rds
   # Note that we stored the display name here
   sc1def = list()
   sc1def$meta1 = sc1conf[default == 1]$UI   # Use display name
@@ -236,11 +235,11 @@ makeShinyFilesATACarchr <- function(
   
   
   ### Saving objects
-  saveRDS(sc1conf, file = paste0(shiny.dir, "/", shiny.prefix, "conf.rds"))
-  saveRDS(sc1meta, file = paste0(shiny.dir, "/", shiny.prefix, "meta.rds"))
-  saveRDS(sc1gene, file = paste0(shiny.dir, "/", shiny.prefix, "gene.rds"))
-  saveRDS(sc1dimr, file = paste0(shiny.dir, "/", shiny.prefix, "dimr.rds"))
-  saveRDS(sc1def,  file = paste0(shiny.dir, "/", shiny.prefix, "def.rds"))
+  qs_save(sc1conf, file = paste0(shiny.dir, "/", shiny.prefix, "conf.qs2.rds"))
+  qs_save(sc1meta, file = paste0(shiny.dir, "/", shiny.prefix, "meta.qs2.rds"))
+  qs_save(sc1gene, file = paste0(shiny.dir, "/", shiny.prefix, "gene.qs2.rds"))
+  qs_save(sc1dimr, file = paste0(shiny.dir, "/", shiny.prefix, "dimr.qs2.rds"))
+  qs_save(sc1def,  file = paste0(shiny.dir, "/", shiny.prefix, "def.qs2.rds"))
   return(paste0(shiny.prefix, " files generated!"))
 }
 

@@ -60,7 +60,6 @@ data types are present) are computed here in R and passed as the template
 context.
 }
 \examples{
-\dontrun{
 # Example citation
 citation = list(
   author  = "Liu X., Ouyang J.F., Rossello F.J. et al.",
@@ -75,7 +74,6 @@ makeShinyCodes(shiny.title = "scRNA-seq shiny app", shiny.footnotes = "",
                shiny.prefix = c("sc1", "sc2"), defPtSiz = c(1.25, 1.5),
                shiny.headers = c("dataset1", "dataset2"),
                shiny.dir = "shinyApp/")
-}
 
 }
 \author{

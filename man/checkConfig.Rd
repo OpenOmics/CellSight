@@ -23,9 +23,7 @@ that in the Seurat/SingleCellExperiment object, (ii) number of levels does
 not match number of colours and (iii) specified colours are invalid colours.
 }
 \examples{
-\dontrun{
 checkConfig(scConf, seu)
-}
 
 }
 \author{

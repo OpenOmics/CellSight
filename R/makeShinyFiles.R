@@ -43,14 +43,12 @@
 #' @import data.table hdf5r reticulate hdf5r
 #'
 #' @examples
-#' \dontrun{
 #' makeShinyFiles(seu, scConf,
 #'   shiny.prefix = "sc1", shiny.dir = "shinyApp/",
 #'   default.gene1 = "POU5F1", default.gene2 = "APOA1",
 #'   default.multigene = c("POU5F1", "APOA1", "GPRC5A", "TBXT", "ISL1"),
 #'   default.dimred = "umap"
 #' )
-#' }
 #'
 #' @export
 makeShinyFiles <- function(
@@ -72,7 +70,7 @@ makeShinyFiles <- function(
   ...
 ) {
   ### Check object class
-  if (class(obj)[1] == "Seurat") {
+  if (is(obj, "Seurat")) {
     # Seurat object
     makeShinyFilesGEX(
       obj, scConf, assay, assay.slot, dimred.to.use,
@@ -118,7 +116,7 @@ makeShinyFiles <- function(
         err(paste0("Precomputed DEG file not found: ", precomputed_path))
       }
     }
-  } else if (class(obj)[1] == "ArchRProject") {
+  } else if (is(obj, "ArchRProject")) {
     # ArchR object
     makeShinyFilesATACarchr(
       obj, scConf, bigWigGroup, assay, dimred.to.use,

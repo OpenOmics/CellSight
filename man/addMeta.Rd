@@ -30,9 +30,7 @@ updated CellSight config data.table
 Add a metadata to be included in the shiny app.
 }
 \examples{
-\dontrun{
 scConf = addMeta(scConf, c("orig.ident"), seu)
-}
 
 }
 \author{

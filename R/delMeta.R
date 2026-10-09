@@ -14,9 +14,7 @@
 #' @import data.table
 #'
 #' @examples
-#' \dontrun{
 #' scConf = delMeta(scConf, c("orig.ident"))
-#' }
 #'
 #' @export
 delMeta <- function(scConf, meta.to.del){

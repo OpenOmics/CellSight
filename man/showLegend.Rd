@@ -23,7 +23,6 @@ is shown here instead of the actual name. For more information regarding
 display name, see \code{?modMetaName}.
 }
 \examples{
-\dontrun{
 showLegend(scConf)
 
 # Can also save the legend for plotting later
@@ -31,7 +30,6 @@ scLegend = showLegend(scConf)
 leg = do.call(gtable_rbind, scLegend)
 grid.newpage()
 grid.draw(leg)
-}
 
 }
 \author{

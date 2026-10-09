@@ -2,12 +2,12 @@
 #'
 #' Generate data files required for shiny app, specifically scRNA-seq data
 #' Six files will be generated, namely 
-#' (i) the CellSight config \code{prefix_conf.rds}, 
-#' (ii) the single-cell metadata \code{prefix_meta.rds}, 
+#' (i) the CellSight config \code{prefix_conf.qs2.rds}, 
+#' (ii) the single-cell metadata \code{prefix_meta.qs2.rds}, 
 #' (iii) the single-cell assays \code{prefix_assay_X.h5}, 
-#' (iv) the feature mapping object config \code{prefix_gene.rds}, 
-#' (v) the dimension reduction embeddings \code{prefix_dimr.rds} and 
-#' (vi) the defaults for the Shiny app \code{prefix_def.rds}. 
+#' (iv) the feature mapping object config \code{prefix_gene.qs2.rds}, 
+#' (v) the dimension reduction embeddings \code{prefix_dimr.qs2.rds} and 
+#' (vi) the defaults for the Shiny app \code{prefix_def.qs2.rds}. 
 #' A prefix is specified for each set of files to allow for multiple 
 #' single-cell datasets in a single Shiny app.
 #'
@@ -45,14 +45,13 @@
 #' @author John F. Ouyang
 #'
 #' @import data.table hdf5r reticulate hdf5r
+#' @importFrom qs2 qs_save
 #'
 #' @examples
-#' \dontrun{
 #' makeShinyFilesGEX(seu, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/",
 #'                   default.gene1 = "POU5F1", default.gene2 = "APOA1",
 #'                   default.multigene = c("POU5F1","APOA1","GPRC5A","TBXT","ISL1"),
 #'                   default.dimred = "umap")
-#' }
 #'
 #' @export
 makeShinyFilesGEX <- function(
@@ -62,7 +61,7 @@ makeShinyFilesGEX <- function(
   default.dimred = NA, chunkSize = 500){
   ### Preprocessing and checks
   # Generate defaults for gex.assay / gex.slot
-  if(class(obj)[1] == "Seurat"){
+  if(is(obj, "Seurat")){
     # Seurat Object
     if(is.na(gex.assay[1])){
       gex.assay = names(obj@assays)
@@ -72,7 +71,7 @@ makeShinyFilesGEX <- function(
       }
       gex.assay = setdiff(gex.assay, "peaks")
     }
-    if(class(obj@assays[[gex.assay[1]]]) == "Assay5"){
+    if(is(obj@assays[[gex.assay[1]]], "Assay5")){
       # Seurat v5: check if layers are joined
       if(!(gex.slot[1] %in% names(obj@assays[[gex.assay[1]]]@layers))){
         stop(paste0("gex.slot not found in gex.assay. ",
@@ -125,7 +124,7 @@ makeShinyFilesGEX <- function(
 
   
   ### Actual object generation
-  # Make prefix_conf.rds / prefix_meta.rds
+  # Make prefix_conf.qs2.rds / prefix_meta.qs2.rds
   sc1conf = scConf
   sc1meta = sc1meta[, c("cellID", as.character(sc1conf$ID)), with = FALSE]
   # Factor metadata again
@@ -141,7 +140,7 @@ makeShinyFilesGEX <- function(
   # A mismatch occurs when the Seurat object contains cells in @meta.data that
   # are absent from @reductions (e.g. after reference-based mapping or merging).
   # Indexing a matrix with an unknown rowname throws "subscript out of bounds".
-  if(class(obj)[1] == "Seurat"){
+  if(is(obj, "Seurat")){
     for(iDR in dimred.to.use){
       drCells = rownames(obj@reductions[[iDR]]@cell.embeddings)
       nBefore = nrow(sc1meta)
@@ -154,9 +153,9 @@ makeShinyFilesGEX <- function(
     }
   }
 
-  # Make prefix_dimr.rds
+  # Make prefix_dimr.qs2.rds
   sc1dimr = list()
-  if(class(obj)[1] == "Seurat"){
+  if(is(obj, "Seurat")){
     # Seurat Object
     for(iDR in dimred.to.use){
       drMat = obj@reductions[[iDR]]@cell.embeddings
@@ -179,12 +178,12 @@ makeShinyFilesGEX <- function(
     
   }
   
-  # Make prefix_assay_X.h5 / prefix_gene.rds
+  # Make prefix_assay_X.h5 / prefix_gene.qs2.rds
   sc1gene = list()
   if(!dir.exists(shiny.dir)){dir.create(shiny.dir)}
   for(iAssay in gex.assay){
     filename = paste0(shiny.dir, "/", shiny.prefix, "assay_", iAssay, ".h5")
-    if(class(obj)[1] == "Seurat"){
+    if(is(obj, "Seurat")){
       tmpG = makeH5fromSeurat(obj, sc1meta, filename = filename,
                               gex.assay = iAssay, gex.slot = gex.slot[1], 
                               chunkSize = chunkSize)
@@ -244,7 +243,7 @@ makeShinyFilesGEX <- function(
     }
   }
   
-  # Make prefix_def.rds
+  # Make prefix_def.qs2.rds
   # Note that we stored the display name here
   sc1def = list()
   sc1def$meta1 = sc1conf[default == 1]$UI   # Use display name
@@ -278,11 +277,11 @@ makeShinyFilesGEX <- function(
   
   
   ### Saving objects
-  saveRDS(sc1conf, file = paste0(shiny.dir, "/", shiny.prefix, "conf.rds"))
-  saveRDS(sc1meta, file = paste0(shiny.dir, "/", shiny.prefix, "meta.rds"))
-  saveRDS(sc1gene, file = paste0(shiny.dir, "/", shiny.prefix, "gene.rds"))
-  saveRDS(sc1dimr, file = paste0(shiny.dir, "/", shiny.prefix, "dimr.rds"))
-  saveRDS(sc1def,  file = paste0(shiny.dir, "/", shiny.prefix, "def.rds"))
+  qs_save(sc1conf, file = paste0(shiny.dir, "/", shiny.prefix, "conf.qs2.rds"))
+  qs_save(sc1meta, file = paste0(shiny.dir, "/", shiny.prefix, "meta.qs2.rds"))
+  qs_save(sc1gene, file = paste0(shiny.dir, "/", shiny.prefix, "gene.qs2.rds"))
+  qs_save(sc1dimr, file = paste0(shiny.dir, "/", shiny.prefix, "dimr.qs2.rds"))
+  qs_save(sc1def,  file = paste0(shiny.dir, "/", shiny.prefix, "def.qs2.rds"))
   return(paste0(shiny.prefix, " files generated!"))
 }
 

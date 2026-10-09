@@ -26,10 +26,8 @@
 #' }
 #'
 #' @examples
-#' \dontrun{
 #' gtf <- getRefGeneGTF("hg38")
 #' file.exists(gtf)
-#' }
 #'
 #' @export
 getRefGeneGTF <- function(scGenome, cache = refGeneCache(), verbose = TRUE) {

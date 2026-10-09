@@ -10,8 +10,7 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  eval = FALSE
+  comment = "#>"
 )
 ```
 
@@ -27,7 +26,7 @@ building an app needs a real dataset. Run it against your own object.
 Every CellSight app is built in two steps, in this order:
 
 1. **`makeShinyFiles()`** reads your object and writes the app's *data* into
-   `shiny.dir` — chunked HDF5 expression matrices plus `.rds` files holding the
+   `shiny.dir` — chunked HDF5 expression matrices plus `.qs2.rds` files holding the
    config and cell metadata, all prefixed with `shiny.prefix` (`sc1` by
    default).
 2. **`makeShinyCodes()`** writes the app's *code* into the same directory —
@@ -190,3 +189,9 @@ makeShinyCodes(
 * `vignette("deployment")` — run the app somewhere other than your laptop.
 * `vignette("docker")` — the prebuilt container and its helper scripts.
 * `vignette("templates")` — change what the generated app itself contains.
+
+## Session info
+
+```{r}
+sessionInfo()
+```

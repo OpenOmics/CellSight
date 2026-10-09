@@ -20,9 +20,7 @@ updated CellSight config data.table
 Remove a metadata from being included in the shiny app.
 }
 \examples{
-\dontrun{
 scConf = delMeta(scConf, c("orig.ident"))
-}
 
 }
 \author{

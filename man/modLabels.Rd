@@ -22,10 +22,8 @@ updated CellSight config data.table
 Modify the legend labels for categorical metadata.
 }
 \examples{
-\dontrun{
 scConf = modLabels(scConf, meta.to.mod = "library", 
                    new.labels = c("Fib", "Primed", "Naive", "RSeT"))
-}
 
 }
 \author{

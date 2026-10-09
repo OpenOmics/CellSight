@@ -2,12 +2,12 @@
 #'
 #' Generate data files required for shiny app, specifically scATAC-seq data
 #' Six files will be generated, namely 
-#' (i) the CellSight config \code{prefix_conf.rds}, 
-#' (ii) the single-cell metadata \code{prefix_meta.rds}, 
+#' (i) the CellSight config \code{prefix_conf.qs2.rds}, 
+#' (ii) the single-cell metadata \code{prefix_meta.qs2.rds}, 
 #' (iii) the single-cell assays \code{prefix_assay_X.h5}, 
-#' (iv) the feature mapping object config \code{prefix_gene.rds}, 
-#' (v) the dimension reduction embeddings \code{prefix_dimr.rds} and 
-#' (vi) the defaults for the Shiny app \code{prefix_def.rds} and
+#' (iv) the feature mapping object config \code{prefix_gene.qs2.rds}, 
+#' (v) the dimension reduction embeddings \code{prefix_dimr.qs2.rds} and 
+#' (vi) the defaults for the Shiny app \code{prefix_def.qs2.rds} and
 #' (vii) the bigwig files for trackplot \code{prefix_bw_GRP}. 
 #' A prefix is specified for each set of files to allow for multiple 
 #' single-cell datasets in a single Shiny app.
@@ -44,12 +44,11 @@
 #' @author John F. Ouyang
 #'
 #' @import data.table hdf5r reticulate
+#' @importFrom qs2 qs_save
 #'
 #' @examples
-#' \dontrun{
 #' makeShinyFilesATACsignac(sig, scConf, 
 #'                          shiny.prefix = "sc1", shiny.dir = "shinyApp/")
-#' }
 #'
 #' @export
 makeShinyFilesATACsignac <- function(
@@ -104,7 +103,7 @@ makeShinyFilesATACsignac <- function(
                 genome = scGenome)
   
   ### Saving objects
-  saveRDS(sc1bw,   file = paste0(shiny.dir, "/", shiny.prefix, "bw.rds"))
+  qs_save(sc1bw,   file = paste0(shiny.dir, "/", shiny.prefix, "bw.qs2.rds"))
   return(paste0(shiny.prefix, " bw files generated!"))
 }
 

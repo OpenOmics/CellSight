@@ -17,7 +17,6 @@
 #' @import data.table ggplot2 RColorBrewer grid gridExtra
 #'
 #' @examples
-#' \dontrun{
 #' showLegend(scConf)
 #' 
 #' # Can also save the legend for plotting later
@@ -25,7 +24,6 @@
 #' leg = do.call(gtable_rbind, scLegend)
 #' grid.newpage()
 #' grid.draw(leg)
-#' }
 #'
 #' @export
 showLegend <- function(scConf, fontSize = 14){

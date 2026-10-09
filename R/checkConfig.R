@@ -17,19 +17,17 @@
 #' @import data.table reticulate hdf5r
 #'
 #' @examples
-#' \dontrun{
 #' checkConfig(scConf, seu)
-#' }
 #'
 #' @export
 checkConfig <- function(scConf, obj){
   nErr = 0
   # Extract corresponding metadata
-  if(class(obj)[1] == "Seurat"){
+  if(is(obj, "Seurat")){
     # Seurat Object
     objMeta = obj@meta.data
     
-  } else if (class(obj)[1] == "SingleCellExperiment"){
+  } else if (is(obj, "SingleCellExperiment")){
     # SCE Object
     objMeta = SingleCellExperiment::colData(obj)
     

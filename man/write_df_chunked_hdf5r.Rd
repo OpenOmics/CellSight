@@ -33,9 +33,7 @@ Writes a data frame to an HDF5 file using chunked storage for efficient
 I/O operations, especially for large datasets.
 }
 \examples{
-\dontrun{
 df <- data.frame(x = 1:100000, y = rnorm(100000))
 write_df_chunked_hdf5r(df, "output.h5", key = "mydata")
-}
 
 }

@@ -1,0 +1,20 @@
+name: R CMD check
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  r-cmd-check:
+    runs-on: ubuntu-latest
+    container:
+      image: rroutsong/cellsight2_builder:latest
+      options: --user root
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run R CMD check --as-cran and summarize results
+        run: Rscript .github/scripts/rcmdcheck-summary.R

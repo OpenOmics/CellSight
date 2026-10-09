@@ -22,10 +22,8 @@ updated CellSight config data.table
 Modify the colour palette for categorical metadata.
 }
 \examples{
-\dontrun{
 scConf = modColours(scConf, meta.to.mod = "library", 
                     new.colours = c("black", "darkorange", "blue", "red"))
-}
 
 }
 \author{

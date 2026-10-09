@@ -10,8 +10,7 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  eval = FALSE
+  comment = "#>"
 )
 ```
 
@@ -239,3 +238,9 @@ makeShinyFilesSpatial(seu, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/"
 If you do, write every modality into the same `shiny.dir` under the same
 `shiny.prefix` before calling `makeShinyCodes()` — the code writer detects which
 tabs to generate from the data files it finds there.
+
+## Session info
+
+```{r}
+sessionInfo()
+```

@@ -24,9 +24,7 @@ plotting metadata with gene expression or when plotting two metadata
 simultaneously. Default2 is used when plotting two metadata simultaneously.
 }
 \examples{
-\dontrun{
 scConf = modDefault(scConf, default1 = "library", default2 = "cluster")
-}
 
 }
 \author{

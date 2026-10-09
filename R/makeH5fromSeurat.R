@@ -20,7 +20,7 @@ makeH5fromSeurat <- function(obj, sc1meta, filename,
                              gex.assay, gex.slot, chunkSize){  
   
   # Create h5 file and get ready
-  if(class(obj@assays[[gex.assay]]) == "Assay5"){
+  if(is(obj@assays[[gex.assay]], "Assay5")){
     cat("Assay type: Assay5 (Seurat v5)\n")
     cat("Available layers in assay:", names(obj@assays[[gex.assay]]@layers), "\n")
     
@@ -132,7 +132,7 @@ makeH5fromSeurat <- function(obj, sc1meta, filename,
   
 # Start writing to file
   nChunk = floor((gex.matdim[1]-8)/chk)
-  if(class(obj@assays[[gex.assay]]) == "Assay5"){
+  if(is(obj@assays[[gex.assay]], "Assay5")){
     # First, check what layers exist and their dimensions
     layer_names = names(obj@assays[[gex.assay]]@layers)
     for(ln in layer_names){
