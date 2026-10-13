@@ -9,7 +9,7 @@ jobs:
   r-cmd-check:
     runs-on: ubuntu-latest
     container:
-      image: rroutsong/cellsight2_builder:latest
+      image: rroutsong/cellsight_builder:latest
       options: --user root
 
     steps:

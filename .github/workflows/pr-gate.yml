@@ -9,7 +9,7 @@ jobs:
   install-test:
     runs-on: ubuntu-latest
     container:
-      image: rroutsong/cellsight2_builder:latest
+      image: rroutsong/cellsight_builder:latest
       options: --user root  # Run as root to avoid permission issues
     
     steps:
