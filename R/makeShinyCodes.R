@@ -41,6 +41,15 @@
 #' @importFrom qs2 qs_read
 #'
 #' @examples
+#' bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+#' pbmc_path <- BiocFileCache::bfcrpath(bfc,
+#'   "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+#' seu <- readRDS(pbmc_path)
+#' scConf <- createConfig(seu)
+#' appdir <- tempdir()
+#' makeShinyFiles(seu, scConf, assay = "SCT",
+#'                shiny.prefix = "sc1", shiny.dir = appdir)
+#'
 #' # Example citation
 #' citation = list(
 #'   author  = "Liu X., Ouyang J.F., Rossello F.J. et al.",
@@ -51,10 +60,10 @@
 #'   year    = "2020",
 #'   doi     = "10.1038/s41586-020-2734-6",
 #'   link    = "https://www.nature.com/articles/s41586-020-2734-6")
-#' makeShinyCodes(shiny.title = "scRNA-seq shiny app", shiny.footnotes = "",
-#'                shiny.prefix = c("sc1", "sc2"), defPtSiz = c(1.25, 1.5),
-#'                shiny.headers = c("dataset1", "dataset2"),
-#'                shiny.dir = "shinyApp/")
+#' makeShinyCodes(shiny.title = "scRNA-seq shiny app", shiny.footnotes = citation,
+#'                shiny.prefix = "sc1", defPtSiz = 1.25,
+#'                shiny.headers = "dataset1",
+#'                shiny.dir = appdir)
 #'
 #' @export
 makeShinyCodes <- function(

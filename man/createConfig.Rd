@@ -35,6 +35,10 @@ categories of categorical metadata and (iii) colour palettes associated
 with each metadata.
 }
 \examples{
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+obj <- readRDS(pbmc_path)
 scConf = createConfig(obj)
 
 }

@@ -23,6 +23,11 @@
 #' @importFrom methods is
 #'
 #' @examples
+#' bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+#' pbmc_path <- BiocFileCache::bfcrpath(bfc,
+#'   "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+#' seu <- readRDS(pbmc_path)
+#' scConf <- createConfig(seu)
 #' scConf = addMeta(scConf, c("orig.ident"), seu)
 #'
 #' @export

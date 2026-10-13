@@ -29,7 +29,11 @@ A prefix is specified for each set of files to allow for multiple
 single-cell datasets in a single Shiny app.
 }
 \examples{
+\dontrun{
+# Requires a Seurat object with spatial images (obj@images); none of the
+# package's example data has these, so this is illustrative only.
 makeShinyFilesSpatial(seu, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/")
+}
 
 }
 \author{

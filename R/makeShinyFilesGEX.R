@@ -48,9 +48,15 @@
 #' @importFrom qs2 qs_save
 #'
 #' @examples
-#' makeShinyFilesGEX(seu, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/",
+#' bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+#' pbmc_path <- BiocFileCache::bfcrpath(bfc,
+#'   "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+#' seu <- readRDS(pbmc_path)
+#' scConf <- createConfig(seu)
+#' makeShinyFilesGEX(seu, scConf, gex.assay = "SCT",
+#'                   shiny.prefix = "sc1", shiny.dir = tempdir(),
 #'                   default.gene1 = "POU5F1", default.gene2 = "APOA1",
-#'                   default.multigene = c("POU5F1","APOA1","GPRC5A","TBXT","ISL1"),
+#'                   default.multigene = c("POU5F1","APOA1","GPRC5A"),
 #'                   default.dimred = "umap")
 #'
 #' @export
@@ -86,7 +92,7 @@ makeShinyFilesGEX <- function(
     }
     if(is.na(dimred.to.use[1])){
       dimred.to.use = setdiff(names(obj@reductions), c("pca","ref.pca","lsi"))
-      dimred.to.use = c(DefaultDimReduc(obj), setdiff(dimred.to.use, DefaultDimReduc(obj)))
+      dimred.to.use = c(SeuratObject::DefaultDimReduc(obj), setdiff(dimred.to.use, SeuratObject::DefaultDimReduc(obj)))
     }
     sc1meta = data.table(cellID = rownames(obj@meta.data), obj@meta.data)
     

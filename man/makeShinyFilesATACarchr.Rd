@@ -75,8 +75,11 @@ A prefix is specified for each set of files to allow for multiple
 single-cell datasets in a single Shiny app.
 }
 \examples{
-makeShinyFilesATACarchr(ArchR, scConf, 
+\dontrun{
+# Requires an ArchRProject; no such object ships with this package.
+makeShinyFilesATACarchr(ArchR, scConf,
                         shiny.prefix = "sc1", shiny.dir = "shinyApp/")
+}
 
 }
 \author{

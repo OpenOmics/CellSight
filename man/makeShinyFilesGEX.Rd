@@ -76,9 +76,15 @@ A prefix is specified for each set of files to allow for multiple
 single-cell datasets in a single Shiny app.
 }
 \examples{
-makeShinyFilesGEX(seu, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/",
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+seu <- readRDS(pbmc_path)
+scConf <- createConfig(seu)
+makeShinyFilesGEX(seu, scConf, gex.assay = "SCT",
+                  shiny.prefix = "sc1", shiny.dir = tempdir(),
                   default.gene1 = "POU5F1", default.gene2 = "APOA1",
-                  default.multigene = c("POU5F1","APOA1","GPRC5A","TBXT","ISL1"),
+                  default.multigene = c("POU5F1","APOA1","GPRC5A"),
                   default.dimred = "umap")
 
 }

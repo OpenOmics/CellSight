@@ -20,7 +20,13 @@ your behalf. Which tabs end up in the app is therefore decided by what is
 present in your object plus which arguments you supplied — not by anything you
 configure directly.
 
-Code here is not evaluated when the site is built; it needs real data.
+The gene expression / CITE-seq section below runs against the same
+[multimodal PBMC CITE-seq
+object](https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1)
+used in `vignette("cellsight")`. It has neither spatial images, an ATAC assay,
+nor a precomputed DEG table, so the spatial / ATAC / `.h5ad` sections further
+down are illustrative only — the arguments are correct, but there is no single
+object this vignette ships that exercises all four modalities at once.
 
 ## What triggers what
 
@@ -47,6 +53,14 @@ that silence is easy to mistake for a bug.
 The default path. `assay` and `assay.slot` choose what gets written:
 
 ```{r}
+library(Seurat)
+library(cellsight)
+library(BiocFileCache)
+
+bfc <- BiocFileCache(ask = FALSE)
+pbmc_path <- bfcrpath(bfc, "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+seu <- readRDS(pbmc_path)
+
 scConf <- createConfig(seu)
 
 makeShinyFiles(

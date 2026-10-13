@@ -23,6 +23,11 @@ is shown here instead of the actual name. For more information regarding
 display name, see \code{?modMetaName}.
 }
 \examples{
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+seu <- readRDS(pbmc_path)
+scConf <- createConfig(seu)
 showLegend(scConf)
 
 # Can also save the legend for plotting later

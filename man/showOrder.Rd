@@ -18,6 +18,11 @@ helps users to decide if the display order is ok. If not, users can use
 \code{reorderMeta} to change the order in which metadata will be displayed.
 }
 \examples{
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+seu <- readRDS(pbmc_path)
+scConf <- createConfig(seu)
 showOrder(scConf)
 
 }

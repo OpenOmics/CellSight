@@ -68,8 +68,12 @@ A prefix is specified for each set of files to allow for multiple
 single-cell datasets in a single Shiny app.
 }
 \examples{
-makeShinyFilesATACsignac(sig, scConf, 
+\dontrun{
+# Requires a Signac object with a "peaks" assay; no such object ships with
+# this package.
+makeShinyFilesATACsignac(sig, scConf,
                          shiny.prefix = "sc1", shiny.dir = "shinyApp/")
+}
 
 }
 \author{

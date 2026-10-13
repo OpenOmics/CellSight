@@ -71,12 +71,15 @@ A prefix is specified for each set of files to allow for multiple
 single-cell datasets in a single Shiny app.
 }
 \examples{
-makeShinyFilesGEX(seu, scConf,
-  shiny.prefix = "sc1", shiny.dir = "shinyApp/",
-  default.gene1 = "POU5F1", default.gene2 = "APOA1",
-  default.multigene = c("POU5F1", "APOA1", "GPRC5A", "TBXT", "ISL1"),
-  default.dimred = "umap"
+\dontrun{
+# Requires makeShinyFilesGEX()/makeShinyFiles() to have already written
+# <prefix>def.qs2.rds, plus a precomputed marker-gene table; neither ships
+# with this package.
+makeShinyFilesDEG(seu, scConf,
+  shiny.dir = "shinyApp/", shiny.prefix = "sc1",
+  precomputed.deg = "markers.tsv", clusters = "seurat_clusters"
 )
+}
 
 }
 \author{

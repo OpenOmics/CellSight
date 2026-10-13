@@ -47,8 +47,11 @@
 #' @importFrom qs2 qs_save
 #'
 #' @examples
-#' makeShinyFilesATACarchr(ArchR, scConf, 
+#' \dontrun{
+#' # Requires an ArchRProject; no such object ships with this package.
+#' makeShinyFilesATACarchr(ArchR, scConf,
 #'                         shiny.prefix = "sc1", shiny.dir = "shinyApp/")
+#' }
 #'
 #' @export
 makeShinyFilesATACarchr <- function(

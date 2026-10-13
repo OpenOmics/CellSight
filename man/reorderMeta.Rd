@@ -20,6 +20,11 @@ Reorder the order in which metadata appear in the dropdown menu in the
 shiny app.
 }
 \examples{
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+seu <- readRDS(pbmc_path)
+scConf <- createConfig(seu)
 scConf = reorderMeta(scConf, scConf$ID[c(1,3,2,4:length(scConf$ID))])
 
 }

@@ -47,8 +47,12 @@
 #' @importFrom qs2 qs_save
 #'
 #' @examples
-#' makeShinyFilesATACsignac(sig, scConf, 
+#' \dontrun{
+#' # Requires a Signac object with a "peaks" assay; no such object ships with
+#' # this package.
+#' makeShinyFilesATACsignac(sig, scConf,
 #'                          shiny.prefix = "sc1", shiny.dir = "shinyApp/")
+#' }
 #'
 #' @export
 makeShinyFilesATACsignac <- function(

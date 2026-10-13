@@ -17,7 +17,11 @@
 #' @importFrom qs2 qs_save
 #'
 #' @examples
+#' \dontrun{
+#' # Requires a Seurat object with spatial images (obj@images); none of the
+#' # package's example data has these, so this is illustrative only.
 #' makeShinyFilesSpatial(seu, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/")
+#' }
 #'
 #' @export
 makeShinyFilesSpatial <- function(
