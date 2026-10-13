@@ -8,6 +8,7 @@
 #' @return a \code{jinjar_config} object
 #' @rdname scJinjaCfg
 #' @export scJinjaCfg
+#' @importFrom jinjar jinjar_config path_loader render
 #'
 scJinjaCfg <- function() {
   jinjar::jinjar_config(variable_open = "<<", variable_close = ">>")

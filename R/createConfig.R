@@ -27,21 +27,23 @@
 #' @import data.table reticulate hdf5r
 #'
 #' @examples
-#' \dontrun{
+#' bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+#' pbmc_path <- BiocFileCache::bfcrpath(bfc,
+#'   "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+#' obj <- readRDS(pbmc_path)
 #' scConf = createConfig(obj)
-#' }
 #'
 #' @export
 createConfig <- function(obj, meta.to.include = NA, legendCols = 4,
                          maxLevels = 50){
   # Extract corresponding metadata
   drExist = TRUE
-  if(class(obj)[1] == "Seurat"){
+  if(is(obj, "Seurat")){
     # Seurat Object
     objMeta = obj@meta.data
     if(length(names(obj@reductions)) == 0){drExist = FALSE}
     
-  } else if(class(obj)[1] == "ArchRProject"){
+  } else if(is(obj, "ArchRProject")){
     # ArchR Object
     objMeta = as.data.frame(obj@cellColData)
     if(length(names(obj@embeddings@listData)) == 0){drExist = FALSE}

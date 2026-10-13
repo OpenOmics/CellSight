@@ -10,8 +10,7 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  eval = FALSE
+  comment = "#>"
 )
 ```
 
@@ -19,15 +18,16 @@ CellSight turns a single-cell or spatial object into a self-contained Shiny
 app. You do not write any Shiny code: you describe *what to show* in a config
 object, and CellSight writes both the app's data files and the app's source.
 
-The code in this article is not evaluated when the site is built, because
-building an app needs a real dataset. Run it against your own object.
+The code in this article downloads and processes a real ~2 GB public dataset
+(cached locally after the first run), so it will run against that dataset
+rather than one of your own unless you substitute it below.
 
 ## The two-step workflow
 
 Every CellSight app is built in two steps, in this order:
 
 1. **`makeShinyFiles()`** reads your object and writes the app's *data* into
-   `shiny.dir` — chunked HDF5 expression matrices plus `.rds` files holding the
+   `shiny.dir` — chunked HDF5 expression matrices plus `.qs2.rds` files holding the
    config and cell metadata, all prefixed with `shiny.prefix` (`sc1` by
    default).
 2. **`makeShinyCodes()`** writes the app's *code* into the same directory —
@@ -46,8 +46,12 @@ object](https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1
 ```{r}
 library(Seurat)
 library(cellsight)
+library(BiocFileCache)
 
-seu <- readRDS("multimodal_pbmc.rds")
+# Cached download: fetched once, reused on every subsequent render.
+bfc <- BiocFileCache(ask = FALSE)
+pbmc_path <- bfcrpath(bfc, "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+seu <- readRDS(pbmc_path)
 
 scConf <- createConfig(seu)
 
@@ -190,3 +194,9 @@ makeShinyCodes(
 * `vignette("deployment")` — run the app somewhere other than your laptop.
 * `vignette("docker")` — the prebuilt container and its helper scripts.
 * `vignette("templates")` — change what the generated app itself contains.
+
+## Session info
+
+```{r}
+sessionInfo()
+```

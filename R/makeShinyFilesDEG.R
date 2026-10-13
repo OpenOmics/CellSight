@@ -2,12 +2,12 @@
 #'
 #' Generate data files required for shiny app, specifically scRNA-seq data
 #' Six files will be generated, namely
-#' (i) the CellSight config \code{prefix_conf.rds},
-#' (ii) the single-cell metadata \code{prefix_meta.rds},
+#' (i) the CellSight config \code{prefix_conf.qs2.rds},
+#' (ii) the single-cell metadata \code{prefix_meta.qs2.rds},
 #' (iii) the single-cell assays \code{prefix_assay_X.h5},
-#' (iv) the feature mapping object config \code{prefix_gene.rds},
-#' (v) the dimension reduction embeddings \code{prefix_dimr.rds} and
-#' (vi) the defaults for the Shiny app \code{prefix_def.rds}.
+#' (iv) the feature mapping object config \code{prefix_gene.qs2.rds},
+#' (v) the dimension reduction embeddings \code{prefix_dimr.qs2.rds} and
+#' (vi) the defaults for the Shiny app \code{prefix_def.qs2.rds}.
 #' A prefix is specified for each set of files to allow for multiple
 #' single-cell datasets in a single Shiny app.
 #'
@@ -45,14 +45,16 @@
 #' @author John F. Ouyang
 #'
 #' @import data.table hdf5r reticulate hdf5r
+#' @importFrom qs2 qs_save qs_read
 #'
 #' @examples
 #' \dontrun{
-#' makeShinyFilesGEX(seu, scConf,
-#'   shiny.prefix = "sc1", shiny.dir = "shinyApp/",
-#'   default.gene1 = "POU5F1", default.gene2 = "APOA1",
-#'   default.multigene = c("POU5F1", "APOA1", "GPRC5A", "TBXT", "ISL1"),
-#'   default.dimred = "umap"
+#' # Requires makeShinyFilesGEX()/makeShinyFiles() to have already written
+#' # <prefix>def.qs2.rds, plus a precomputed marker-gene table; neither ships
+#' # with this package.
+#' makeShinyFilesDEG(seu, scConf,
+#'   shiny.dir = "shinyApp/", shiny.prefix = "sc1",
+#'   precomputed.deg = "markers.tsv", clusters = "seurat_clusters"
 #' )
 #' }
 #'
@@ -68,14 +70,14 @@ makeShinyFilesDEG <- function(
   if (!clusters %in% names(obj@meta.data)) {
     stop(paste0('"', clusters, '" not found in Seurat object meta data!'))
   }
-  defs_file <- paste0(shiny.dir, "/", shiny.prefix, "def.rds")
+  defs_file <- paste0(shiny.dir, "/", shiny.prefix, "def.qs2.rds")
   if (!file.exists(defs_file)) {
-    stop(paste0(shiny.dir, "/", shiny.prefix, "def.rds does not exist! Cannot create DEG data"))
+    stop(paste0(shiny.dir, "/", shiny.prefix, "def.qs2.rds does not exist! Cannot create DEG data"))
   }
   # update defitions to include config values for DEG page
-  defs <- readRDS(defs_file)
+  defs <- qs_read(defs_file)
   defs$DEG <- clusters
-  saveRDS(defs, defs_file)
+  qs_save(defs, defs_file)
 
   # read in clustermap
   cell_id <- "orig.ident"

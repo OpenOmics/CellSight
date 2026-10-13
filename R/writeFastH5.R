@@ -1,5 +1,3 @@
-library(hdf5r)
-
 #' Write Data Frame to HDF5 File in Chunks using hdf5r
 #'
 #' Writes a data frame to an HDF5 file using chunked storage for efficient
@@ -15,10 +13,8 @@ library(hdf5r)
 #' @return Invisibly returns the file path
 #'
 #' @examples
-#' \dontrun{
 #' df <- data.frame(x = 1:100000, y = rnorm(100000))
 #' write_df_chunked_hdf5r(df, "output.h5", key = "mydata")
-#' }
 #'
 #' @export
 write_df_chunked_hdf5r <- function(df, filename, key = "data",

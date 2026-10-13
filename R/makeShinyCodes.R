@@ -38,9 +38,18 @@
 #' @author John F. Ouyang
 #'
 #' @import data.table readr
+#' @importFrom qs2 qs_read
 #'
 #' @examples
-#' \dontrun{
+#' bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+#' pbmc_path <- BiocFileCache::bfcrpath(bfc,
+#'   "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+#' seu <- readRDS(pbmc_path)
+#' scConf <- createConfig(seu)
+#' appdir <- tempdir()
+#' makeShinyFiles(seu, scConf, assay = "SCT",
+#'                shiny.prefix = "sc1", shiny.dir = appdir)
+#'
 #' # Example citation
 #' citation = list(
 #'   author  = "Liu X., Ouyang J.F., Rossello F.J. et al.",
@@ -51,11 +60,10 @@
 #'   year    = "2020",
 #'   doi     = "10.1038/s41586-020-2734-6",
 #'   link    = "https://www.nature.com/articles/s41586-020-2734-6")
-#' makeShinyCodes(shiny.title = "scRNA-seq shiny app", shiny.footnotes = "",
-#'                shiny.prefix = c("sc1", "sc2"), defPtSiz = c(1.25, 1.5),
-#'                shiny.headers = c("dataset1", "dataset2"),
-#'                shiny.dir = "shinyApp/")
-#' }
+#' makeShinyCodes(shiny.title = "scRNA-seq shiny app", shiny.footnotes = citation,
+#'                shiny.prefix = "sc1", defPtSiz = 1.25,
+#'                shiny.headers = "dataset1",
+#'                shiny.dir = appdir)
 #'
 #' @export
 makeShinyCodes <- function(
@@ -81,7 +89,7 @@ makeShinyCodes <- function(
 
   ### Check if files exist
   for (i in shiny.prefix) {
-    if (!file.exists(paste0(shiny.dir, "/", i, "conf.rds"))) {
+    if (!file.exists(paste0(shiny.dir, "/", i, "conf.qs2.rds"))) {
       stop(paste0("files missing for ", i, " dataset!"))
     }
   }
@@ -94,9 +102,9 @@ makeShinyCodes <- function(
   ### as first-dataset variants used by the extra spatial tab in the
   ### multi-dataset layout.
   slider_for <- function(prefix) {
-    meta_file <- paste0(prefix, "meta.rds")
+    meta_file <- paste0(prefix, "meta.qs2.rds")
     if (file.exists(meta_file)) {
-      n_cells <- nrow(readRDS(meta_file))
+      n_cells <- nrow(qs_read(meta_file))
     } else {
       n_cells <- 10000  # Default fallback
     }
@@ -115,12 +123,12 @@ makeShinyCodes <- function(
 
   datasets <- lapply(seq_along(shiny.prefix), function(i) {
     px <- shiny.prefix[i]
-    has_image <- file.exists(paste0(shiny.dir, "/", px, "image.rds"))
-    has_bw    <- file.exists(paste0(shiny.dir, "/", px, "bw.rds"))
+    has_image <- file.exists(paste0(shiny.dir, "/", px, "image.qs2.rds"))
+    has_bw    <- file.exists(paste0(shiny.dir, "/", px, "bw.qs2.rds"))
     has_deg   <- file.exists(paste0(shiny.dir, "/", px, "deg.h5"))
     multislide <- FALSE
     if (has_image) {
-      tmpImg <- readRDS(paste0(shiny.dir, "/", px, "image.rds"))
+      tmpImg <- qs_read(paste0(shiny.dir, "/", px, "image.qs2.rds"))
       multislide <- !is.null(tmpImg$slide_names) && length(tmpImg$slide_names) > 1
     }
     sl <- slider_for(px)

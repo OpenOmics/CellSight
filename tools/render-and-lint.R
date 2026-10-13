@@ -19,6 +19,7 @@
 suppressMessages({
   library(cellsight)
   library(lintr)
+  library(qs2)
 })
 
 fail <- function(...) { message("ERROR: ", ...); quit(status = 1) }
@@ -31,12 +32,12 @@ dir.create(app_dir)
 ## spatial (multi-slide) + ATAC + DEG data so every tab template renders.
 prefixes <- c("sc1", "sc2")
 for (px in prefixes) {
-  saveRDS(data.frame(cellID = paste0("c", 1:5)), file.path(app_dir, paste0(px, "conf.rds")))
-  saveRDS(data.frame(cellID = paste0("c", 1:5)), file.path(app_dir, paste0(px, "meta.rds")))
+  qs_save(data.frame(cellID = paste0("c", 1:5)), file.path(app_dir, paste0(px, "conf.qs2.rds")))
+  qs_save(data.frame(cellID = paste0("c", 1:5)), file.path(app_dir, paste0(px, "meta.qs2.rds")))
 }
-saveRDS(list(slide_names = c("A", "B"), slide_display_names = c("A", "B")),
-        file.path(app_dir, "sc1image.rds"))
-saveRDS(list(genome = "hg38"), file.path(app_dir, "sc1bw.rds"))
+qs_save(list(slide_names = c("A", "B"), slide_display_names = c("A", "B")),
+        file.path(app_dir, "sc1image.qs2.rds"))
+qs_save(list(genome = "hg38"), file.path(app_dir, "sc1bw.qs2.rds"))
 writeLines("x", file.path(app_dir, "sc1deg.h5"))
 
 ok <- tryCatch({

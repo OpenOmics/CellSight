@@ -22,10 +22,15 @@ updated CellSight config data.table
 Modify the legend labels for categorical metadata.
 }
 \examples{
-\dontrun{
-scConf = modLabels(scConf, meta.to.mod = "library", 
-                   new.labels = c("Fib", "Primed", "Naive", "RSeT"))
-}
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+seu <- readRDS(pbmc_path)
+scConf <- createConfig(seu)
+scConf = modLabels(scConf, meta.to.mod = "celltype.l1",
+                   new.labels = c("B cells", "CD4 T cells", "CD8 T cells",
+                                  "Dendritic", "Monocyte", "NK cells",
+                                  "Other", "Other T"))
 
 }
 \author{

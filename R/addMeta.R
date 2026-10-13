@@ -20,16 +20,20 @@
 #' @author John F. Ouyang
 #'
 #' @import data.table reticulate hdf5r
+#' @importFrom methods is
 #'
 #' @examples
-#' \dontrun{
+#' bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+#' pbmc_path <- BiocFileCache::bfcrpath(bfc,
+#'   "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+#' seu <- readRDS(pbmc_path)
+#' scConf <- createConfig(seu)
 #' scConf = addMeta(scConf, c("orig.ident"), seu)
-#' }
 #'
 #' @export
 addMeta <- function(scConf, meta.to.add, obj, maxLevels = 50){
   # Extract corresponding metadata
-  if(class(obj)[1] == "Seurat"){
+  if(is(obj, "Seurat")){
     # Seurat Object
     objMeta = obj@meta.data
     

@@ -10,8 +10,7 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  eval = FALSE
+  comment = "#>"
 )
 ```
 
@@ -20,7 +19,21 @@ generated app shows and how it looks. It is an ordinary `data.table`, so you
 can inspect and edit it directly, but the helpers in this article keep it
 internally consistent and are the supported route.
 
-Code here is not evaluated when the site is built; it needs a real object.
+The examples below run against the same [multimodal PBMC CITE-seq
+object](https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1)
+used in `vignette("cellsight")`:
+
+```{r}
+library(Seurat)
+library(cellsight)
+library(BiocFileCache)
+
+bfc <- BiocFileCache(ask = FALSE)
+pbmc_path <- bfcrpath(bfc, "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+seu <- readRDS(pbmc_path)
+
+scConf <- createConfig(seu)
+```
 
 ## What is in a config
 
@@ -198,3 +211,9 @@ showLegend(scConf)
 ```
 
 Then build, as in `vignette("cellsight")`.
+
+## Session info
+
+```{r}
+sessionInfo()
+```

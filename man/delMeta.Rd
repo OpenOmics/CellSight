@@ -20,9 +20,12 @@ updated CellSight config data.table
 Remove a metadata from being included in the shiny app.
 }
 \examples{
-\dontrun{
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+seu <- readRDS(pbmc_path)
+scConf <- createConfig(seu)
 scConf = delMeta(scConf, c("orig.ident"))
-}
 
 }
 \author{

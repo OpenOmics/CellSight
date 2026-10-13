@@ -1,0 +1,20 @@
+name: BiocCheck
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  bioccheck:
+    runs-on: ubuntu-latest
+    container:
+      image: rroutsong/cellsight_builder:latest
+      options: --user root
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run BiocCheck and summarize results
+        run: Rscript .github/scripts/bioccheck-summary.R

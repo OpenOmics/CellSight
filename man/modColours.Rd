@@ -22,10 +22,14 @@ updated CellSight config data.table
 Modify the colour palette for categorical metadata.
 }
 \examples{
-\dontrun{
-scConf = modColours(scConf, meta.to.mod = "library", 
-                    new.colours = c("black", "darkorange", "blue", "red"))
-}
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+seu <- readRDS(pbmc_path)
+scConf <- createConfig(seu)
+scConf = modColours(scConf, meta.to.mod = "celltype.l1",
+                    new.colours = c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C",
+                                    "#FB9A99", "#E31A1C", "#FDBF6F", "#FF7F00"))
 
 }
 \author{

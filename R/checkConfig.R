@@ -17,19 +17,22 @@
 #' @import data.table reticulate hdf5r
 #'
 #' @examples
-#' \dontrun{
+#' bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+#' pbmc_path <- BiocFileCache::bfcrpath(bfc,
+#'   "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+#' seu <- readRDS(pbmc_path)
+#' scConf <- createConfig(seu)
 #' checkConfig(scConf, seu)
-#' }
 #'
 #' @export
 checkConfig <- function(scConf, obj){
   nErr = 0
   # Extract corresponding metadata
-  if(class(obj)[1] == "Seurat"){
+  if(is(obj, "Seurat")){
     # Seurat Object
     objMeta = obj@meta.data
     
-  } else if (class(obj)[1] == "SingleCellExperiment"){
+  } else if (is(obj, "SingleCellExperiment")){
     # SCE Object
     objMeta = SingleCellExperiment::colData(obj)
     

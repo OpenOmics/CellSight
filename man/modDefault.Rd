@@ -24,9 +24,12 @@ plotting metadata with gene expression or when plotting two metadata
 simultaneously. Default2 is used when plotting two metadata simultaneously.
 }
 \examples{
-\dontrun{
-scConf = modDefault(scConf, default1 = "library", default2 = "cluster")
-}
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+seu <- readRDS(pbmc_path)
+scConf <- createConfig(seu)
+scConf = modDefault(scConf, default1 = "celltype.l1", default2 = "orig.ident")
 
 }
 \author{
