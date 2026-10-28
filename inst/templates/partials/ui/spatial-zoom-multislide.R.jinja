@@ -58,7 +58,7 @@
 selectInput("<< d.prefix >>s1slide", "Select Slide:",
             choices = setNames(<< d.prefix >>image$slide_names, << d.prefix >>image$slide_display_names),
             selected = << d.prefix >>image$slide_names[1]),
-br(), selectInput("<< d.prefix >>s1inp1", "Cell metadata to colour plot:", choices = << d.prefix >>conf$UI, selected = << d.prefix >>def$meta1) %>%
+br(), selectInput("<< d.prefix >>s1inp1", "Cell metadata to colour plot:", choices = << d.prefix >>conf$UI, selected = << d.prefix >>def$meta1) |>
           helper(type = "inline", size = "m", fade = TRUE,
                  title = "Cell Info / Gene to colour cells by",
                  content = c("Select cell info / feature to colour cells",

@@ -22,7 +22,7 @@ configure directly.
 
 The gene expression / CITE-seq section below runs against the same
 [multimodal PBMC CITE-seq
-object](https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1)
+object](https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds)
 used in `vignette("cellsight")`. It has neither spatial images, an ATAC assay,
 nor a precomputed DEG table, so the spatial / ATAC / `.h5ad` sections further
 down are illustrative only — the arguments are correct, but there is no single
@@ -58,7 +58,7 @@ library(cellsight)
 library(BiocFileCache)
 
 bfc <- BiocFileCache(ask = FALSE)
-pbmc_path <- bfcrpath(bfc, "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+pbmc_path <- bfcrpath(bfc, "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
 seu <- readRDS(pbmc_path)
 
 scConf <- createConfig(seu)
@@ -216,7 +216,7 @@ makeShinyFiles(
 ```
 
 Computing the table first, with Seurat, then handing it over. `FindAllMarkers`
-on a 162,000-cell object takes a while, so this is not run here either:
+takes a while even on this dataset, so this is not run here either:
 
 ```{r, eval = FALSE}
 deg <- Seurat::FindAllMarkers(seu, only.pos = FALSE)

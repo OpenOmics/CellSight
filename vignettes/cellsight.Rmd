@@ -18,9 +18,11 @@ CellSight turns a single-cell or spatial object into a self-contained Shiny
 app. You do not write any Shiny code: you describe *what to show* in a config
 object, and CellSight writes both the app's data files and the app's source.
 
-The code in this article downloads and processes a real ~2 GB public dataset
+The code in this article downloads and processes a real, ~175 MB dataset
 (cached locally after the first run), so it will run against that dataset
-rather than one of your own unless you substitute it below.
+rather than one of your own unless you substitute it below. It is a 15,000-cell
+random subsample of a larger public multimodal PBMC CITE-seq object, kept small
+enough to render quickly and fit comfortably in CI/CD memory budgets.
 
 ## The two-step workflow
 
@@ -40,8 +42,8 @@ is what ties the two together. Whatever you pass as `shiny.prefix` to
 ## A minimal app
 
 Using the [multimodal PBMC CITE-seq
-object](https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1)
-(162,000 cells, 228 antibodies):
+object](https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds)
+(15,000 cells, 228 antibodies):
 
 ```{r}
 library(Seurat)
@@ -50,7 +52,7 @@ library(BiocFileCache)
 
 # Cached download: fetched once, reused on every subsequent render.
 bfc <- BiocFileCache(ask = FALSE)
-pbmc_path <- bfcrpath(bfc, "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+pbmc_path <- bfcrpath(bfc, "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
 seu <- readRDS(pbmc_path)
 
 scConf <- createConfig(seu)

@@ -64,14 +64,14 @@ tabPanel(
   fluidRow(
     column(
       3, style = "border-right: 2px solid black", h4("Assay Expression"),
-      selectInput("<< d.prefix >>a3inp1", "Feature 1:", choices = NULL) %>%
+      selectInput("<< d.prefix >>a3inp1", "Feature 1:", choices = NULL) |>
         helper(type = "inline", size = "m", fade = TRUE,
               title = "Feature expression to colour cells by",
               content = c("Select gene to colour cells by gene expression",
                          paste0("- Feature expression are coloured in a ",
                                 "White-Red colour scheme which can be ",
                                 "changed in the plot controls"))),
-      selectInput("<< d.prefix >>a3inp2", "Feature 2:", choices = NULL) %>%
+      selectInput("<< d.prefix >>a3inp2", "Feature 2:", choices = NULL) |>
         helper(type = "inline", size = "m", fade = TRUE,
                title = "Feature expression to colour cells by",
                content = c("Select gene to colour cells by gene expression",
