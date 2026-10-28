@@ -4,7 +4,7 @@
 # GITHUB_STEP_SUMMARY. Exits non-zero (failing the job) only when BiocCheck
 # reports at least one ERROR, matching Bioconductor's minimum acceptance bar.
 
-pkg_dir <- "CellSight"
+pkg_dir <- "."
 summary_file <- Sys.getenv("GITHUB_STEP_SUMMARY", "")
 
 fail <- function(...) {

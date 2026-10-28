@@ -4,7 +4,7 @@
 # and write a formatted summary to GITHUB_STEP_SUMMARY. Exits non-zero (failing
 # the job) only when the check reports at least one ERROR.
 
-pkg_dir <- "CellSight"
+pkg_dir <- "."
 summary_file <- Sys.getenv("GITHUB_STEP_SUMMARY", "")
 
 fail <- function(...) {
