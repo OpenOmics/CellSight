@@ -75,13 +75,13 @@ platform's constraints before committing to it.
 
 From RStudio, open `shinyApp/ui.R` and click **Run App**. From the console:
 
-```{r}
+```{r, eval = FALSE}
 shiny::runApp("shinyApp")
 ```
 
 To let others on your network reach it:
 
-```{r}
+```{r, eval = FALSE}
 shiny::runApp("shinyApp", host = "0.0.0.0", port = 3838)
 ```
 
@@ -139,9 +139,10 @@ EXPOSE 3838
 ## Google Analytics
 
 `makeShinyCodes()` takes a tracking ID and writes the corresponding
-`google-analytics.html` into the app directory:
+`google-analytics.html` into the app directory. This continues on from the
+app built in `vignette("cellsight")`, so it is not re-run here:
 
-```{r}
+```{r, eval = FALSE}
 makeShinyCodes(
   shiny.title  = "PBMC multiomics",
   shiny.prefix = "sc1",

@@ -19,15 +19,18 @@ cran_packages <- c(
   "Matrix",
   "hdf5r",
   "reticulate",
-  "R.utils",
   "ggplot2",
   "gridExtra",
+  "jinjar",
   "glue",
   "readr",
   "future",
+  "future.apply",
   "RColorBrewer",
   "devtools",
   "Seurat",
+  "SeuratObject",
+  "Signac",
   "remotes",
   "DT",
   "BiocManager",
@@ -39,7 +42,14 @@ cran_packages <- c(
   "shiny",
   "shinyhelper",
   "ggpubr",
-  "ggrepel"
+  "ggrepel",
+  "qs2",
+  "styler",
+  "lintr",
+  "pak",
+  "shinydataviewer",
+  "knitr",
+  "rmarkdown"
 )
 
 
@@ -60,7 +70,12 @@ install.packages(
 # Install via:
 #   BiocManager::install('packageName')
 bioc_packages <- c(
-  # limma
+  "BiocFileCache",
+  "BiocGenerics",
+  "GenomeInfoDb",
+  "rtracklayer",
+  "S4Vectors",
+  "SingleCellExperiment"
 )
 
 # Install missing Bioconductor packages
@@ -74,3 +89,4 @@ for (p in bioc_packages) {
 
 # not on CRAN
 remotes::install_github("satijalab/seurat-wrappers")
+remotes::install_github("GreenleafLab/ArchR")

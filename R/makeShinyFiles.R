@@ -119,7 +119,7 @@ makeShinyFiles <- function(
           obj, scConf, shiny.dir, shiny.prefix, precomputed_path, clusters, chunkSize
         )
       } else {
-        err(paste0("Precomputed DEG file not found: ", precomputed_path))
+        stop(paste0("Precomputed DEG file not found: ", precomputed_path))
       }
     }
   } else if (is(obj, "ArchRProject")) {
@@ -137,5 +137,7 @@ makeShinyFiles <- function(
       default.gene1, default.gene2, default.multigene,
       default.dimred, chunkSize
     )
+  } else {
+    stop("Only Seurat/ArchR objects or h5ad file paths are accepted!")
   }
 }

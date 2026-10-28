@@ -70,7 +70,7 @@ makeShinyCodes <- function(
   shiny.title,
   shiny.footnotes = "",
   shiny.prefix,
-  shiny.headers,
+  shiny.headers = NULL,
   shiny.dir,
   defPtSiz = 1.25,
   ganalytics = NA

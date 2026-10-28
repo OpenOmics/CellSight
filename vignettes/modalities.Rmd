@@ -65,7 +65,7 @@ scConf <- createConfig(seu)
 
 makeShinyFiles(
   seu, scConf,
-  assay        = "RNA",
+  assay        = "SCT",
   assay.slot   = "data",
   shiny.prefix = "sc1",
   shiny.dir    = "shinyApp/"
@@ -80,7 +80,7 @@ For CITE-seq, protein and RNA are separate assays, so build them as separate
 prefixes and let the app present them as two datasets:
 
 ```{r}
-makeShinyFiles(seu, scConf, assay = "RNA", shiny.prefix = "sc1", shiny.dir = "shinyApp/")
+makeShinyFiles(seu, scConf, assay = "SCT", shiny.prefix = "sc1", shiny.dir = "shinyApp/")
 makeShinyFiles(seu, scConf, assay = "ADT", shiny.prefix = "sc2", shiny.dir = "shinyApp/")
 
 makeShinyCodes(
@@ -102,7 +102,16 @@ appear:
 
 ```{r}
 length(seu@images)
-#> [1] 1
+```
+
+The PBMC object used throughout this article has no images, so the call
+above simply writes gene expression files again with no spatial tab added.
+The rest of this section is illustrative, using a hypothetical Visium object
+with two slides:
+
+```{r, eval = FALSE}
+length(seu@images)
+#> [1] 2
 
 makeShinyFiles(seu, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/")
 ```
@@ -117,7 +126,7 @@ CellSight labels each slide with the most common `sample` value among that
 slide's cells; otherwise it falls back to the image names, `names(obj@images)`.
 So either add a `sample` column or rename the images before building:
 
-```{r}
+```{r, eval = FALSE}
 names(seu@images)
 #> [1] "slice1" "slice1.2"
 
@@ -136,12 +145,14 @@ normalisation, clustering and UMAP for you — see `vignette("docker")`.
 ## scATAC-seq with Signac
 
 Coverage tracks need bigWig files grouped by some cell metadata, which is what
-`bigWigGroup` names. Passing it is what switches the track-plot tab on:
+`bigWigGroup` names. Passing it is what switches the track-plot tab on. This
+object has no `peaks` assay, so this is illustrative only — `bigWigGroup` is
+simply ignored when a Signac `peaks` assay isn't present:
 
-```{r}
+```{r, eval = FALSE}
 makeShinyFiles(
   seu, scConf,
-  bigWigGroup  = "seurat_clusters",
+  bigWigGroup  = "celltype.l1",
   shiny.prefix = "sc1",
   shiny.dir    = "shinyApp/"
 )
@@ -167,9 +178,10 @@ binaries there before you build.
 
 `ArchRProject` inputs are recognised by class and routed to
 `makeShinyFilesATACarchr()`, which accepts the same defaults arguments as the
-GEX writer plus `bigWigGroup`:
+GEX writer plus `bigWigGroup`. This vignette has no `ArchRProject` object to
+run against, so `proj` below is illustrative — substitute your own:
 
-```{r}
+```{r, eval = FALSE}
 scConf <- createConfig(proj)
 
 makeShinyFiles(
@@ -189,9 +201,11 @@ dependency, so CellSight installs without it and only needs it for this path.
 
 The DEG tab is driven by a precomputed table, not computed at build time. Both
 `precomputed.deg` and `clusters` are required, and the file must exist —
-`makeShinyFiles()` errors if the path is wrong rather than silently skipping:
+`makeShinyFiles()` errors if the path is wrong rather than silently skipping.
+No `deg_results.csv` ships with this vignette, so the call below is
+illustrative:
 
-```{r}
+```{r, eval = FALSE}
 makeShinyFiles(
   seu, scConf,
   precomputed.deg = "deg_results.csv",
@@ -201,9 +215,10 @@ makeShinyFiles(
 )
 ```
 
-Computing the table first, with Seurat, then handing it over:
+Computing the table first, with Seurat, then handing it over. `FindAllMarkers`
+on a 162,000-cell object takes a while, so this is not run here either:
 
-```{r}
+```{r, eval = FALSE}
 deg <- Seurat::FindAllMarkers(seu, only.pos = FALSE)
 write.csv(deg, "deg_results.csv", row.names = FALSE)
 ```
@@ -215,9 +230,10 @@ not to a visualisation tool.
 ## AnnData / Scanpy input
 
 Pass the `.h5ad` path as a string where you would pass an object, to both
-`createConfig()` and `makeShinyFiles()`:
+`createConfig()` and `makeShinyFiles()`. No `pbmc.h5ad` ships with this
+vignette, so this is illustrative only:
 
-```{r}
+```{r, eval = FALSE}
 reticulate::py_install("anndata")
 
 scConf <- createConfig("pbmc.h5ad")
@@ -231,7 +247,7 @@ Reading `.h5ad` goes through **reticulate**, so a Python environment with
 Which matrix is read is controlled by `assay`, which defaults to `"X"`: that
 value reads `h5ad.X`, and any other is looked up in `h5ad.layers`.
 
-```{r}
+```{r, eval = FALSE}
 makeShinyFiles("pbmc.h5ad", scConf, assay = "X", shiny.prefix = "sc1", shiny.dir = "shinyApp/")
 makeShinyFiles("pbmc.h5ad", scConf, assay = "counts", shiny.prefix = "sc1", shiny.dir = "shinyApp/")
 ```
@@ -242,10 +258,12 @@ and is ignored on this path.
 ## Calling the writers directly
 
 The modality writers are exported, so you can call one on its own when you want
-just that modality, or want to pass arguments the dispatcher does not forward:
+just that modality, or want to pass arguments the dispatcher does not forward.
+`makeShinyFilesSpatial()` requires an object with images, which this one
+doesn't have, so this is illustrative only:
 
-```{r}
-makeShinyFilesGEX(seu, scConf, gex.assay = "RNA", shiny.prefix = "sc1", shiny.dir = "shinyApp/")
+```{r, eval = FALSE}
+makeShinyFilesGEX(seu, scConf, gex.assay = "SCT", shiny.prefix = "sc1", shiny.dir = "shinyApp/")
 makeShinyFilesSpatial(seu, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/")
 ```
 

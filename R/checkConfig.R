@@ -74,7 +74,7 @@ checkConfig <- function(scConf, obj){
     fID = strsplit(scConf[ID == iMeta]$fID, "\\|")[[1]]
     if(!is.na(fID[1])){
       # Check if levels in scConf matches objMeta
-      if(!all.equal(sort(fID), sort(as.character(unique(objMeta[[iMeta]]))))){
+      if(!isTRUE(all.equal(sort(fID), sort(as.character(unique(objMeta[[iMeta]])))))){
         message(paste0("ERROR! factors in scConf/obj do not match for: ", iMeta))
         nErr = nErr + 1
       }

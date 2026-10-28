@@ -24,7 +24,7 @@
 #' @export
 reorderMeta <- function(scConf, new.meta.order){
   # Check if new.meta.order matches scConf$ID
-  if(!all.equal(sort(new.meta.order), sort(as.character(scConf$ID)))){
+  if(!isTRUE(all.equal(sort(new.meta.order), sort(as.character(scConf$ID))))){
     stop("new.meta.order does not match scConf$ID!")
   }
   
