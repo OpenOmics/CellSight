@@ -16,5 +16,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install missing R dependencies from DESCRIPTION
+        run: |
+          Rscript -e 'if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes", repos = "https://cloud.r-project.org"); remotes::install_deps(".", dependencies = TRUE, repos = c(BiocManager::repositories(), "https://cloud.r-project.org"))'
+
       - name: Run BiocCheck and summarize results
         run: Rscript .github/scripts/bioccheck-summary.R
