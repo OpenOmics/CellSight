@@ -33,7 +33,7 @@ test_that("createConfig drops metadata above maxLevels, with a warning", {
   seu <- test_seurat()
   expect_warning(
     scConf <- createConfig(seu,
-      meta.to.include = c("group", "donor"),
+      meta.to.include = c("group", "donor", "nCount_RNA"),
       maxLevels = 2
     ),
     "donor.*excluded"
