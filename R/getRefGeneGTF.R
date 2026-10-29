@@ -22,8 +22,8 @@
 #' release of the CellSight repository.
 #'
 #' @examples
-#' \dontrun{
-#' # Downloads a real file from the network; not run during checks/examples.
+#' \donttest{
+#' # Downloads a real file from the network; skipped during routine checks.
 #' gtf <- getRefGeneGTF("hg38")
 #' file.exists(gtf)
 #' }
@@ -69,6 +69,10 @@ getRefGeneGTF <- function(scGenome, cache = refGeneCache(), verbose = TRUE) {
 #'   \code{tools::R_user_dir("cellsight", "cache")}.
 #'
 #' @return A \code{BiocFileCache} object.
+#'
+#' @examples
+#' cache <- refGeneCache(cache.dir = tempfile())
+#' class(cache)
 #'
 #' @export
 refGeneCache <- function(cache.dir = tools::R_user_dir("cellsight", "cache")) {

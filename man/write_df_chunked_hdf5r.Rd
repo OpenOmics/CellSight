@@ -34,6 +34,6 @@ I/O operations, especially for large datasets.
 }
 \examples{
 df <- data.frame(x = 1:100000, y = rnorm(100000))
-write_df_chunked_hdf5r(df, "output.h5", key = "mydata")
+write_df_chunked_hdf5r(df, tempfile(fileext = ".h5"), key = "mydata")
 
 }

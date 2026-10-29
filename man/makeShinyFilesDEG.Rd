@@ -71,14 +71,33 @@ A prefix is specified for each set of files to allow for multiple
 single-cell datasets in a single Shiny app.
 }
 \examples{
-\dontrun{
-# Requires makeShinyFilesGEX()/makeShinyFiles() to have already written
-# <prefix>def.qs2.rds, plus a precomputed marker-gene table; neither ships
-# with this package.
-makeShinyFilesDEG(seu, scConf,
-  shiny.dir = "shinyApp/", shiny.prefix = "sc1",
-  precomputed.deg = "markers.tsv", clusters = "seurat_clusters"
-)
+if (requireNamespace("Seurat", quietly = TRUE) &&
+    requireNamespace("SeuratObject", quietly = TRUE)) {
+  set.seed(1)
+  counts <- matrix(rpois(20 * 30, 5), nrow = 20, ncol = 30,
+                    dimnames = list(paste0("Gene", 1:20), paste0("Cell", 1:30)))
+  seu <- Seurat::CreateSeuratObject(counts = counts, min.cells = 0, min.features = 0)
+  seu$grp <- factor(rep(c("A", "B"), 15))
+  seu <- Seurat::NormalizeData(seu, verbose = FALSE)
+  seu <- Seurat::FindVariableFeatures(seu, nfeatures = 10, verbose = FALSE)
+  seu <- Seurat::ScaleData(seu, verbose = FALSE)
+  seu <- Seurat::RunPCA(seu, npcs = 3, verbose = FALSE)
+  seu <- Seurat::RunUMAP(seu, dims = 1:3, n.neighbors = 5, verbose = FALSE)
+
+  scConf <- createConfig(seu, meta.to.include = c("orig.ident", "grp"))
+  appdir <- tempfile()
+  makeShinyFiles(seu, scConf, shiny.prefix = "sc1", shiny.dir = appdir)
+
+  # A precomputed marker-gene table, as produced by Seurat::FindAllMarkers()
+  markers <- data.frame(
+    p_val = 0.01, avg_log2FC = 1, pct.1 = 0.5, pct.2 = 0.1,
+    p_val_adj = 0.05, cluster = c("A", "B"), gene = c("Gene1", "Gene2")
+  )
+  deg_path <- tempfile(fileext = ".tsv")
+  write.table(markers, deg_path, sep = "\t", row.names = FALSE, quote = FALSE)
+
+  makeShinyFilesDEG(seu, scConf, shiny.dir = appdir, shiny.prefix = "sc1",
+                    precomputed.deg = deg_path, clusters = "grp")
 }
 
 }

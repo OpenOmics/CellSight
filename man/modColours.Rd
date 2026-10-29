@@ -24,7 +24,7 @@ Modify the colour palette for categorical metadata.
 \examples{
 bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
 pbmc_path <- BiocFileCache::bfcrpath(bfc,
-  "https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1")
+  "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
 seu <- readRDS(pbmc_path)
 scConf <- createConfig(seu)
 scConf = modColours(scConf, meta.to.mod = "celltype.l1",

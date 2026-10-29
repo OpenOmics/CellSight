@@ -17,3 +17,8 @@ A \code{BiocFileCache} object.
 Returns (creating if necessary) the package-specific on-disk cache used to
 store downloaded reference annotation files.
 }
+\examples{
+cache <- refGeneCache(cache.dir = tempfile())
+class(cache)
+
+}

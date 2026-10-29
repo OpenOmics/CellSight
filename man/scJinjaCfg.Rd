@@ -15,3 +15,8 @@ literal curly braces in the generated Shiny/ggplot code pass through
 untouched. Block and comment delimiters keep the jinjar defaults; neither
 of those sequences occurs in the generated code.
 }
+\examples{
+cfg <- scJinjaCfg()
+jinjar::render("Hello, << name >>!", name = "world", .config = cfg)
+
+}

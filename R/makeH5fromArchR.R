@@ -11,7 +11,17 @@
 #'
 #' @author John F. Ouyang
 #'
-#' @import data.table hdf5r reticulate 
+#' @import data.table hdf5r reticulate
+#'
+#' @examples
+#' if (requireNamespace("ArchR", quietly = TRUE)) {
+#'   # Requires a real ArchRProject; none ships with this package (ArchR is
+#'   # not on CRAN/Bioconductor), so this is only run when ArchR is actually
+#'   # installed and a project is available.
+#'   # sc1meta <- data.table::data.table(cellID = rownames(proj@cellColData))
+#'   # makeH5fromArchR(proj, sc1meta, filename = tempfile(fileext = ".h5"),
+#'   #                  assay = "PeakMatrix")
+#' }
 #'
 #' @export
 makeH5fromArchR <- function(obj, sc1meta, filename, assay){

@@ -25,7 +25,11 @@ Sys.setenv("_R_CHECK_FORCE_SUGGESTS_" = "false")
 res <- tryCatch(
   rcmdcheck::rcmdcheck(
     pkg_dir,
-    args = c("--as-cran"),
+    ## --no-manual: this CI container has no pdflatex, so the PDF manual
+    ## build step itself fails and rcmdcheck counts that as an ERROR. The
+    ## official Bioconductor build system (which does have LaTeX) still
+    ## builds and checks the manual; this only skips it for this PR gate.
+    args = c("--as-cran", "--no-manual"),
     error_on = "never",
     quiet = TRUE
   ),

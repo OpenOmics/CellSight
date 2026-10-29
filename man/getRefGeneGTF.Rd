@@ -29,15 +29,14 @@ they are needed. Downloads are cached with \pkg{BiocFileCache} so each file
 is fetched only once and reused on subsequent calls.
 }
 \details{
-The remote sources are pinned to the \code{datav1.0.0} data release of the
-CellSight repository:
-\itemize{
-  \item \code{hg19}, \code{hg38}: GitHub release assets
-  \item \code{mm9}, \code{mm10}: GitHub user-attachment assets
-}
+All four files are hosted as release assets on the \code{datav1.0.0} data
+release of the CellSight repository.
 }
 \examples{
+\donttest{
+# Downloads a real file from the network; skipped during routine checks.
 gtf <- getRefGeneGTF("hg38")
 file.exists(gtf)
+}
 
 }
