@@ -6,8 +6,14 @@
 #' of those sequences occurs in the generated code.
 #'
 #' @return a \code{jinjar_config} object
+#'
+#' @examples
+#' cfg <- scJinjaCfg()
+#' jinjar::render("Hello, << name >>!", name = "world", .config = cfg)
+#'
 #' @rdname scJinjaCfg
 #' @export scJinjaCfg
+#' @importFrom jinjar jinjar_config path_loader render
 #'
 scJinjaCfg <- function() {
   jinjar::jinjar_config(variable_open = "<<", variable_close = ">>")
@@ -25,6 +31,10 @@ scJinjaCfg <- function() {
 #' @param x a character vector of template blocks
 #'
 #' @return the dedented character vector
+#'
+#' @examples
+#' scTrim("\n  hello\n    world\n  ")
+#'
 #' @rdname scTrim
 #' @export scTrim
 #'

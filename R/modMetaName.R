@@ -21,11 +21,14 @@
 #' @import data.table
 #'
 #' @examples
-#' \dontrun{
-#' scConf = modMetaName(scConf, 
-#'                      meta.to.mod = c("orig.ident", "seurat_clusters"), 
-#'                      new.name = c("library", "cluster"))
-#' }
+#' bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+#' pbmc_path <- BiocFileCache::bfcrpath(bfc,
+#'   "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
+#' seu <- readRDS(pbmc_path)
+#' scConf <- createConfig(seu)
+#' scConf = modMetaName(scConf,
+#'                      meta.to.mod = c("orig.ident", "celltype.l1"),
+#'                      new.name = c("sample", "celltype"))
 #'
 #' @export
 modMetaName <- function(scConf, meta.to.mod, new.name){

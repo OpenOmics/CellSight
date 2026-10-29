@@ -17,19 +17,22 @@
 #' @import data.table reticulate hdf5r
 #'
 #' @examples
-#' \dontrun{
+#' bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+#' pbmc_path <- BiocFileCache::bfcrpath(bfc,
+#'   "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
+#' seu <- readRDS(pbmc_path)
+#' scConf <- createConfig(seu)
 #' checkConfig(scConf, seu)
-#' }
 #'
 #' @export
 checkConfig <- function(scConf, obj){
   nErr = 0
   # Extract corresponding metadata
-  if(class(obj)[1] == "Seurat"){
+  if(is(obj, "Seurat")){
     # Seurat Object
     objMeta = obj@meta.data
     
-  } else if (class(obj)[1] == "SingleCellExperiment"){
+  } else if (is(obj, "SingleCellExperiment")){
     # SCE Object
     objMeta = SingleCellExperiment::colData(obj)
     
@@ -71,7 +74,7 @@ checkConfig <- function(scConf, obj){
     fID = strsplit(scConf[ID == iMeta]$fID, "\\|")[[1]]
     if(!is.na(fID[1])){
       # Check if levels in scConf matches objMeta
-      if(!all.equal(sort(fID), sort(as.character(unique(objMeta[[iMeta]]))))){
+      if(!isTRUE(all.equal(sort(fID), sort(as.character(unique(objMeta[[iMeta]])))))){
         message(paste0("ERROR! factors in scConf/obj do not match for: ", iMeta))
         nErr = nErr + 1
       }

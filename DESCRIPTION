@@ -3,15 +3,17 @@ Type: Package
 Title: cellsight: spatial sequencing visualization
 Version: 0.0.1
 Authors@R: c(
-  person("Ryan", "Routsong", email = "ryan.routsong@nih.gov",
-         role = c("aut", "cre")),
-  person("Skyler", "Kuhn", role = "aut"),
-  person("Brittney", "Dulek", role = "aut"),
-  person("Neelam", "Redekar", role = "aut"),
-  person("John F.", "Ouyang", role = c("aut", "cph"),
-         comment = "Author of ShinyCell2, from which CellSight is derived; see NOTICE"),
-  person("Beijun", "Chen", role = c("aut", "cph"),
-         comment = "Author of ShinyCell2, from which CellSight is derived; see NOTICE"))
+  person("Ryan", "Routsong", email = "routsongrm@nih.gov",
+         role = c("aut", "cre"),
+         comment = c(ORCID = "0000-0002-1348-6172")),
+  person("Skyler", "Kuhn", role = "aut",
+         comment = c(ORCID = "0000-0003-0606-2125")),
+  person("Neelam", "Redekar", role = "aut",
+         comment = c(ORCID = "0000-0002-4819-9034")),
+  person("John F.", "Ouyang", role = "aut",
+         comment = "Upstream maintainer of ShinyCell2, from which CellSight is derived; see NOTICE"),
+  person("Beijun", "Chen", role = "aut",
+         comment = "Upstream contributor to ShinyCell2, from which CellSight is derived; see NOTICE"))
 Description: CellSight is a GPL-3.0-licensed toolkit for generating interactive
   Shiny applications for single-cell multi-omics and spatial transcriptomics
   data. This project includes modifications and extensions derived from
@@ -27,25 +29,34 @@ Depends:
   Matrix       (>= 1.5.3),
   hdf5r        (>= 1.3.8),
   reticulate   (>= 1.28),
-  R.utils      (>= 2.12.2),
   ggplot2      (>= 3.4.1),
   gridExtra    (>= 2.3),
   jinjar       (>= 0.2.0),
   readr        (>= 2.1.4),
   future       (>= 1.32.0),
+  future.apply,
   RColorBrewer (>= 1.1-3),
-  shinyhelper,
   grid
 Imports:
-  BiocFileCache (>= 2.0.0)
+  BiocFileCache (>= 2.0.0),
+  methods,
+  qs2
 Suggests:
   Seurat       (>= 5.0.0),
   Signac       (>= 1.12.0),
   ArchR        (>= 1.0.1),
+  BiocGenerics,
+  GenomeInfoDb,
+  rtracklayer,
+  S4Vectors,
+  SeuratObject,
+  SingleCellExperiment,
   styler       (>= 1.10.0),
   lintr        (>= 3.0.0),
   pak          (>= 0.7.0),
+  testthat     (>= 3.0.0),
   shiny,
+  shinyhelper,
   DT,
   magrittr,
   ggrepel,
@@ -55,6 +66,7 @@ Suggests:
   knitr,
   rmarkdown
 VignetteBuilder: knitr
+Config/testthat/edition: 3
 Config/Needs/website:
   pkgdown
 Config/Needs/viz:
@@ -69,6 +81,9 @@ Config/Needs/viz:
   hdf5r,
   ggdendro,
   gridExtra,
-  ggpubr
+  ggpubr,
+  qs2
+biocViews: Software, SingleCell, Spatial, Transcriptomics, Visualization,
+  GeneExpression, ShinyApps, Sequencing
 Encoding: UTF-8
 RoxygenNote: 7.3.3

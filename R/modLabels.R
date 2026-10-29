@@ -15,10 +15,15 @@
 #' @import data.table
 #'
 #' @examples
-#' \dontrun{
-#' scConf = modLabels(scConf, meta.to.mod = "library", 
-#'                    new.labels = c("Fib", "Primed", "Naive", "RSeT"))
-#' }
+#' bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+#' pbmc_path <- BiocFileCache::bfcrpath(bfc,
+#'   "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
+#' seu <- readRDS(pbmc_path)
+#' scConf <- createConfig(seu)
+#' scConf = modLabels(scConf, meta.to.mod = "celltype.l1",
+#'                    new.labels = c("B cells", "CD4 T cells", "CD8 T cells",
+#'                                   "Dendritic", "Monocyte", "NK cells",
+#'                                   "Other", "Other T"))
 #'
 #' @export
 modLabels <- function(scConf, meta.to.mod, new.labels){

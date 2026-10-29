@@ -15,10 +15,14 @@
 #' @import data.table
 #'
 #' @examples
-#' \dontrun{
-#' scConf = modColours(scConf, meta.to.mod = "library", 
-#'                     new.colours = c("black", "darkorange", "blue", "red"))
-#' }
+#' bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+#' pbmc_path <- BiocFileCache::bfcrpath(bfc,
+#'   "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
+#' seu <- readRDS(pbmc_path)
+#' scConf <- createConfig(seu)
+#' scConf = modColours(scConf, meta.to.mod = "celltype.l1",
+#'                     new.colours = c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C",
+#'                                     "#FB9A99", "#E31A1C", "#FDBF6F", "#FF7F00"))
 #'
 #' @export
 modColours <- function(scConf, meta.to.mod, new.colours){

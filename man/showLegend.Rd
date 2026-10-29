@@ -23,7 +23,11 @@ is shown here instead of the actual name. For more information regarding
 display name, see \code{?modMetaName}.
 }
 \examples{
-\dontrun{
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
+seu <- readRDS(pbmc_path)
+scConf <- createConfig(seu)
 showLegend(scConf)
 
 # Can also save the legend for plotting later
@@ -31,7 +35,6 @@ scLegend = showLegend(scConf)
 leg = do.call(gtable_rbind, scLegend)
 grid.newpage()
 grid.draw(leg)
-}
 
 }
 \author{

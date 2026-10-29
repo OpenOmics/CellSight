@@ -43,7 +43,7 @@ tabPanel(
       selectInput("<< d.prefix >>s3inp3", "Split by",
         choices = << d.prefix >>conf[grp == TRUE]$UI,
         selected = << d.prefix >>def$grp1
-      ) %>% helper(
+      ) |> helper(
           type = "inline", size = "m", fade = TRUE,
           title = "Cell information to group cells by",
           content = c("Select categorical cell information to split single cells by this categorical covariate")

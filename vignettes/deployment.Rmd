@@ -10,8 +10,7 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  eval = FALSE
+  comment = "#>"
 )
 ```
 
@@ -27,14 +26,14 @@ prefix:
 
 | file | contents |
 | ---- | -------- |
-| `<prefix>conf.rds` | the config (`scConf`) |
-| `<prefix>meta.rds` | cell metadata |
-| `<prefix>dimr.rds` | dimensionality-reduction embeddings |
-| `<prefix>gene.rds` | feature-name to HDF5-row mapping |
-| `<prefix>def.rds` | the app's default gene / metadata selections |
+| `<prefix>conf.qs2.rds` | the config (`scConf`) |
+| `<prefix>meta.qs2.rds` | cell metadata |
+| `<prefix>dimr.qs2.rds` | dimensionality-reduction embeddings |
+| `<prefix>gene.qs2.rds` | feature-name to HDF5-row mapping |
+| `<prefix>def.qs2.rds` | the app's default gene / metadata selections |
 | `<prefix>assay_<assay>.h5` | chunked expression matrix, one per assay |
-| `<prefix>image.rds` | spatial images and slide names, if spatial |
-| `<prefix>bw.rds` | bigWig grouping and genome, if ATAC |
+| `<prefix>image.qs2.rds` | spatial images and slide names, if spatial |
+| `<prefix>bw.qs2.rds` | bigWig grouping and genome, if ATAC |
 | `<prefix>deg.h5` | precomputed DEG tables, if supplied |
 
 plus one shared `ui.R`, `server.R` and `shinyFunc.R`. The whole directory is
@@ -49,16 +48,16 @@ Building needs the packages in `Depends`. *Serving* needs a different set,
 declared in `DESCRIPTION` as `Config/Needs/viz`. Install exactly that on the
 host:
 
-```{r}
+```r
 install.packages("pak")
 pak::pkg_install("CellSight", dependencies = c("Depends", "Imports", "Config/Needs/viz"))
 ```
 
 Or without pak:
 
-```{r}
+```r
 reqPkg <- c("shiny", "shinyhelper", "data.table", "Matrix", "DT", "magrittr",
-            "ggplot2", "ggrepel", "hdf5r", "ggdendro", "gridExtra", "ggpubr")
+            "ggplot2", "ggrepel", "hdf5r", "ggdendro", "gridExtra", "ggpubr", "qs2")
 newPkg <- reqPkg[!(reqPkg %in% installed.packages()[, "Package"])]
 if (length(newPkg)) install.packages(newPkg)
 ```
@@ -76,13 +75,13 @@ platform's constraints before committing to it.
 
 From RStudio, open `shinyApp/ui.R` and click **Run App**. From the console:
 
-```{r}
+```{r, eval = FALSE}
 shiny::runApp("shinyApp")
 ```
 
 To let others on your network reach it:
 
-```{r}
+```{r, eval = FALSE}
 shiny::runApp("shinyApp", host = "0.0.0.0", port = 3838)
 ```
 
@@ -90,7 +89,7 @@ shiny::runApp("shinyApp", host = "0.0.0.0", port = 3838)
 
 Deploy the directory with **rsconnect**:
 
-```{r}
+```r
 install.packages("rsconnect")
 rsconnect::setAccountInfo(name = "<account>", token = "<token>", secret = "<secret>")
 rsconnect::deployApp("shinyApp")
@@ -100,7 +99,7 @@ Two things bite here. First, shinyapps.io infers dependencies by scanning your
 code, and it will not find the system binaries that ATAC track plots need — so
 ATAC-enabled apps generally need a container-based host instead. Second, the
 free and lower tiers have an instance memory limit; the HDF5 design keeps
-CellSight apps light, but a large `meta.rds` (millions of cells) can still
+CellSight apps light, but a large `meta.qs2.rds` (millions of cells) can still
 exceed it.
 
 ## Shiny Server
@@ -140,9 +139,10 @@ EXPOSE 3838
 ## Google Analytics
 
 `makeShinyCodes()` takes a tracking ID and writes the corresponding
-`google-analytics.html` into the app directory:
+`google-analytics.html` into the app directory. This continues on from the
+app built in `vignette("cellsight")`, so it is not re-run here:
 
-```{r}
+```{r, eval = FALSE}
 makeShinyCodes(
   shiny.title  = "PBMC multiomics",
   shiny.prefix = "sc1",
@@ -161,3 +161,9 @@ The upstream ShinyCell2 project has more detail on cloud hosting, which applies
 unchanged to CellSight apps:
 [Instructions on how to deploy apps
 online](https://htmlpreview.github.io/?https://github.com/the-ouyang-lab/cellsight-tutorial/master/docs/cloud.html).
+
+## Session info
+
+```{r}
+sessionInfo()
+```

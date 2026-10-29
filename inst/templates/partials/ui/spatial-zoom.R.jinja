@@ -60,7 +60,7 @@ tabPanel(
   fluidRow(
     column(
       3, style = "border-right: 2px solid black", h4("Information to plot"),
-      selectInput("<< d.prefix >>s1inp1", "Cell metadata to colour plot:", choices = << d.prefix >>conf$UI, selected = << d.prefix >>def$meta1) %>%
+      selectInput("<< d.prefix >>s1inp1", "Cell metadata to colour plot:", choices = << d.prefix >>conf$UI, selected = << d.prefix >>def$meta1) |>
         helper(type = "inline", size = "m", fade = TRUE,
                title = "Cell Info / Gene to colour cells by",
                content = c("Select cell info / feature to colour cells",

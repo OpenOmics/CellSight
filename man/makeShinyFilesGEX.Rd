@@ -66,22 +66,26 @@ data files required for shiny app
 \description{
 Generate data files required for shiny app, specifically scRNA-seq data
 Six files will be generated, namely 
-(i) the CellSight config \code{prefix_conf.rds}, 
-(ii) the single-cell metadata \code{prefix_meta.rds}, 
+(i) the CellSight config \code{prefix_conf.qs2.rds}, 
+(ii) the single-cell metadata \code{prefix_meta.qs2.rds}, 
 (iii) the single-cell assays \code{prefix_assay_X.h5}, 
-(iv) the feature mapping object config \code{prefix_gene.rds}, 
-(v) the dimension reduction embeddings \code{prefix_dimr.rds} and 
-(vi) the defaults for the Shiny app \code{prefix_def.rds}. 
+(iv) the feature mapping object config \code{prefix_gene.qs2.rds}, 
+(v) the dimension reduction embeddings \code{prefix_dimr.qs2.rds} and 
+(vi) the defaults for the Shiny app \code{prefix_def.qs2.rds}. 
 A prefix is specified for each set of files to allow for multiple 
 single-cell datasets in a single Shiny app.
 }
 \examples{
-\dontrun{
-makeShinyFilesGEX(seu, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/",
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
+seu <- readRDS(pbmc_path)
+scConf <- createConfig(seu)
+makeShinyFilesGEX(seu, scConf, gex.assay = "SCT",
+                  shiny.prefix = "sc1", shiny.dir = tempdir(),
                   default.gene1 = "POU5F1", default.gene2 = "APOA1",
-                  default.multigene = c("POU5F1","APOA1","GPRC5A","TBXT","ISL1"),
+                  default.multigene = c("POU5F1","APOA1","GPRC5A"),
                   default.dimred = "umap")
-}
 
 }
 \author{
