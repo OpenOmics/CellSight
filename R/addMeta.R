@@ -27,7 +27,7 @@
 #' pbmc_path <- BiocFileCache::bfcrpath(bfc,
 #'   "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
 #' seu <- readRDS(pbmc_path)
-#' scConf <- createConfig(seu)
+#' scConf <- delMeta(createConfig(seu), "orig.ident")
 #' scConf = addMeta(scConf, c("orig.ident"), seu)
 #'
 #' @export
