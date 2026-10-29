@@ -1,0 +1,33 @@
+name: testthat
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  testthat:
+    runs-on: ubuntu-latest
+    container:
+      image: rroutsong/cellsight_builder:latest
+      options: --user root
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install missing R dependencies from DESCRIPTION
+        run: |
+          Rscript -e 'if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes", repos = "https://cloud.r-project.org"); remotes::install_deps(".", dependencies = TRUE, repos = c(BiocManager::repositories(), "https://cloud.r-project.org"))'
+
+      - name: Ensure testthat is available
+        run: |
+          Rscript -e 'if (!requireNamespace("testthat", quietly = TRUE)) install.packages("testthat", repos = "https://cloud.r-project.org")'
+
+      - name: Install cellsight from PR branch
+        run: |
+          Rscript -e 'if ("cellsight" %in% installed.packages()[,"Package"]) remove.packages("cellsight")'
+          Rscript -e 'install.packages(".", repos = NULL, type = "source")'
+
+      - name: Run testthat suite and summarize results
+        run: Rscript .github/scripts/testthat-summary.R
