@@ -45,7 +45,7 @@ jobs:
 
       - name: Build and install libbeato and bwtool
         run: |
-          export CFLAGS="-std=gnu17 -fcommon"
+          export CFLAGS="-std=gnu17 -fcommon -D_GNU_SOURCE -Wno-implicit-function-declaration -Wno-implicit-int -Wno-int-conversion -Wno-return-mismatch"
           git clone https://github.com/CRG-Barcelona/libbeato.git
           cd libbeato
           git checkout 0c30432
