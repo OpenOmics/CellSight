@@ -45,16 +45,17 @@ jobs:
 
       - name: Build and install libbeato and bwtool
         run: |
+          export CFLAGS="-std=gnu17 -fcommon"
           git clone https://github.com/CRG-Barcelona/libbeato.git
           cd libbeato
           git checkout 0c30432
-          ./configure
+          ./configure CFLAGS="$CFLAGS"
           make
           sudo make install
           cd ..
           git clone https://github.com/CRG-Barcelona/bwtool.git
           cd bwtool
-          ./configure
+          ./configure CFLAGS="$CFLAGS"
           make
           sudo make install
           cd ..
