@@ -20,9 +20,12 @@ Reorder the order in which metadata appear in the dropdown menu in the
 shiny app.
 }
 \examples{
-\dontrun{
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
+seu <- readRDS(pbmc_path)
+scConf <- createConfig(seu)
 scConf = reorderMeta(scConf, scConf$ID[c(1,3,2,4:length(scConf$ID))])
-}
 
 }
 \author{

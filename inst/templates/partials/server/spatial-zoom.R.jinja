@@ -314,6 +314,6 @@ output$<< d.prefix >>s1.dt <- renderDataTable({
   ggData = sc2Dnum(<< d.prefix >>conf, meta_subset, tmpdimr, "umap", << d.prefix >>s1oup1xy$x, << d.prefix >>s1oup1xy$y, input$<< d.prefix >>s1inp1,
                    "<< d.prefix >>assay_", << d.prefix >>gene, "Cell Information", input$<< d.prefix >>s1sub1, input$<< d.prefix >>s1sub2, input$<< d.prefix >>s1splt)
   datatable(ggData, rownames = FALSE, extensions = "Buttons",
-            options = list(pageLength = -1, dom = "tB", buttons = c("copy", "csv", "excel"))) %>%
+            options = list(pageLength = -1, dom = "tB", buttons = c("copy", "csv", "excel"))) |>
     formatRound(columns = c("pctZoom"), digits = 2)
 })

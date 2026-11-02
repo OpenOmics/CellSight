@@ -20,3 +20,7 @@ removed. This is a self-contained reimplementation of the dedenting that
 \code{glue::glue()} applied to these templates, kept so the code writers do
 not depend on \pkg{glue}. Operates on ASCII input.
 }
+\examples{
+scTrim("\n  hello\n    world\n  ")
+
+}

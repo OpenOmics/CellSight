@@ -101,6 +101,14 @@ reference:
   - makeH5fromArchR
   - write_df_chunked_hdf5r
 
+- title: Reference data
+  desc: >
+    Resolve the bundled refGene GTFs used to build the gene index for ATAC
+    track plots, downloading and caching them on demand.
+  contents:
+  - getRefGeneGTF
+  - refGeneCache
+
 - title: Template helpers
   desc: >
     Used by the code writers to render the bundled jinjar templates. Of

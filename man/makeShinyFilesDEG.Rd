@@ -61,23 +61,43 @@ data files required for shiny app
 \description{
 Generate data files required for shiny app, specifically scRNA-seq data
 Six files will be generated, namely
-(i) the CellSight config \code{prefix_conf.rds},
-(ii) the single-cell metadata \code{prefix_meta.rds},
+(i) the CellSight config \code{prefix_conf.qs2.rds},
+(ii) the single-cell metadata \code{prefix_meta.qs2.rds},
 (iii) the single-cell assays \code{prefix_assay_X.h5},
-(iv) the feature mapping object config \code{prefix_gene.rds},
-(v) the dimension reduction embeddings \code{prefix_dimr.rds} and
-(vi) the defaults for the Shiny app \code{prefix_def.rds}.
+(iv) the feature mapping object config \code{prefix_gene.qs2.rds},
+(v) the dimension reduction embeddings \code{prefix_dimr.qs2.rds} and
+(vi) the defaults for the Shiny app \code{prefix_def.qs2.rds}.
 A prefix is specified for each set of files to allow for multiple
 single-cell datasets in a single Shiny app.
 }
 \examples{
-\dontrun{
-makeShinyFilesGEX(seu, scConf,
-  shiny.prefix = "sc1", shiny.dir = "shinyApp/",
-  default.gene1 = "POU5F1", default.gene2 = "APOA1",
-  default.multigene = c("POU5F1", "APOA1", "GPRC5A", "TBXT", "ISL1"),
-  default.dimred = "umap"
-)
+if (requireNamespace("Seurat", quietly = TRUE) &&
+    requireNamespace("SeuratObject", quietly = TRUE)) {
+  set.seed(1)
+  counts <- matrix(rpois(20 * 30, 5), nrow = 20, ncol = 30,
+                    dimnames = list(paste0("Gene", 1:20), paste0("Cell", 1:30)))
+  seu <- Seurat::CreateSeuratObject(counts = counts, min.cells = 0, min.features = 0)
+  seu$grp <- factor(rep(c("A", "B"), 15))
+  seu <- Seurat::NormalizeData(seu, verbose = FALSE)
+  seu <- Seurat::FindVariableFeatures(seu, nfeatures = 10, verbose = FALSE)
+  seu <- Seurat::ScaleData(seu, verbose = FALSE)
+  seu <- Seurat::RunPCA(seu, npcs = 3, verbose = FALSE)
+  seu <- Seurat::RunUMAP(seu, dims = 1:3, n.neighbors = 5, verbose = FALSE)
+
+  scConf <- createConfig(seu, meta.to.include = c("orig.ident", "grp"))
+  appdir <- tempfile()
+  makeShinyFiles(seu, scConf, shiny.prefix = "sc1", shiny.dir = appdir)
+
+  # A precomputed marker-gene table, as produced by Seurat::FindAllMarkers()
+  markers <- data.frame(
+    p_val = 0.01, avg_log2FC = 1, pct.1 = 0.5, pct.2 = 0.1,
+    p_val_adj = 0.05, cluster = c("A", "B"), gene = c("Gene1", "Gene2")
+  )
+  deg_path <- tempfile(fileext = ".tsv")
+  write.table(markers, deg_path, sep = "\t", row.names = FALSE, quote = FALSE)
+
+  makeShinyFilesDEG(seu, scConf, shiny.dir = appdir, shiny.prefix = "sc1",
+                    precomputed.deg = deg_path, clusters = "grp")
 }
 
 }

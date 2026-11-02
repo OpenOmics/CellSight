@@ -78,7 +78,7 @@ tabPanel(
                          choices = c("Cell Information", paste0("Assay: ", << d.prefix >>def$assay)),
                          selected = "Cell Information"),
           div(class = "centerSelect",
-          selectInput("<< d.prefix >>a2inp1", "Cell Info / Feature Name:", choices = NULL) %>%
+          selectInput("<< d.prefix >>a2inp1", "Cell Info / Feature Name:", choices = NULL) |>
             helper(type = "inline", size = "m", fade = TRUE,
                    title = "Cell Info / Gene to colour cells by",
                    content = c("Select cell info / feature to colour cells",
@@ -131,7 +131,7 @@ tabPanel(
                          choices = c("Cell Information", paste0("Assay: ", << d.prefix >>def$assay)),
                          selected = paste0("Assay: ", << d.prefix >>def$assay[1])),
           div(class = "centerSelect",
-          selectInput("<< d.prefix >>a2inp2", "Cell Info / Feature Name:", choices = NULL) %>%
+          selectInput("<< d.prefix >>a2inp2", "Cell Info / Feature Name:", choices = NULL) |>
             helper(type = "inline", size = "m", fade = TRUE,
                    title = "Cell Info / Gene to colour cells by",
                    content = c("Select cell info / feature to colour cells",

@@ -10,8 +10,7 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  eval = FALSE
+  comment = "#>"
 )
 ```
 
@@ -20,7 +19,21 @@ generated app shows and how it looks. It is an ordinary `data.table`, so you
 can inspect and edit it directly, but the helpers in this article keep it
 internally consistent and are the supported route.
 
-Code here is not evaluated when the site is built; it needs a real object.
+The examples below run against the same [multimodal PBMC CITE-seq
+object](https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds)
+used in `vignette("cellsight")`:
+
+```{r}
+library(Seurat)
+library(cellsight)
+library(BiocFileCache)
+
+bfc <- BiocFileCache(ask = FALSE)
+pbmc_path <- bfcrpath(bfc, "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
+seu <- readRDS(pbmc_path)
+
+scConf <- createConfig(seu)
+```
 
 ## What is in a config
 
@@ -56,13 +69,14 @@ takes `fontSize` if the labels are long.
 Restrict at creation time when you already know what you want:
 
 ```{r}
-scConf <- createConfig(seu, meta.to.include = c("orig.ident", "seurat_clusters", "celltype"))
+scConf <- createConfig(seu, meta.to.include = c("orig.ident", "celltype.l1", "celltype.l2"))
 ```
 
 Or start from everything and prune. `delMeta()` takes a vector:
 
 ```{r}
-scConf <- delMeta(scConf, c("nCount_RNA", "nFeature_RNA", "percent.mt"))
+scConf <- createConfig(seu)
+scConf <- delMeta(scConf, c("nCount_RNA", "nFeature_RNA", "Phase"))
 ```
 
 `addMeta()` brings a column back, or adds one that `createConfig()` skipped —
@@ -70,11 +84,14 @@ note that it needs the object too, since it has to read the column's levels:
 
 ```{r}
 scConf <- addMeta(scConf, "Phase", seu)
-scConf <- addMeta(scConf, c("donor", "timepoint"), seu, maxLevels = 100)
+scConf <- addMeta(scConf, "celltype.l3", seu, maxLevels = 100)
 ```
 
-`maxLevels` is the guard against accidentally exposing something like a
-per-cell barcode as a categorical variable; raise it deliberately.
+`celltype.l3` is the finest-grained cell-type annotation on this object and
+has more categories than the default `maxLevels` (50) allows, so it was
+dropped by `createConfig()`; `addMeta()` lets you bring it in anyway once you
+raise the limit deliberately. The same guard protects you from accidentally
+exposing something like a per-cell barcode as a categorical variable.
 
 ## Renaming for display
 
@@ -84,8 +101,8 @@ and is vectorised:
 ```{r}
 scConf <- modMetaName(
   scConf,
-  meta.to.mod = c("orig.ident", "seurat_clusters", "percent.mt"),
-  new.name    = c("Library", "Cluster", "% mitochondrial")
+  meta.to.mod = c("orig.ident", "celltype.l1", "nFeature_SCT"),
+  new.name    = c("Sample", "Cell type", "RNA features")
 )
 ```
 
@@ -98,8 +115,9 @@ showOrder(scConf)
 
 scConf <- modLabels(
   scConf,
-  meta.to.mod = "Cluster",
-  new.labels  = c("Naive CD4 T", "Memory CD4 T", "CD14 Mono", "B", "NK")
+  meta.to.mod = "Cell type",
+  new.labels  = c("B cells", "CD4 T cells", "CD8 T cells", "Dendritic cells",
+                  "Monocytes", "NK cells", "Other", "Other T cells")
 )
 ```
 
@@ -111,24 +129,25 @@ level order. Any format R accepts works — hex codes or named colours:
 ```{r}
 scConf <- modColours(
   scConf,
-  meta.to.mod = "Cluster",
-  new.colours = c("#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F")
+  meta.to.mod = "Cell type",
+  new.colours = c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C",
+                  "#FB9A99", "#E31A1C", "#FDBF6F", "#FF7F00")
 )
 ```
 
 Colour palettes are a good place to be deliberate: the default is a
 `colorRampPalette()` interpolation of a 12-colour Paired-style set, which
 starts to produce near-indistinguishable neighbours once a metadata has more
-than roughly a dozen levels. If a cluster label matters, give it a colour that
+than roughly a dozen levels. If a cell type matters, give it a colour that
 survives being one point among 100,000.
 
 For a sequential or a colourblind-safe set, generate rather than hand-pick:
 
 ```{r}
-# "Cluster" here is the display name (UI); use the object's column name if you
-# have not renamed it. modColours() errors unless the lengths match exactly.
-n <- length(strsplit(scConf[UI == "Cluster"]$fID, "\\|")[[1]])
-scConf <- modColours(scConf, "Cluster", scales::hue_pal()(n))
+# "Cell type" here is the display name (UI); use the object's column name if
+# you have not renamed it. modColours() errors unless the lengths match exactly.
+n <- length(strsplit(scConf[UI == "Cell type"]$fID, "\\|")[[1]])
+scConf <- modColours(scConf, "Cell type", scales::hue_pal()(n))
 ```
 
 ## Ordering
@@ -141,9 +160,11 @@ typing it out:
 
 ```{r}
 scConf$ID
-#> [1] "orig.ident" "seurat_clusters" "celltype" "Phase"
 
-scConf <- reorderMeta(scConf, c("celltype", "seurat_clusters", "orig.ident", "Phase"))
+scConf <- reorderMeta(scConf, c("celltype.l1", "celltype.l2", "celltype.l3",
+                                 "orig.ident", "Phase", "lane", "donor", "time",
+                                 "nCount_ADT", "nFeature_ADT", "nCount_SCT",
+                                 "nFeature_SCT"))
 ```
 
 Put the metadata people actually reach for first; the app's default selections
@@ -155,7 +176,7 @@ come from `default`, but the dropdown order is what everyone scrolls through.
 for the main grouping, the second for the side-by-side and split views:
 
 ```{r}
-scConf <- modDefault(scConf, default1 = "celltype", default2 = "seurat_clusters")
+scConf <- modDefault(scConf, default1 = "Cell type", default2 = "orig.ident")
 ```
 
 `createConfig()` guesses these by pattern-matching `ident`/`library` for the
@@ -182,19 +203,26 @@ Putting it together, a typical config pass looks like:
 
 ```{r}
 scConf <- createConfig(seu)
-scConf <- delMeta(scConf, c("nCount_RNA", "nFeature_RNA", "percent.mt"))
-scConf <- modMetaName(scConf, c("orig.ident", "seurat_clusters"), c("Library", "Cluster"))
+scConf <- delMeta(scConf, c("nCount_RNA", "nFeature_RNA", "nCount_SCT", "nFeature_SCT"))
+scConf <- modMetaName(scConf, c("orig.ident", "celltype.l1"), c("Sample", "Cell type"))
 
 # one colour per level, in level order
-nClust <- length(strsplit(scConf[UI == "Cluster"]$fID, "\\|")[[1]])
-scConf <- modColours(scConf, "Cluster", scales::hue_pal()(nClust))
+nCellType <- length(strsplit(scConf[UI == "Cell type"]$fID, "\\|")[[1]])
+scConf <- modColours(scConf, "Cell type", scales::hue_pal()(nCellType))
 
 # reorderMeta() wants IDs, and all of them
-scConf <- reorderMeta(scConf, c("celltype", "seurat_clusters", "orig.ident"))
-scConf <- modDefault(scConf, "celltype", "Cluster")
+scConf <- reorderMeta(scConf, c("celltype.l1", "celltype.l2", "orig.ident", "Phase",
+                                 "lane", "donor", "time", "nCount_ADT", "nFeature_ADT"))
+scConf <- modDefault(scConf, "Cell type", "orig.ident")
 
 checkConfig(scConf, seu)
 showLegend(scConf)
 ```
 
 Then build, as in `vignette("cellsight")`.
+
+## Session info
+
+```{r}
+sessionInfo()
+```

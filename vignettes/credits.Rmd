@@ -8,7 +8,7 @@ vignette: >
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE)
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
 CellSight is a derivative work. Most of what makes it useful was written by
@@ -33,9 +33,8 @@ documentation on top of that foundation — it does not replace it.
 
 Maintained by the [OpenOmics](https://github.com/OpenOmics) group:
 
-* **Ryan Routsong** (maintainer) — <ryan.routsong@nih.gov>
+* **Ryan Routsong** (maintainer) — <routsongrm@nih.gov>
 * **Skyler Kuhn**
-* **Brittney Dulek**
 * **Neelam Redekar**
 
 The generated [authors page](../authors.html) lists the same set with their
@@ -113,3 +112,9 @@ Bugs and feature requests: <https://github.com/OpenOmics/CellSight/issues>.
 If the issue looks like it comes from the shared visualisation code rather than
 from CellSight's additions, it may be worth checking
 [ShinyCell2's issues](https://github.com/the-ouyang-lab/ShinyCell2/issues) too.
+
+## Session info
+
+```{r}
+sessionInfo()
+```

@@ -43,14 +43,18 @@
 #' @import data.table hdf5r reticulate hdf5r
 #'
 #' @examples
-#' \dontrun{
+#' bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+#' pbmc_path <- BiocFileCache::bfcrpath(bfc,
+#'   "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
+#' seu <- readRDS(pbmc_path)
+#' scConf <- createConfig(seu)
 #' makeShinyFiles(seu, scConf,
-#'   shiny.prefix = "sc1", shiny.dir = "shinyApp/",
+#'   assay = "SCT",
+#'   shiny.prefix = "sc1", shiny.dir = tempdir(),
 #'   default.gene1 = "POU5F1", default.gene2 = "APOA1",
-#'   default.multigene = c("POU5F1", "APOA1", "GPRC5A", "TBXT", "ISL1"),
+#'   default.multigene = c("POU5F1", "APOA1", "GPRC5A"),
 #'   default.dimred = "umap"
 #' )
-#' }
 #'
 #' @export
 makeShinyFiles <- function(
@@ -72,7 +76,7 @@ makeShinyFiles <- function(
   ...
 ) {
   ### Check object class
-  if (class(obj)[1] == "Seurat") {
+  if (is(obj, "Seurat")) {
     # Seurat object
     makeShinyFilesGEX(
       obj, scConf, assay, assay.slot, dimred.to.use,
@@ -115,10 +119,10 @@ makeShinyFiles <- function(
           obj, scConf, shiny.dir, shiny.prefix, precomputed_path, clusters, chunkSize
         )
       } else {
-        err(paste0("Precomputed DEG file not found: ", precomputed_path))
+        stop(paste0("Precomputed DEG file not found: ", precomputed_path))
       }
     }
-  } else if (class(obj)[1] == "ArchRProject") {
+  } else if (is(obj, "ArchRProject")) {
     # ArchR object
     makeShinyFilesATACarchr(
       obj, scConf, bigWigGroup, assay, dimred.to.use,
@@ -133,5 +137,7 @@ makeShinyFiles <- function(
       default.gene1, default.gene2, default.multigene,
       default.dimred, chunkSize
     )
+  } else {
+    stop("Only Seurat/ArchR objects or h5ad file paths are accepted!")
   }
 }

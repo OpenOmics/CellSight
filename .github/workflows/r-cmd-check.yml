@@ -1,0 +1,24 @@
+name: R CMD check
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  r-cmd-check:
+    runs-on: ubuntu-latest
+    container:
+      image: rroutsong/cellsight_builder:latest
+      options: --user root
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install missing R dependencies from DESCRIPTION
+        run: |
+          Rscript -e 'if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes", repos = "https://cloud.r-project.org"); remotes::install_deps(".", dependencies = TRUE, repos = c(BiocManager::repositories(), "https://cloud.r-project.org"))'
+
+      - name: Run R CMD check --as-cran and summarize results
+        run: Rscript .github/scripts/rcmdcheck-summary.R

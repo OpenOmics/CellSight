@@ -8,7 +8,7 @@ vignette: >
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE)
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
 This article is for contributors changing what a generated CellSight app
@@ -36,7 +36,7 @@ Step 2 is the one people skip. `makeShinyCodes()` reads
 `system.file("templates", package = "cellsight")`, so editing
 `inst/templates/ui.R.jinja` in your checkout has no effect until you reinstall:
 
-```{r}
+```r
 devtools::install(".")
 # or: install.packages(".", repos = NULL, type = "source")
 ```
@@ -139,7 +139,7 @@ Everything the templates can see is built in R, in `makeShinyCodes()`. Inside a
 | `slider_*_first` / `ptsiz_val_first` | first-dataset variants, for the extra spatial tab in the multi-dataset layout |
 
 The three `has_*` flags are **detected from disk**, not passed in:
-`makeShinyCodes()` tests for `<prefix>image.rds`, `<prefix>bw.rds` and
+`makeShinyCodes()` tests for `<prefix>image.qs2.rds`, `<prefix>bw.qs2.rds` and
 `<prefix>deg.h5` in `shiny.dir`. So a tab that fails to appear usually means
 `makeShinyFiles()` did not write that file — check the app directory before
 suspecting the template.
@@ -196,3 +196,9 @@ For syntax highlighting in mixed R + Jinja files, a VS Code extension is bundled
 at `inst/extdata/vscode-rjinja/rjinja-syntax.tar.gz`. Extract it and install via
 **Install from VSIX…**. It is optional and aimed at contributors editing
 `*.R.jinja` files.
+
+## Session info
+
+```{r}
+sessionInfo()
+```

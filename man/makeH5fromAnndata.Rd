@@ -23,6 +23,17 @@ h5 object
 \description{
 Make h5 object from Anndata assay
 }
+\examples{
+if (requireNamespace("reticulate", quietly = TRUE) &&
+    reticulate::py_module_available("anndata")) {
+  # Requires a real .h5ad file; none ships with this package, so this is
+  # only run when a Python environment with anndata is actually available.
+  # sc1meta <- data.table::data.table(cellID = h5ad_cell_barcodes)
+  # makeH5fromAnndata("pbmc.h5ad", sc1meta, filename = tempfile(fileext = ".h5"),
+  #                    gex.assay = "X", chunkSize = 500)
+}
+
+}
 \author{
 John F. Ouyang
 }

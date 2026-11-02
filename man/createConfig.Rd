@@ -35,9 +35,11 @@ categories of categorical metadata and (iii) colour palettes associated
 with each metadata.
 }
 \examples{
-\dontrun{
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
+obj <- readRDS(pbmc_path)
 scConf = createConfig(obj)
-}
 
 }
 \author{

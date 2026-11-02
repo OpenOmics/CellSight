@@ -10,8 +10,7 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  eval = FALSE
+  comment = "#>"
 )
 ```
 
@@ -19,15 +18,18 @@ CellSight turns a single-cell or spatial object into a self-contained Shiny
 app. You do not write any Shiny code: you describe *what to show* in a config
 object, and CellSight writes both the app's data files and the app's source.
 
-The code in this article is not evaluated when the site is built, because
-building an app needs a real dataset. Run it against your own object.
+The code in this article downloads and processes a real, ~175 MB dataset
+(cached locally after the first run), so it will run against that dataset
+rather than one of your own unless you substitute it below. It is a 15,000-cell
+random subsample of a larger public multimodal PBMC CITE-seq object, kept small
+enough to render quickly and fit comfortably in CI/CD memory budgets.
 
 ## The two-step workflow
 
 Every CellSight app is built in two steps, in this order:
 
 1. **`makeShinyFiles()`** reads your object and writes the app's *data* into
-   `shiny.dir` — chunked HDF5 expression matrices plus `.rds` files holding the
+   `shiny.dir` — chunked HDF5 expression matrices plus `.qs2.rds` files holding the
    config and cell metadata, all prefixed with `shiny.prefix` (`sc1` by
    default).
 2. **`makeShinyCodes()`** writes the app's *code* into the same directory —
@@ -40,14 +42,18 @@ is what ties the two together. Whatever you pass as `shiny.prefix` to
 ## A minimal app
 
 Using the [multimodal PBMC CITE-seq
-object](https://zenodo.org/records/15162323/files/multimodal_pbmc.rds?download=1)
-(162,000 cells, 228 antibodies):
+object](https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds)
+(15,000 cells, 228 antibodies):
 
 ```{r}
 library(Seurat)
 library(cellsight)
+library(BiocFileCache)
 
-seu <- readRDS("multimodal_pbmc.rds")
+# Cached download: fetched once, reused on every subsequent render.
+bfc <- BiocFileCache(ask = FALSE)
+pbmc_path <- bfcrpath(bfc, "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
+seu <- readRDS(pbmc_path)
 
 scConf <- createConfig(seu)
 
@@ -63,7 +69,7 @@ makeShinyCodes(
 That leaves a complete app in `shinyApp/`. Open `shinyApp/ui.R` in RStudio and
 click **Run App**, or from the console:
 
-```{r}
+```{r, eval = FALSE}
 shiny::runApp("shinyApp")
 ```
 
@@ -91,7 +97,7 @@ Two arguments are worth knowing up front:
 
 ```{r}
 # Only expose specific metadata columns
-scConf <- createConfig(seu, meta.to.include = c("orig.ident", "seurat_clusters", "celltype"))
+scConf <- createConfig(seu, meta.to.include = c("orig.ident", "celltype.l1", "celltype.l2"))
 
 # Allow more categories per metadata column (default 50; anything above is dropped)
 scConf <- createConfig(seu, maxLevels = 100)
@@ -113,7 +119,7 @@ The app opens on whichever metadata and genes you nominate. Setting these saves
 every future visitor a few clicks:
 
 ```{r}
-scConf <- modDefault(scConf, "celltype", "seurat_clusters")
+scConf <- modDefault(scConf, "celltype.l1", "orig.ident")
 
 makeShinyFiles(
   seu, scConf,
@@ -140,9 +146,10 @@ each needs, are in `vignette("modalities")`.
 
 Pass a vector of prefixes to `makeShinyCodes()`, one per `makeShinyFiles()`
 call, plus a header for each. Each dataset's tabs are grouped under its own
-navbar dropdown:
+navbar dropdown. This is illustrative — `seu1`/`seu2` stand in for two of your
+own objects:
 
-```{r}
+```{r, eval = FALSE}
 makeShinyFiles(seu1, scConf1, shiny.prefix = "sc1", shiny.dir = "shinyApp/")
 makeShinyFiles(seu2, scConf2, shiny.prefix = "sc2", shiny.dir = "shinyApp/")
 
@@ -190,3 +197,9 @@ makeShinyCodes(
 * `vignette("deployment")` — run the app somewhere other than your laptop.
 * `vignette("docker")` — the prebuilt container and its helper scripts.
 * `vignette("templates")` — change what the generated app itself contains.
+
+## Session info
+
+```{r}
+sessionInfo()
+```

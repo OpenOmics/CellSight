@@ -25,6 +25,19 @@ h5 object
 \description{
 Make h5 object from Seurat assay data
 }
+\examples{
+if (requireNamespace("Seurat", quietly = TRUE)) {
+  set.seed(1)
+  counts <- matrix(rpois(10 * 15, 5), nrow = 10, ncol = 15,
+                    dimnames = list(paste0("Gene", 1:10), paste0("Cell", 1:15)))
+  seu <- Seurat::CreateSeuratObject(counts = counts, min.cells = 0, min.features = 0)
+  seu <- Seurat::NormalizeData(seu, verbose = FALSE)
+  sc1meta <- data.table::data.table(cellID = colnames(seu))
+  makeH5fromSeurat(seu, sc1meta, filename = tempfile(fileext = ".h5"),
+                    gex.assay = "RNA", gex.slot = "data", chunkSize = 500)
+}
+
+}
 \author{
 John F. Ouyang
 }

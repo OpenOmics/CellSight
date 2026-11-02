@@ -70,7 +70,7 @@ tabPanel(
                   selected = "Cell Information"),
       selectInput("<< d.prefix >>a1inp1", "Cell Info / Feature Name:",
                   choices = << d.prefix >>conf$UI,
-                  selected = << d.prefix >>conf$UI[1]) %>%
+                  selected = << d.prefix >>conf$UI[1]) |>
         helper(type = "inline", size = "m", fade = TRUE,
                title = "Cell Info / Gene to colour cells by",
                content = c("Select cell info / feature to colour cells",

@@ -14,9 +14,12 @@
 #' @author John F. Ouyang
 #'
 #' @import data.table hdf5r reticulate hdf5r
+#' @importFrom qs2 qs_save
 #'
 #' @examples
 #' \dontrun{
+#' # Requires a Seurat object with spatial images (obj@images); none of the
+#' # package's example data has these, so this is illustrative only.
 #' makeShinyFilesSpatial(seu, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/")
 #' }
 #'
@@ -24,13 +27,13 @@
 makeShinyFilesSpatial <- function(
   obj, scConf, shiny.prefix = "sc1", shiny.dir = "shinyApp/"){
   ### Preprocessing and checks
-  if(!file.exists(paste0(shiny.dir, "/", shiny.prefix, "conf.rds"))){
-    stop(paste0(shiny.prefix, "conf.rds file is missing! Have you ran makeShinyFilesGEX?"))
+  if(!file.exists(paste0(shiny.dir, "/", shiny.prefix, "conf.qs2.rds"))){
+    stop(paste0(shiny.prefix, "conf.qs2.rds file is missing! Have you ran makeShinyFilesGEX?"))
   }
   
   ### Start extraction
   sc1image = list()
-  if(class(obj)[1] == "Seurat"){
+  if(is(obj, "Seurat")){
     if(.hasSlot(obj, "images")){
       # Get all available slide names
       slide_names <- names(obj@images)
@@ -158,6 +161,6 @@ makeShinyFilesSpatial <- function(
   }
   
   ### Saving objects
-  saveRDS(sc1image, file = paste0(shiny.dir, "/", shiny.prefix, "image.rds"))
+  qs_save(sc1image, file = paste0(shiny.dir, "/", shiny.prefix, "image.qs2.rds"))
 }
 

@@ -1,4 +1,5 @@
 # cellsight <img src="man/figures/logo.png" align="right" height="139" alt="cellsight logo" />
+
 `cellsight` is an enhanced R package for creating interactive, lightweight, 
 and shareable web applications to explore single-cell multi-omics and spatial 
 transcriptomics data. CellSight introduces powerful features tailored for modern single-cell 

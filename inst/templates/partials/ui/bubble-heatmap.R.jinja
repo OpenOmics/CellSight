@@ -23,7 +23,7 @@ tabPanel(
                                         (Max 50 genes, separated <br />
                                          by , or ; or newline):"),
                     height = "250px",
-                    value = paste0(<< d.prefix >>def$genes[[1]], collapse = ", ")) %>%
+                    value = paste0(<< d.prefix >>def$genes[[1]], collapse = ", ")) |>
         helper(type = "inline", size = "m", fade = TRUE,
                title = "List of genes to plot on bubbleplot / heatmap",
                content = c("Input genes to plot",
@@ -34,7 +34,7 @@ tabPanel(
                   selected = << d.prefix >>def$assay[1]),
       selectInput("<< d.prefix >>b3grp", "Group by:",
                   choices = << d.prefix >>conf[grp == TRUE]$UI,
-                  selected = << d.prefix >>conf[grp == TRUE]$UI[1]) %>%
+                  selected = << d.prefix >>conf[grp == TRUE]$UI[1]) |>
         helper(type = "inline", size = "m", fade = TRUE,
                title = "Cell information to group cells by",
                content = c("Select categorical cell information to group cells by",

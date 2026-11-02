@@ -45,7 +45,7 @@ tabPanel(
       textAreaInput("<< d.prefix >>comb_mod_inp",
                     HTML("Gene list for module score<br/>(max 50, separated by , ; or newline):"),
                     height = "200px",
-                    value = paste0(<< d.prefix >>def$genes[[1]], collapse = ", ")) %>%
+                    value = paste0(<< d.prefix >>def$genes[[1]], collapse = ", ")) |>
         helper(type = "inline", size = "m", fade = TRUE,
                title = "Genes for module score",
                content = c("Input target genes to score per cell",

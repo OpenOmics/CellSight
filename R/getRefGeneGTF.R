@@ -18,15 +18,12 @@
 #'   (cached) \code{*.refGene.gtf.gz} file.
 #'
 #' @details
-#' The remote sources are pinned to the \code{datav1.0.0} data release of the
-#' CellSight repository:
-#' \itemize{
-#'   \item \code{hg19}, \code{hg38}: GitHub release assets
-#'   \item \code{mm9}, \code{mm10}: GitHub user-attachment assets
-#' }
+#' All four files are hosted as release assets on the \code{datav1.0.0} data
+#' release of the CellSight repository.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' # Downloads a real file from the network; skipped during routine checks.
 #' gtf <- getRefGeneGTF("hg38")
 #' file.exists(gtf)
 #' }
@@ -73,6 +70,10 @@ getRefGeneGTF <- function(scGenome, cache = refGeneCache(), verbose = TRUE) {
 #'
 #' @return A \code{BiocFileCache} object.
 #'
+#' @examples
+#' cache <- refGeneCache(cache.dir = tempfile())
+#' class(cache)
+#'
 #' @export
 refGeneCache <- function(cache.dir = tools::R_user_dir("cellsight", "cache")) {
   if (!requireNamespace("BiocFileCache", quietly = TRUE)) {
@@ -94,7 +95,7 @@ refGeneURLs <- function() {
   list(
     hg19 = "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/hg19.refGene.gtf.gz",
     hg38 = "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/hg38.refGene.gtf.gz",
-    mm9  = "https://github.com/user-attachments/files/32125619/mm9.refGene.gtf.gz",
-    mm10 = "https://github.com/user-attachments/files/32125621/mm10.refGene.gtf.gz"
+    mm9  = "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/mm9.refGene.gtf.gz",
+    mm10 = "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/mm10.refGene.gtf.gz"
   )
 }

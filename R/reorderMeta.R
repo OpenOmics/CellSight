@@ -14,14 +14,17 @@
 #' @import data.table
 #'
 #' @examples
-#' \dontrun{
+#' bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+#' pbmc_path <- BiocFileCache::bfcrpath(bfc,
+#'   "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
+#' seu <- readRDS(pbmc_path)
+#' scConf <- createConfig(seu)
 #' scConf = reorderMeta(scConf, scConf$ID[c(1,3,2,4:length(scConf$ID))])
-#' }
 #'
 #' @export
 reorderMeta <- function(scConf, new.meta.order){
   # Check if new.meta.order matches scConf$ID
-  if(!all.equal(sort(new.meta.order), sort(as.character(scConf$ID)))){
+  if(!isTRUE(all.equal(sort(new.meta.order), sort(as.character(scConf$ID))))){
     stop("new.meta.order does not match scConf$ID!")
   }
   

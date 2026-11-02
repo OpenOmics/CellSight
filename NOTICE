@@ -22,6 +22,15 @@ changes relative to upstream. These modifications are maintained by the
 CellSight contributors and are distributed under GPL-3.0.
 Primary derivative-work notice date: 2026-09-10.
 
+AI-assisted contributions
+--------------------------
+Portions of this repository were drafted with the assistance of Claude Code
+(Anthropic), an AI coding assistant.
+
+All AI-assisted content was reviewed, edited, and is maintained 
+by Ryan Routsong (NIH), who is responsible for its correctness and upkeep. 
+This content is distributed under GPL-3.0 along with the rest of the repository.
+
 No warranty
 -----------
 This program is distributed WITHOUT ANY WARRANTY; without even the implied

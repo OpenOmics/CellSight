@@ -36,12 +36,13 @@ library(data.table)
 library(Matrix)
 library(DT)
 library(magrittr)
-{% for d in datasets %}<< d.prefix >>conf = readRDS("./<< d.prefix >>conf.rds")
-<< d.prefix >>def  = readRDS("./<< d.prefix >>def.rds")
-<< d.prefix >>meta = readRDS("./<< d.prefix >>meta.rds")
-{% if d.has_image %}<< d.prefix >>image = readRDS("./<< d.prefix >>image.rds")
+library(qs2)
+{% for d in datasets %}<< d.prefix >>conf = qs_read("./<< d.prefix >>conf.qs2.rds")
+<< d.prefix >>def  = qs_read("./<< d.prefix >>def.qs2.rds")
+<< d.prefix >>meta = qs_read("./<< d.prefix >>meta.qs2.rds")
+{% if d.has_image %}<< d.prefix >>image = qs_read("./<< d.prefix >>image.qs2.rds")
 if(is.null(<< d.prefix >>image$slide_display_names)) << d.prefix >>image$slide_display_names <- << d.prefix >>image$slide_names
-{% endif %}{% if d.has_bw %}<< d.prefix >>bw    = readRDS("./<< d.prefix >>bw.rds")
+{% endif %}{% if d.has_bw %}<< d.prefix >>bw    = qs_read("./<< d.prefix >>bw.qs2.rds")
 << d.prefix >>bwGrp = gsub("<< d.prefix >>bw_", "", dir(pattern = "<< d.prefix >>bw_"))
 {% endif %}{% endfor %}
 

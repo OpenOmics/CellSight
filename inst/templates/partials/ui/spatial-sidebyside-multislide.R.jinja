@@ -59,7 +59,7 @@ selectInput("<< d.prefix >>s2slide", "Select Slide:",
 choices = setNames(<< d.prefix >>image$slide_names, << d.prefix >>image$slide_display_names),
 selected = << d.prefix >>image$slide_names[1]), fluidRow(
           column(
-            6, selectInput("<< d.prefix >>s2inp1", "Cell metadata to colour plot:", choices = << d.prefix >>conf$UI, selected = << d.prefix >>def$meta1) %>%
+            6, selectInput("<< d.prefix >>s2inp1", "Cell metadata to colour plot:", choices = << d.prefix >>conf$UI, selected = << d.prefix >>def$meta1) |>
               helper(type = "inline", size = "m", fade = TRUE,
                      title = "Cell metadata to colour cells by",
                      content = c("Select cell metadata to colour cells",
@@ -105,7 +105,7 @@ selected = << d.prefix >>image$slide_names[1]), fluidRow(
         6,
         fluidRow(
           column(
-            6, selectInput("<< d.prefix >>s2inp2", "Cell metadata to colour plot:", choices = << d.prefix >>conf$UI, selected = << d.prefix >>def$meta2) %>%
+            6, selectInput("<< d.prefix >>s2inp2", "Cell metadata to colour plot:", choices = << d.prefix >>conf$UI, selected = << d.prefix >>def$meta2) |>
               helper(type = "inline", size = "m", fade = TRUE,
                      title = "Cell metadata to colour cells by",
                      content = c("Select cell metadata to colour cells",

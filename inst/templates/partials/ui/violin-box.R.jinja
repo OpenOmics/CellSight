@@ -20,13 +20,13 @@ tabPanel(
       3, style = "border-right: 2px solid black",
       selectInput("<< d.prefix >>b1inp1", "Cell information (X-axis):",
                   choices = << d.prefix >>conf[grp == TRUE]$UI,
-                  selected = << d.prefix >>def$grp1) %>%
+                  selected = << d.prefix >>def$grp1) |>
         helper(type = "inline", size = "m", fade = TRUE,
                title = "Cell information to group cells by",
                content = c("Select categorical cell information to group cells by",
                            "- Single cells are grouped by this categorical covariate",
                            "- Plotted as the X-axis of the violin plot / box plot")),
-      selectInput("<< d.prefix >>b1inp2", "Cell Info / Feature name (Y-axis):", choices = NULL) %>%
+      selectInput("<< d.prefix >>b1inp2", "Cell Info / Feature name (Y-axis):", choices = NULL) |>
         helper(type = "inline", size = "m", fade = TRUE,
                title = "Cell Info / Gene to plot",
                content = c("Select cell info / feature to plot on Y-axis",

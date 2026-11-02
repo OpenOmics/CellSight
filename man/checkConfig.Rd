@@ -23,9 +23,12 @@ that in the Seurat/SingleCellExperiment object, (ii) number of levels does
 not match number of colours and (iii) specified colours are invalid colours.
 }
 \examples{
-\dontrun{
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+pbmc_path <- BiocFileCache::bfcrpath(bfc,
+  "https://github.com/OpenOmics/CellSight/releases/download/datav1.0.0/multimodal_pbmc_subsample.rds")
+seu <- readRDS(pbmc_path)
+scConf <- createConfig(seu)
 checkConfig(scConf, seu)
-}
 
 }
 \author{

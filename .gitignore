@@ -1,3 +1,8 @@
+# Staged demo data (downloaded on demand, not committed) and its output app
+tools/docker/CellSight/run_demo_pbmc.R
+/tools/docker/CellSight/data/
+/tools/docker/CellSight/demo_app/
+
 # History files
 .Rhistory
 .Rapp.history

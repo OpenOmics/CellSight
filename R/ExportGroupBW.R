@@ -1,3 +1,7 @@
+#' @importFrom future nbrOfWorkers
+#' @importFrom future.apply future_lapply
+#' @importFrom Matrix sparseMatrix
+#' @noRd
 ExportGroupBW  <- function(
     object,
     assay = NULL,

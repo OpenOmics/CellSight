@@ -68,6 +68,6 @@ output$<< d.prefix >>a3.dt <- renderDataTable({
                        paste0("<< d.prefix >>assay_", input$<< d.prefix >>a3ass1, ".h5"), << d.prefix >>gene[[input$<< d.prefix >>a3ass1]],
                        input$<< d.prefix >>a3sub1, input$<< d.prefix >>a3sub2)
   datatable(ggData, rownames = FALSE, extensions = "Buttons",
-            options = list(pageLength = -1, dom = "tB", buttons = c("copy", "csv", "excel"))) %>%
+            options = list(pageLength = -1, dom = "tB", buttons = c("copy", "csv", "excel"))) |>
     formatRound(columns = c("percent"), digits = 2)
 })
