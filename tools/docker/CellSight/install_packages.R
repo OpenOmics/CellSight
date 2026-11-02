@@ -30,7 +30,6 @@ cran_packages <- c(
   "devtools",
   "Seurat",
   "SeuratObject",
-  "Signac",
   "remotes",
   "DT",
   "BiocManager",
@@ -75,7 +74,8 @@ bioc_packages <- c(
   "GenomeInfoDb",
   "rtracklayer",
   "S4Vectors",
-  "SingleCellExperiment"
+  "SingleCellExperiment",
+  "Signac"
 )
 
 # Install missing Bioconductor packages
