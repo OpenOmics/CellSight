@@ -64,6 +64,7 @@ jobs:
       - name: Install R/system dependencies from DESCRIPTION
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          dependencies: 'c("Depends", "Imports", "LinkingTo")'
           extra-packages: any::remotes, any::BiocManager
 
       - name: Verify checkout and display file structure
