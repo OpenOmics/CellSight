@@ -63,6 +63,8 @@ jobs:
 
       - name: Install R/system dependencies from DESCRIPTION
         uses: r-lib/actions/setup-r-dependencies@v2
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         with:
           dependencies: 'c("Depends", "Imports", "LinkingTo")'
           extra-packages: any::remotes, any::BiocManager

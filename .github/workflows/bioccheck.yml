@@ -17,6 +17,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install missing R dependencies from DESCRIPTION
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
           Rscript -e 'if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes", repos = "https://cloud.r-project.org"); remotes::install_deps(".", dependencies = TRUE, repos = c(BiocManager::repositories(), "https://cloud.r-project.org"))'
 
