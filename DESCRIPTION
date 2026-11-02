@@ -65,6 +65,8 @@ Suggests:
   shinydataviewer,
   knitr,
   rmarkdown
+Remotes:
+  GreenleafLab/ArchR
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/Needs/website:
