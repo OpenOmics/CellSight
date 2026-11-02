@@ -130,7 +130,7 @@ copy the app in, and expose Shiny's port.
 FROM rocker/shiny:latest
 
 RUN install2.r --error shinyhelper data.table Matrix DT magrittr \
-    ggplot2 ggrepel hdf5r ggdendro gridExtra ggpubr
+    ggplot2 ggrepel hdf5r ggdendro gridExtra ggpubr qs2
 
 COPY shinyApp /srv/shiny-server/cellsight
 EXPOSE 3838
