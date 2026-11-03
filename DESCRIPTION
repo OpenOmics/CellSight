@@ -65,14 +65,6 @@ Suggests:
   shinydataviewer,
   knitr,
   rmarkdown
-Remotes:
-  GreenleafLab/ArchR,
-  bioc::BiocFileCache,
-  bioc::BiocGenerics,
-  bioc::GenomeInfoDb,
-  bioc::rtracklayer,
-  bioc::S4Vectors,
-  bioc::SingleCellExperiment
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/Needs/website:

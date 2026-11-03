@@ -66,8 +66,7 @@ jobs:
         env:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         with:
-          dependencies: 'c("Depends", "Imports", "LinkingTo")'
-          extra-packages: any::remotes, any::BiocManager
+          extra-packages: any::remotes, any::BiocManager, TFMPvalue@0.0.9, GreenleafLab/ArchR
 
       - name: Verify checkout and display file structure
         run: |
