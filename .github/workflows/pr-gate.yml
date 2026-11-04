@@ -64,7 +64,11 @@ jobs:
       - name: Force C++17 for source builds
         run: |
           mkdir -p ~/.R
-          echo "CXX_STD = CXX17" >> ~/.R/Makevars
+          # chromVAR's DESCRIPTION pins CXX_STD=CXX11, which a global
+          # CXX_STD override can't beat; overriding the CXX11STD value
+          # itself does, since RcppArmadillo now requires C++14+.
+          echo 'CXX11STD = -std=gnu++17' >> ~/.R/Makevars
+          echo 'CXX14STD = -std=gnu++17' >> ~/.R/Makevars
           cat ~/.R/Makevars
 
       - name: Install R/system dependencies from DESCRIPTION
