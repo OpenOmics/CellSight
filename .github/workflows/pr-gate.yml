@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        r-version: ['4.4', '4.5', '4.6']
+        r-version: ['4.4', '4.5', '4.6', 'release', 'next', 'oldrel']
 
     steps:
       - name: Checkout repository
@@ -60,6 +60,12 @@ jobs:
           sudo make install
           cd ..
           bwtool --version
+
+      - name: Force C++17 for source builds
+        run: |
+          mkdir -p ~/.R
+          echo "CXX_STD = CXX17" >> ~/.R/Makevars
+          cat ~/.R/Makevars
 
       - name: Install R/system dependencies from DESCRIPTION
         uses: r-lib/actions/setup-r-dependencies@v2
