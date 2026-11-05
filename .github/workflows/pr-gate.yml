@@ -8,17 +8,76 @@ on:
 jobs:
   install-test:
     runs-on: ubuntu-latest
-    container:
-      image: rroutsong/cellsight_builder:latest
-      options: --user root  # Run as root to avoid permission issues
-    
+    strategy:
+      fail-fast: false
+      matrix:
+        r-version: ['4.4', '4.5', '4.6', 'release', 'next', 'oldrel']
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install missing R dependencies from DESCRIPTION
+      - name: Set up R ${{ matrix.r-version }}
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.r-version }}
+          use-public-rspm: true
+
+      - name: Install apt build dependencies
         run: |
-          Rscript -e 'if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes", repos = "https://cloud.r-project.org"); remotes::install_deps(".", dependencies = TRUE, repos = c(BiocManager::repositories(), "https://cloud.r-project.org"))'
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            git \
+            libfreetype6-dev \
+            libgit2-dev \
+            libpng-dev \
+            libtiff5-dev \
+            libjpeg-dev \
+            libharfbuzz-dev \
+            libfribidi-dev \
+            libhdf5-dev \
+            libxml2-dev \
+            python3 \
+            python3-pip \
+            zlib1g-dev
+
+      - name: Build and install libbeato and bwtool
+        run: |
+          export CFLAGS="-std=gnu17 -fcommon -D_GNU_SOURCE -Wno-implicit-function-declaration -Wno-implicit-int -Wno-int-conversion -Wno-return-mismatch"
+          git clone https://github.com/CRG-Barcelona/libbeato.git
+          cd libbeato
+          git checkout 0c30432
+          ./configure CFLAGS="$CFLAGS"
+          make
+          sudo make install
+          cd ..
+          git clone https://github.com/CRG-Barcelona/bwtool.git
+          cd bwtool
+          ./configure CFLAGS="$CFLAGS"
+          make
+          sudo make install
+          cd ..
+          bwtool --version
+
+      - name: Force C++17 for source builds
+        run: |
+          mkdir -p ~/.R
+          # chromVAR's DESCRIPTION pins CXX_STD=CXX11, which a global
+          # CXX_STD override can't beat; overriding the CXX11STD value
+          # itself does, since RcppArmadillo now requires C++14+.
+          echo 'CXX11STD = -std=gnu++17' >> ~/.R/Makevars
+          echo 'CXX14STD = -std=gnu++17' >> ~/.R/Makevars
+          cat ~/.R/Makevars
+
+      - name: Install R/system dependencies from DESCRIPTION
+        uses: r-lib/actions/setup-r-dependencies@v2
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          dependencies: '"hard"'
+          extra-packages: any::remotes, any::BiocManager, TFMPvalue@0.0.9, GreenleafLab/ArchR
 
       - name: Verify checkout and display file structure
         run: |
