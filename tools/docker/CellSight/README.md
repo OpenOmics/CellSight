@@ -22,5 +22,8 @@ CellSight config generation, and CellSight output file assumptions).
 - `build_cellsight.R`: Main CLI to generate CellSight files/codes from a Seurat RDS.
 - `seurat_inspector.R`: Utility to inspect Seurat object structure before app generation.
 - `ingest_10x.R`: Utility to preprocess 10x Visium HD into Seurat RDS.
-- `install_packages.R`: CRAN/Bioc dependency bootstrap script.
+- `environment-build.yml` / `environment-viz.yml`: conda environments (`cs-build` for building apps, `cs-viz` for serving them).
+- `env_tools.R`: helper that tops up a conda R env with CRAN/GitHub packages and verifies they load.
+- `run_app.R`: serves a built app (wrapped as `run_cellsight_app` in the image).
+- `Dockerfile.rocker` / `install_packages.R`: previous rocker/shiny-based build, kept for reference.
 - `git_installs.sh`: Installs external native trackplot dependencies (`libbeato`, `bwtool`).
