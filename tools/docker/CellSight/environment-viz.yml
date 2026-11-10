@@ -1,0 +1,30 @@
+name: cs-viz
+# Environment for *serving* a generated CellSight app. Covers every package the
+# generated ui.R / server.R / shinyFunc.R load (see inst/templates/*.jinja)
+# plus the DESCRIPTION Suggests used by the app. Deliberately has no Seurat,
+# Signac or cellsight: the generated app only reads precomputed files.
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - r-base=4.4
+  - compilers
+  - make
+  - pkg-config
+  - r-shiny
+  - r-shinyhelper
+  - r-dt
+  - r-magrittr
+  - r-data.table
+  - r-matrix
+  - r-hdf5r
+  - r-ggplot2
+  - r-ggrepel
+  - r-ggdendro
+  - r-ggpubr
+  - r-gridextra
+  - r-qs2
+  # shinydataviewer dependencies (the package itself is installed from CRAN
+  # in the Dockerfile because it is not on conda-forge)
+  - r-reactable
+  - r-bslib

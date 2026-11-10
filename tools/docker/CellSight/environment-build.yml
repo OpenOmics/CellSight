@@ -1,0 +1,47 @@
+name: cs-build
+# Environment for *building* CellSight apps (build_cellsight.R, ingest_10x.R,
+# seurat_inspector.R). Mirrors the Depends/Imports of the CellSight DESCRIPTION
+# plus the Seurat/Signac stack needed to read the input objects.
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - r-base=4.4
+  # toolchain: lets R compile any CRAN package conda doesn't carry (e.g. jinjar)
+  - compilers
+  - make
+  - pkg-config
+  - git
+  # CellSight Depends
+  - r-data.table
+  - r-matrix
+  - r-hdf5r
+  - r-reticulate
+  - r-ggplot2
+  - r-gridextra
+  - r-readr
+  - r-future
+  - r-future.apply
+  - r-rcolorbrewer
+  # CellSight Imports
+  - r-qs2
+  - bioconductor-biocfilecache
+  # Seurat / multimodal stack
+  - r-seurat>=5
+  - r-seuratobject
+  - r-signac
+  - bioconductor-biocgenerics
+  - bioconductor-genomeinfodb
+  - bioconductor-rtracklayer
+  - bioconductor-s4vectors
+  - bioconductor-singlecellexperiment
+  # code generation / CLI
+  - r-styler
+  - r-lintr
+  - r-remotes
+  - r-biocmanager
+  - r-argparse
+  - r-optparse
+  - r-knitr
+  - r-rmarkdown

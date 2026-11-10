@@ -1,92 +1,40 @@
 #!/usr/bin/env Rscript
 
-# Number of CPUs processes
-# to use for parallelizing
-# the install of N packages
+# Minimal bootstrap. CellSight's own R dependencies (data.table, Seurat,
+# shiny, DT, ggpubr, Signac, BiocFileCache, ...) are resolved from the
+# package DESCRIPTION when CellSight is installed from GitHub (see the
+# Dockerfile), so they are intentionally not listed here.
+
+# Posit Package Manager serves prebuilt Linux binaries (Ubuntu 22.04 "jammy"),
+# which avoids long source compiles. The user agent must be set for R to be
+# offered binaries.
+cran_repo <- "https://packagemanager.posit.co/cran/__linux__/jammy/latest"
+options(
+  repos = c(CRAN = cran_repo),
+  HTTPUserAgent = sprintf(
+    "R/%s R (%s)", getRversion(),
+    paste(getRversion(), R.version$platform, R.version$arch, R.version$os)
+  )
+)
 use_ncpus <- max(parallel::detectCores() - 2, 2)
 
-# CRAN packages,
-# add any missing/required
-# CRAN packages to the list
-# directly below. This script
-# will install them if they
-# are not already installed.
-# Install via:
-#   install.packages('packageName', repos='http://cran.r-project.org')
-cran_packages <- c(
-  "optparse",
-  "data.table",
-  "Matrix",
-  "hdf5r",
-  "reticulate",
-  "ggplot2",
-  "gridExtra",
-  "jinjar",
-  "glue",
-  "readr",
-  "future",
-  "future.apply",
-  "RColorBrewer",
-  "devtools",
-  "Seurat",
-  "SeuratObject",
-  "remotes",
-  "DT",
-  "BiocManager",
-  "shinyhelper",
-  "argparse",
-  "ggdendro",
-  "hdf5r",
-  "magrittr",
-  "shiny",
-  "shinyhelper",
-  "ggpubr",
-  "ggrepel",
-  "qs2",
-  "styler",
-  "lintr",
-  "pak",
-  "shinydataviewer",
-  "knitr",
-  "rmarkdown"
-)
-
-
-# Install missing CRAN packages
+# Upgrade stale base-image packages first, so later installs never load an
+# old copy (e.g. fs 1.6.5 vs >= 2.1.0 required).
 install.packages(
-  setdiff(
-    cran_packages, rownames(installed.packages())
-  ),
+  c("fs", "cli", "rlang", "vctrs", "glue", "pkgload"),
+  repos = cran_repo
+)
+
+# Tools needed by the install itself and by the container's CLI scripts
+# (build_cellsight.R, ingest_10x.R, seurat_inspector.R).
+bootstrap <- c("remotes", "BiocManager", "argparse", "optparse")
+install.packages(
+  setdiff(bootstrap, rownames(installed.packages())),
   Ncpus = use_ncpus,
-  repos = "http://cran.r-project.org"
+  repos = cran_repo
 )
 
-# Bioconductor packages,
-# add any missing/required
-# Bioconductor packages to the list
-# directly below. This script will
-# install them if they are missing.
-# Install via:
-#   BiocManager::install('packageName')
-bioc_packages <- c(
-  "BiocFileCache",
-  "BiocGenerics",
-  "GenomeInfoDb",
-  "rtracklayer",
-  "S4Vectors",
-  "SingleCellExperiment",
-  "Signac"
-)
-
-# Install missing Bioconductor packages
-for (p in bioc_packages) {
-  if (!p %in% rownames(installed.packages())) {
-    # Package missing
-    print(paste("Installing missing Bioconductor package...", p))
-    BiocManager::install(p, ask = FALSE, update = FALSE, Ncpus = use_ncpus)
-  }
+missing <- setdiff(bootstrap, rownames(installed.packages()))
+if (length(missing) > 0) {
+  stop("Bootstrap install failed for: ", paste(missing, collapse = ", "))
 }
-
-# not on CRAN
-remotes::install_github("satijalab/seurat-wrappers")
-remotes::install_github("GreenleafLab/ArchR")

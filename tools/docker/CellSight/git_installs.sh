@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 git clone https://github.com/CRG-Barcelona/libbeato.git
 cd ./libbeato
 git checkout 0c30432
